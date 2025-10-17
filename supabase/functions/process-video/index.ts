@@ -225,7 +225,7 @@ Faça o deploy da aplicação para produção. Monitore os logs para garantir qu
     const { error: updateError } = await supabaseAdmin
       .from("videos")
       .update({
-        status: "Processado",
+        status: "Concluído",
         title: simulated.title,
         transcription: simulated.transcription,
         summary_short: simulated.summary_short,
@@ -233,6 +233,7 @@ Faça o deploy da aplicação para produção. Monitore os logs para garantir qu
         topics: simulated.topics,
         keywords: simulated.keywords,
         category: simulated.category,
+        subcategory: simulated.subcategory,
         is_tutorial: simulated.is_tutorial,
         tutorial_steps: simulated.tutorial_steps,
         theme_id: themeId,
@@ -241,6 +242,11 @@ Faça o deploy da aplicação para produção. Monitore os logs para garantir qu
       .eq("id", video_id);
 
     if (updateError) {
+      // If update fails, mark as failed
+      await supabaseAdmin
+        .from("videos")
+        .update({ status: "Falha" })
+        .eq("id", video_id);
       throw new Error(`Failed to update video: ${updateError.message}`);
     }
 
@@ -249,19 +255,7 @@ Faça o deploy da aplicação para produção. Monitore os logs para garantir qu
       status: 200,
     });
   } catch (error) {
-    // If processing fails, update video status to 'Falha'
-    try {
-      const { video_id } = await req.json();
-      if (video_id) {
-          const supabaseAdmin = createClient(
-              Deno.env.get("SUPABASE_URL") ?? "",
-              Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-          );
-          await supabaseAdmin.from("videos").update({ status: "Falha" }).eq("id", video_id);
-      }
-    } catch (e) {
-      // Ignore if parsing body fails in error handler
-    }
+    console.error("Error processing video:", error);
     
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
