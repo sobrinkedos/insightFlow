@@ -16,9 +16,9 @@ function App() {
   const location = useLocation();
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-transparent font-sans">
+    <div className="relative flex min-h-screen w-full max-w-full flex-col bg-transparent font-sans overflow-x-hidden">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<HomePage />} />
