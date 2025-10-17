@@ -169,19 +169,18 @@ export function VideosPage() {
         </TabsList>
         <TabsContent value="all" className="mt-4">
           <Card>
-            <CardContent className="p-0 overflow-x-auto">
-              <Table className="min-w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vídeo</TableHead>
-                    <TableHead className="hidden sm:table-cell w-[120px]">Fonte</TableHead>
-                    <TableHead className="hidden md:table-cell w-[200px]">Adicionado em</TableHead>
-                    <TableHead className="text-right w-[140px]">Status</TableHead>
-                    <TableHead className="w-[80px]">
-                      <span className="sr-only">Ações</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-full">Vídeo</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Status</TableHead>
+                      <TableHead className="w-[50px]">
+                        <span className="sr-only">Ações</span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {loading ? (
                      Array.from({ length: 10 }).map((_, i) => (
@@ -189,22 +188,24 @@ export function VideosPage() {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Skeleton className="w-20 h-14 rounded shrink-0" />
-                                <div className="flex-1 space-y-2">
-                                  <Skeleton className="h-5 w-48" />
-                                  <Skeleton className="h-4 w-64" />
+                                <div className="flex-1 min-w-0 space-y-2">
+                                  <Skeleton className="h-5 w-full max-w-xs" />
+                                  <Skeleton className="h-3 w-20" />
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell"><Skeleton className="h-6 w-24" /></TableCell>
-                            <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-32" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                            <TableCell className="text-right">
+                              <Skeleton className="h-6 w-20 rounded-full ml-auto" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-8 w-8 ml-auto" />
+                            </TableCell>
                         </TableRow>
                     ))
                   ) : videos.length > 0 ? (
                     videos.map((video) => (
                       <TableRow key={video.id} onClick={() => navigate(`/videos/${video.id}`)} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell>
+                        <TableCell className="py-3">
                             <div className="flex items-center gap-3">
                               <img 
                                 src={getVideoThumbnail(video.url)} 
@@ -215,16 +216,16 @@ export function VideosPage() {
                                 }}
                               />
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium truncate">{video.title || new URL(video.url).hostname}</div>
-                                <div className="text-xs text-muted-foreground truncate">{video.url}</div>
+                                <div className="font-medium truncate mb-1">{video.title || new URL(video.url).hostname}</div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
+                                  <span>•</span>
+                                  <span className="hidden sm:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                                </div>
                               </div>
                             </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</TableCell>
-                        <TableCell className="hidden md:table-cell">
-                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
-                        </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right whitespace-nowrap">
                             <Badge variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} className={video.status === 'Processando' ? 'animate-pulse' : ''}>
                                 {video.status}
                             </Badge>
@@ -258,7 +259,7 @@ export function VideosPage() {
                     ))
                   ) : (
                     <TableRow>
-                        <TableCell colSpan={5}>
+                        <TableCell colSpan={3}>
                             <EmptyState
                                 icon={VideoIcon}
                                 title="Nenhum vídeo encontrado"
@@ -275,7 +276,8 @@ export function VideosPage() {
                     </TableRow>
                   )}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             </CardContent>
             {videos.length > 0 && (
                 <CardFooter className="justify-between border-t pt-6">
