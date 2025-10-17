@@ -45,6 +45,43 @@ import { Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 
+// Função para extrair thumbnail da URL do vídeo
+function getVideoThumbnail(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    
+    // YouTube
+    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+      const videoId = urlObj.hostname.includes('youtu.be') 
+        ? urlObj.pathname.slice(1)
+        : urlObj.searchParams.get('v');
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      }
+    }
+    
+    // Instagram (placeholder)
+    if (urlObj.hostname.includes('instagram.com')) {
+      return 'https://via.placeholder.com/120x90/E4405F/ffffff?text=Instagram';
+    }
+    
+    // TikTok (placeholder)
+    if (urlObj.hostname.includes('tiktok.com')) {
+      return 'https://via.placeholder.com/120x90/000000/ffffff?text=TikTok';
+    }
+    
+    // Vimeo
+    if (urlObj.hostname.includes('vimeo.com')) {
+      return 'https://via.placeholder.com/120x90/1AB7EA/ffffff?text=Vimeo';
+    }
+    
+    // Default
+    return 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
+  } catch {
+    return 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
+  }
+}
+
 export function VideosPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -149,7 +186,15 @@ export function VideosPage() {
                   {loading ? (
                      Array.from({ length: 10 }).map((_, i) => (
                         <TableRow key={i}>
-                            <TableCell><Skeleton className="h-6 w-64" /></TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Skeleton className="w-20 h-14 rounded shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                  <Skeleton className="h-5 w-48" />
+                                  <Skeleton className="h-4 w-64" />
+                                </div>
+                              </div>
+                            </TableCell>
                             <TableCell className="hidden sm:table-cell"><Skeleton className="h-6 w-24" /></TableCell>
                             <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-32" /></TableCell>
                             <TableCell className="text-right"><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
@@ -160,8 +205,20 @@ export function VideosPage() {
                     videos.map((video) => (
                       <TableRow key={video.id} onClick={() => navigate(`/videos/${video.id}`)} className="cursor-pointer hover:bg-muted/50">
                         <TableCell>
-                            <div className="font-medium truncate max-w-xs">{video.title || new URL(video.url).hostname}</div>
-                            <div className="text-xs text-muted-foreground truncate">{video.url}</div>
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={getVideoThumbnail(video.url)} 
+                                alt={video.title || 'Thumbnail'}
+                                className="w-20 h-14 object-cover rounded border border-border shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
+                                }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">{video.title || new URL(video.url).hostname}</div>
+                                <div className="text-xs text-muted-foreground truncate">{video.url}</div>
+                              </div>
+                            </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</TableCell>
                         <TableCell className="hidden md:table-cell">
