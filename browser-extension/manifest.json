@@ -32,7 +32,7 @@
         "https://*.vimeo.com/*",
         "https://*.dailymotion.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["config.js", "content.js"],
       "css": ["content.css"]
     }
   ],

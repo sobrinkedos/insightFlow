@@ -84,8 +84,11 @@ function addShareButton() {
   button.addEventListener('click', async () => {
     const videoInfo = getVideoInfo();
     
+    // Get base URL from config or use default
+    const baseUrl = typeof INSIGHTSHARE_URL !== 'undefined' ? INSIGHTSHARE_URL : 'http://localhost:5174';
+    
     // Open InsightShare website with video URL
-    const insightShareUrl = `https://insightshare.vercel.app/share?url=${encodeURIComponent(videoInfo.url)}&title=${encodeURIComponent(videoInfo.title)}`;
+    const insightShareUrl = `${baseUrl}/share?url=${encodeURIComponent(videoInfo.url)}&title=${encodeURIComponent(videoInfo.title)}`;
     
     // Try to open in the same window or new tab
     window.open(insightShareUrl, '_blank');
