@@ -81,8 +81,14 @@ function addShareButton() {
   button.innerHTML = '🎬';
   button.title = 'Compartilhar com InsightShare';
   
-  button.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'openPopup' });
+  button.addEventListener('click', async () => {
+    const videoInfo = getVideoInfo();
+    
+    // Open InsightShare website with video URL
+    const insightShareUrl = `https://insightshare.vercel.app/share?url=${encodeURIComponent(videoInfo.url)}&title=${encodeURIComponent(videoInfo.title)}`;
+    
+    // Try to open in the same window or new tab
+    window.open(insightShareUrl, '_blank');
   });
 
   document.body.appendChild(button);
