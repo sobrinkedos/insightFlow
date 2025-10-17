@@ -244,7 +244,7 @@ export function ThemeDetailPage() {
                             </p>
                             <p className="text-sm text-muted-foreground">
                             Adicionado{" "}
-                            {formatDistanceToNow(new Date(video.created_at), { locale: ptBR, addSuffix: true })}
+                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                             </p>
                         </div>
                         </div>
