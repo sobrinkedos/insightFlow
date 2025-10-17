@@ -60,11 +60,17 @@ export function ThemesPage() {
     setLoading(true);
     const { data } = await supabase
       .from('themes')
-      .select('*, video_count:videos!inner(count)')
+      .select('*, videos(count)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
-    setThemes((data as any) || []);
+    // Processar os dados para extrair o count
+    const processedData = (data || []).map(theme => ({
+      ...theme,
+      video_count: Array.isArray(theme.videos) && theme.videos[0]?.count || 0
+    }));
+    
+    setThemes(processedData as any);
     setLoading(false);
   };
 
