@@ -1,6 +1,6 @@
 // Configuração da API (hardcoded para simplificar)
 const API_URL = 'https://enkpfnqsjjnanlqhjnsv.supabase.co';
-const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NjI4NzcsImV4cCI6MjA1MjUzODg3N30.Yz-Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0';
+const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NjcyODAsImV4cCI6MjA3NjE0MzI4MH0.WwYOmV_jXBsrZ74GWw9xuSzRC1vf1k39DAHjY1EI1hE';
 
 // Elementos
 const loginScreen = document.getElementById('loginScreen');
@@ -74,13 +74,47 @@ function getVideoInfo() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     
-    chrome.tabs.sendMessage(currentTab.id, { action: 'getVideoInfo' }, (response) => {
-      if (response && response.url) {
-        currentVideoUrl = response.url;
-        displayVideoInfo(response);
-      }
-    });
+    // Verificar se é uma URL de vídeo suportada
+    if (currentTab.url && (
+      currentTab.url.includes('youtube.com') ||
+      currentTab.url.includes('instagram.com') ||
+      currentTab.url.includes('tiktok.com') ||
+      currentTab.url.includes('vimeo.com') ||
+      currentTab.url.includes('dailymotion.com')
+    )) {
+      currentVideoUrl = currentTab.url;
+      
+      // Tentar obter informações via content script
+      chrome.tabs.sendMessage(currentTab.id, { action: 'getVideoInfo' }, (response) => {
+        // Ignorar erro se content script não responder
+        if (chrome.runtime.lastError) {
+          console.log('Content script não disponível, usando URL da aba');
+        }
+        
+        if (response && response.url) {
+          currentVideoUrl = response.url;
+          displayVideoInfo(response);
+        } else {
+          // Usar informações básicas da aba
+          displayVideoInfo({
+            url: currentTab.url,
+            title: currentTab.title,
+            platform: getPlatformFromUrl(currentTab.url)
+          });
+        }
+      });
+    }
   });
+}
+
+// Obter plataforma da URL
+function getPlatformFromUrl(url) {
+  if (url.includes('youtube.com')) return 'YouTube';
+  if (url.includes('instagram.com')) return 'Instagram';
+  if (url.includes('tiktok.com')) return 'TikTok';
+  if (url.includes('vimeo.com')) return 'Vimeo';
+  if (url.includes('dailymotion.com')) return 'Dailymotion';
+  return 'Desconhecida';
 }
 
 // Exibir informações do vídeo
