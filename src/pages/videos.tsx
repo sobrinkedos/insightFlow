@@ -264,7 +264,6 @@ export function VideosPage() {
               </CardContent>
             </Card>
           )}
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
