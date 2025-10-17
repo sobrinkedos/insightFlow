@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Film, Bot, Sparkles, Loader2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDistanceToNow } from "@/lib/date-utils";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";

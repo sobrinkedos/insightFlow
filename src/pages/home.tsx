@@ -19,8 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDistanceToNow } from "@/lib/date-utils";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
@@ -142,7 +141,7 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                                         </div>
                                         <div className="flex items-center gap-3 mt-2">
                                             <span className="text-xs text-muted-foreground">
-                                                {formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: ptBR })}
+                                                {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                                             </span>
                                             {video.category && (
                                                 <span className="text-xs text-muted-foreground">

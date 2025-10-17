@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Bot, FileText, Info, Film, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDistanceToNow } from "@/lib/date-utils";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,7 +168,7 @@ export function VideoDetailPage() {
             </p>
           )}
           <p className="text-xs text-muted-foreground mt-1">
-            {formatDistanceToNow(new Date(v.created_at), { addSuffix: true, locale: ptBR })}
+            {formatDistanceToNow(new Date(v.created_at), { addSuffix: true })}
           </p>
         </div>
       </Link>
@@ -180,7 +179,7 @@ export function VideoDetailPage() {
     <div className="container py-8">
       <PageHeader
         title={video.title || "Detalhes do Vídeo"}
-        description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: ptBR })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: ptBR })}`}
+        description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}
       >
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />

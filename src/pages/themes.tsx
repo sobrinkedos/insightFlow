@@ -7,8 +7,7 @@ import {
   MoreHorizontal,
   PlusCircle,
 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { formatDistanceToNow } from "@/lib/date-utils"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -177,7 +176,7 @@ export function ThemesPage() {
                             <Badge variant="outline">{theme.video_count} vídeos</Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                              {formatDistanceToNow(new Date(theme.created_at), { addSuffix: true, locale: ptBR })}
+                              {formatDistanceToNow(new Date(theme.created_at), { addSuffix: true })}
                           </TableCell>
                           <TableCell>
                               <div className="flex justify-end">

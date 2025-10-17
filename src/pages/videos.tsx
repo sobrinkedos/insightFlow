@@ -6,8 +6,7 @@ import {
   MoreHorizontal,
   Video as VideoIcon,
 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { formatDistanceToNow } from "@/lib/date-utils"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -166,7 +165,7 @@ export function VideosPage() {
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</TableCell>
                         <TableCell className="hidden md:table-cell">
-                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: ptBR })}
+                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                         </TableCell>
                         <TableCell className="text-right">
                             <Badge variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} className={video.status === 'Processando' ? 'animate-pulse' : ''}>
