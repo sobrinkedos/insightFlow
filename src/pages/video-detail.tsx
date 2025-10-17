@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Bot, FileText, Info, Film, Clock } from "lucide-react";
+import { ArrowLeft, Bot, FileText, Info, Film, Clock, Heart, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date-utils";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,6 +86,44 @@ export function VideoDetailPage() {
 
     fetchVideoDetails();
   }, [id, user]);
+
+  const toggleFavorite = async () => {
+    if (!video) return;
+    
+    const { error } = await supabase
+      .from('videos')
+      .update({ is_favorite: !video.is_favorite })
+      .eq('id', video.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar favorito');
+      return;
+    }
+
+    setVideo({ ...video, is_favorite: !video.is_favorite });
+    toast.success(video.is_favorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos');
+  };
+
+  const deleteVideo = async () => {
+    if (!video) return;
+    
+    if (!confirm('Tem certeza que deseja excluir este vídeo? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('videos')
+      .delete()
+      .eq('id', video.id);
+
+    if (error) {
+      toast.error('Erro ao excluir vídeo');
+      return;
+    }
+
+    toast.success('Vídeo excluído com sucesso');
+    navigate('/videos');
+  };
 
   if (loading) {
     return (
@@ -181,10 +220,26 @@ export function VideoDetailPage() {
         title={video.title || "Detalhes do Vídeo"}
         description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}
       >
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFavorite}
+          >
+            <Heart className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={deleteVideo}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
       </PageHeader>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">

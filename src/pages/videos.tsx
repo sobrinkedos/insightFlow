@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Video as VideoIcon,
   Heart,
+  Trash2,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
 
@@ -111,6 +112,27 @@ export function VideosPage() {
     setVideos(videos.map(v => 
       v.id === videoId ? { ...v, is_favorite: !currentState } : v
     ));
+  };
+
+  const deleteVideo = async (videoId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!confirm('Tem certeza que deseja excluir este vídeo? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('videos')
+      .delete()
+      .eq('id', videoId);
+
+    if (error) {
+      console.error('Error deleting video:', error);
+      return;
+    }
+
+    // Remover localmente
+    setVideos(videos.filter(v => v.id !== videoId));
   };
 
   useEffect(() => {
@@ -257,7 +279,8 @@ export function VideosPage() {
                                 Ver Detalhes
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenuItem className="text-destructive" onClick={(e) => deleteVideo(video.id, e)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
                                 Excluir
                               </DropdownMenuItem>
                             </DropdownMenuContent>
