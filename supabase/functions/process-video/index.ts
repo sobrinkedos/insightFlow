@@ -1,14 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { faker } from "https://esm.sh/@faker-js/faker@v8.4.1";
+import { ANALYSIS_PROMPT } from "./ai-prompts.ts";
 
 // IMPORTANT: Set these secrets in your Supabase project dashboard:
 // `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`
 // Docs: https://supabase.com/docs/guides/functions/secrets
 
-// Although the OpenAI key is set, this function currently SIMULATES AI processing.
-// The actual API call logic is commented out as a reference for future implementation.
-// const openAIKey = Deno.env.get("OPENAI_API_KEY");
+const openAIKey = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,112 +15,103 @@ const corsHeaders = {
 };
 
 // Helper functions
-function extractVideoTitle(url: string): string {
+function extractVideoId(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    const title = urlObj.searchParams.get('title') || 
-                 urlObj.pathname.split('/').pop() || 
-                 '';
-    return decodeURIComponent(title).replace(/[-_]/g, ' ');
+    
+    // YouTube formats: youtube.com/watch?v=ID or youtu.be/ID
+    if (urlObj.hostname.includes('youtube.com')) {
+      return urlObj.searchParams.get('v');
+    } else if (urlObj.hostname.includes('youtu.be')) {
+      return urlObj.pathname.slice(1).split('?')[0];
+    }
+    
+    return null;
   } catch {
-    return '';
+    return null;
   }
 }
 
-function detectTutorial(title: string): boolean {
-  const tutorialKeywords = [
-    'como fazer', 'tutorial', 'passo a passo', 'aprenda',
-    'guia', 'instruções', 'configurar', 'instalar', 'criar'
-  ];
-  const lowerTitle = title.toLowerCase();
-  return tutorialKeywords.some(keyword => lowerTitle.includes(keyword));
-}
+async function getVideoInfo(videoId: string): Promise<{ title: string; description: string } | null> {
+  try {
+    // Usando a API do YouTube Data v3 (você precisa configurar YOUTUBE_API_KEY)
+    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
+    if (!youtubeApiKey) {
+      console.warn("YOUTUBE_API_KEY not set, skipping video info fetch");
+      return null;
+    }
 
-function detectRecipe(title: string): boolean {
-  const recipeKeywords = [
-    'receita', 'paella', 'cozinhar', 'preparar', 'prato',
-    'comida', 'culinária', 'chef', 'gastronomia', 'ingredientes',
-    'modo de preparo', 'temperar', 'assar', 'fritar'
-  ];
-  const lowerTitle = title.toLowerCase();
-  return recipeKeywords.some(keyword => lowerTitle.includes(keyword));
-}
-
-function generateTutorialSteps(isRecipe: boolean, title: string): string {
-  if (isRecipe) {
-    return `# Ingredientes
-
-- 400g de arroz para paella (ou arroz arbóreo)
-- 500g de frutos do mar variados (camarão, lula, mexilhões)
-- 300g de frango em cubos
-- 1 cebola média picada
-- 3 dentes de alho picados
-- 2 tomates maduros picados
-- 1 pimentão vermelho em tiras
-- 100g de ervilhas frescas ou congeladas
-- Açafrão ou colorau a gosto
-- 1 litro de caldo de peixe ou frango
-- Azeite de oliva
-- Sal e pimenta a gosto
-- Limão para servir
-
-# Modo de Preparo
-
-## 1. Preparação dos Ingredientes
-Separe e prepare todos os ingredientes: pique a cebola, o alho, os tomates e corte o pimentão em tiras. Limpe os frutos do mar e tempere o frango com sal e pimenta.
-
-## 2. Refogue a Base
-Em uma paellera ou frigideira grande, aqueça o azeite e refogue a cebola e o alho até ficarem dourados. Adicione o frango e deixe dourar por todos os lados.
-
-## 3. Adicione os Vegetais
-Acrescente os tomates picados, o pimentão e as ervilhas. Refogue por 3-4 minutos até os tomates começarem a desmanchar.
-
-## 4. Tempere e Adicione o Arroz
-Adicione o açafrão ou colorau, misture bem. Acrescente o arroz e mexa para envolver todos os grãos no tempero, deixando tostar levemente por 2 minutos.
-
-## 5. Adicione o Caldo
-Despeje o caldo quente sobre o arroz. Não mexa mais! Deixe cozinhar em fogo médio-alto por 10 minutos sem mexer.
-
-## 6. Adicione os Frutos do Mar
-Distribua os frutos do mar sobre o arroz, pressionando levemente. Reduza o fogo e cozinhe por mais 10-15 minutos até o arroz absorver todo o líquido.
-
-## 7. Finalize
-Desligue o fogo e deixe descansar por 5 minutos coberto com um pano. Sirva com rodelas de limão.
-
-# Dicas
-
-- O segredo da paella é NÃO mexer o arroz após adicionar o caldo
-- O fundo deve ficar levemente tostado (socarrat) - isso é desejável!
-- Use uma paellera larga para o arroz cozinhar uniformemente
-- Ajuste o sal no final, pois o caldo já tem sal`;
-  } else {
-    return `# Requisitos
-
-- Conhecimento básico de programação
-- Editor de código instalado
-- Acesso à internet
-- Terminal/linha de comando
-
-# Passo a Passo
-
-## 1. Preparação Inicial
-Configure seu ambiente de desenvolvimento instalando as ferramentas necessárias. Verifique se todas as dependências estão disponíveis.
-
-## 2. Instalação de Dependências
-Execute o comando de instalação para baixar todos os pacotes necessários. Aguarde a conclusão do processo.
-
-## 3. Configuração
-Configure as variáveis de ambiente e arquivos de configuração. Certifique-se de que todas as credenciais estão corretas.
-
-## 4. Implementação
-Implemente a funcionalidade principal seguindo as boas práticas. Mantenha o código limpo e bem documentado.
-
-## 5. Testes
-Execute os testes para garantir que tudo está funcionando corretamente. Corrija eventuais erros encontrados.
-
-## 6. Deploy
-Faça o deploy da aplicação para produção. Monitore os logs para garantir que está tudo funcionando.`;
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
+    );
+    
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      const snippet = data.items[0].snippet;
+      return {
+        title: snippet.title,
+        description: snippet.description,
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error fetching video info:", error);
+    return null;
   }
+}
+
+async function transcribeAudio(audioUrl: string): Promise<string> {
+  if (!openAIKey) {
+    throw new Error("OPENAI_API_KEY not configured");
+  }
+
+  // Para transcrição real, você precisaria:
+  // 1. Baixar o áudio do YouTube (usando yt-dlp ou similar)
+  // 2. Enviar para a API Whisper da OpenAI
+  // Por enquanto, vamos usar a descrição do vídeo como fallback
+  
+  throw new Error("Audio transcription not implemented yet. Use video description as fallback.");
+}
+
+async function analyzeWithGPT(transcription: string, videoTitle: string): Promise<any> {
+  if (!openAIKey) {
+    throw new Error("OPENAI_API_KEY not configured");
+  }
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${openAIKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: ANALYSIS_PROMPT,
+        },
+        {
+          role: "user",
+          content: `Título do vídeo: ${videoTitle}\n\nTranscrição/Descrição:\n${transcription}`,
+        },
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`OpenAI API error: ${error}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices[0].message.content;
+  
+  return JSON.parse(content);
 }
 
 serve(async (req) => {
@@ -154,89 +143,57 @@ serve(async (req) => {
       throw new Error(`Video not found: ${videoError?.message}`);
     }
 
-    // --- AI PROCESSING SIMULATION ---
-    // In a real scenario, you would:
-    // 1. Download audio from video.url (e.g., using a YouTube downloader library)
-    // 2. Transcribe audio using OpenAI Whisper API.
-    // 3. Analyze with GPT to detect tutorials and generate step-by-step
-    
-    // Simulating a delay for processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Extract video title from URL for better simulation
-    const videoTitle = extractVideoTitle(video.url);
-    
-    // Detect if it's a tutorial/recipe based on URL or title
-    const isTutorial = detectTutorial(videoTitle);
-    const isRecipe = detectRecipe(videoTitle);
-    
-    const simulated = {
-      title: videoTitle || faker.hacker.phrase().replace(/^./, (c) => c.toUpperCase()),
-      transcription: faker.lorem.paragraphs(3),
-      summary_short: faker.lorem.sentence(),
-      summary_expanded: faker.lorem.paragraph(),
-      keywords: isRecipe 
-        ? ['receita', 'culinária', 'gastronomia', faker.food.dish()]
-        : [faker.hacker.noun(), faker.hacker.noun(), faker.hacker.noun()],
-      topics: isRecipe 
-        ? ['Culinária', 'Receitas']
-        : [faker.hacker.verb(), faker.hacker.adjective()],
-      category: isRecipe ? 'Culinária' : faker.commerce.department(),
-      subcategory: isRecipe ? 'Receitas' : null,
-      is_tutorial: isTutorial || isRecipe,
-      tutorial_steps: (isTutorial || isRecipe) ? generateTutorialSteps(isRecipe, videoTitle) : null,
-    };
-    // --- END OF SIMULATION ---
-
-    // 2. Find or create a theme
-    const themeTitle = `Tema sobre ${faker.company.buzzNoun()}`;
-    let themeId = null;
-
-    // Check if a similar theme exists for the user
-    const { data: existingTheme } = await supabaseAdmin
-      .from("themes")
-      .select("id")
-      .eq("user_id", video.user_id)
-      .ilike("title", `%${themeTitle.split(" ").pop()}%`) // Simple check
-      .limit(1)
-      .single();
-
-    if (existingTheme) {
-      themeId = existingTheme.id;
-    } else {
-      // Create a new theme
-      const { data: newTheme, error: themeError } = await supabaseAdmin
-        .from("themes")
-        .insert({
-          user_id: video.user_id,
-          title: themeTitle,
-          description: `Um tema consolidado sobre ${themeTitle.split(" ").pop()}.`,
-        })
-        .select("id")
-        .single();
-
-      if (themeError || !newTheme) {
-        throw new Error(`Could not create theme: ${themeError?.message}`);
-      }
-      themeId = newTheme.id;
+    // 2. Extract video ID from URL
+    const videoId = extractVideoId(video.url);
+    if (!videoId) {
+      throw new Error("Invalid YouTube URL");
     }
 
-    // 3. Update the video with processed data
+    // 3. Get video info (title and description)
+    let videoInfo = await getVideoInfo(videoId);
+    if (!videoInfo) {
+      // Fallback: usar informações básicas do vídeo
+      videoInfo = {
+        title: `Vídeo do YouTube`,
+        description: `Análise de vídeo do YouTube. Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.`,
+      };
+    }
+
+    // 4. Use description as transcription (fallback until we implement audio transcription)
+    const transcription = videoInfo.description || "Sem descrição disponível";
+
+    // 5. Analyze with GPT
+    const analysis = await analyzeWithGPT(transcription, videoInfo.title);
+
+    // 6. Prepare the data
+    const processedData = {
+      title: analysis.title || videoInfo.title,
+      transcription: transcription,
+      summary_short: analysis.summary_short,
+      summary_expanded: analysis.summary_expanded,
+      topics: analysis.topics || [],
+      keywords: analysis.keywords || [],
+      category: analysis.category,
+      subcategory: analysis.subcategory,
+      is_tutorial: analysis.is_tutorial || false,
+      tutorial_steps: analysis.tutorial_steps || null,
+    };
+
+    // 7. Update the video with processed data
     const { error: updateError } = await supabaseAdmin
       .from("videos")
       .update({
         status: "Concluído",
-        title: simulated.title,
-        transcription: simulated.transcription,
-        summary_short: simulated.summary_short,
-        summary_expanded: simulated.summary_expanded,
-        topics: simulated.topics,
-        keywords: simulated.keywords,
-        category: simulated.category,
-        subcategory: simulated.subcategory,
-        is_tutorial: simulated.is_tutorial,
-        tutorial_steps: simulated.tutorial_steps,
-        theme_id: themeId,
+        title: processedData.title,
+        transcription: processedData.transcription,
+        summary_short: processedData.summary_short,
+        summary_expanded: processedData.summary_expanded,
+        topics: processedData.topics,
+        keywords: processedData.keywords,
+        category: processedData.category,
+        subcategory: processedData.subcategory,
+        is_tutorial: processedData.is_tutorial,
+        tutorial_steps: processedData.tutorial_steps,
         processed_at: new Date().toISOString(),
       })
       .eq("id", video_id);
