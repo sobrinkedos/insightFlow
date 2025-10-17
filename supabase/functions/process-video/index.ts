@@ -16,6 +16,115 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper functions
+function extractVideoTitle(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    const title = urlObj.searchParams.get('title') || 
+                 urlObj.pathname.split('/').pop() || 
+                 '';
+    return decodeURIComponent(title).replace(/[-_]/g, ' ');
+  } catch {
+    return '';
+  }
+}
+
+function detectTutorial(title: string): boolean {
+  const tutorialKeywords = [
+    'como fazer', 'tutorial', 'passo a passo', 'aprenda',
+    'guia', 'instruções', 'configurar', 'instalar', 'criar'
+  ];
+  const lowerTitle = title.toLowerCase();
+  return tutorialKeywords.some(keyword => lowerTitle.includes(keyword));
+}
+
+function detectRecipe(title: string): boolean {
+  const recipeKeywords = [
+    'receita', 'paella', 'cozinhar', 'preparar', 'prato',
+    'comida', 'culinária', 'chef', 'gastronomia', 'ingredientes',
+    'modo de preparo', 'temperar', 'assar', 'fritar'
+  ];
+  const lowerTitle = title.toLowerCase();
+  return recipeKeywords.some(keyword => lowerTitle.includes(keyword));
+}
+
+function generateTutorialSteps(isRecipe: boolean, title: string): string {
+  if (isRecipe) {
+    return `# Ingredientes
+
+- 400g de arroz para paella (ou arroz arbóreo)
+- 500g de frutos do mar variados (camarão, lula, mexilhões)
+- 300g de frango em cubos
+- 1 cebola média picada
+- 3 dentes de alho picados
+- 2 tomates maduros picados
+- 1 pimentão vermelho em tiras
+- 100g de ervilhas frescas ou congeladas
+- Açafrão ou colorau a gosto
+- 1 litro de caldo de peixe ou frango
+- Azeite de oliva
+- Sal e pimenta a gosto
+- Limão para servir
+
+# Modo de Preparo
+
+## 1. Preparação dos Ingredientes
+Separe e prepare todos os ingredientes: pique a cebola, o alho, os tomates e corte o pimentão em tiras. Limpe os frutos do mar e tempere o frango com sal e pimenta.
+
+## 2. Refogue a Base
+Em uma paellera ou frigideira grande, aqueça o azeite e refogue a cebola e o alho até ficarem dourados. Adicione o frango e deixe dourar por todos os lados.
+
+## 3. Adicione os Vegetais
+Acrescente os tomates picados, o pimentão e as ervilhas. Refogue por 3-4 minutos até os tomates começarem a desmanchar.
+
+## 4. Tempere e Adicione o Arroz
+Adicione o açafrão ou colorau, misture bem. Acrescente o arroz e mexa para envolver todos os grãos no tempero, deixando tostar levemente por 2 minutos.
+
+## 5. Adicione o Caldo
+Despeje o caldo quente sobre o arroz. Não mexa mais! Deixe cozinhar em fogo médio-alto por 10 minutos sem mexer.
+
+## 6. Adicione os Frutos do Mar
+Distribua os frutos do mar sobre o arroz, pressionando levemente. Reduza o fogo e cozinhe por mais 10-15 minutos até o arroz absorver todo o líquido.
+
+## 7. Finalize
+Desligue o fogo e deixe descansar por 5 minutos coberto com um pano. Sirva com rodelas de limão.
+
+# Dicas
+
+- O segredo da paella é NÃO mexer o arroz após adicionar o caldo
+- O fundo deve ficar levemente tostado (socarrat) - isso é desejável!
+- Use uma paellera larga para o arroz cozinhar uniformemente
+- Ajuste o sal no final, pois o caldo já tem sal`;
+  } else {
+    return `# Requisitos
+
+- Conhecimento básico de programação
+- Editor de código instalado
+- Acesso à internet
+- Terminal/linha de comando
+
+# Passo a Passo
+
+## 1. Preparação Inicial
+Configure seu ambiente de desenvolvimento instalando as ferramentas necessárias. Verifique se todas as dependências estão disponíveis.
+
+## 2. Instalação de Dependências
+Execute o comando de instalação para baixar todos os pacotes necessários. Aguarde a conclusão do processo.
+
+## 3. Configuração
+Configure as variáveis de ambiente e arquivos de configuração. Certifique-se de que todas as credenciais estão corretas.
+
+## 4. Implementação
+Implemente a funcionalidade principal seguindo as boas práticas. Mantenha o código limpo e bem documentado.
+
+## 5. Testes
+Execute os testes para garantir que tudo está funcionando corretamente. Corrija eventuais erros encontrados.
+
+## 6. Deploy
+Faça o deploy da aplicação para produção. Monitore os logs para garantir que está tudo funcionando.`;
+  }
+}
+
 serve(async (req) => {
   // This is needed if you're planning to invoke your function from a browser.
   if (req.method === "OPTIONS") {
@@ -77,115 +186,6 @@ serve(async (req) => {
       is_tutorial: isTutorial || isRecipe,
       tutorial_steps: (isTutorial || isRecipe) ? generateTutorialSteps(isRecipe, videoTitle) : null,
     };
-    
-    function extractVideoTitle(url: string): string {
-      try {
-        const urlObj = new URL(url);
-        // Try to get title from URL parameters or path
-        const title = urlObj.searchParams.get('title') || 
-                     urlObj.pathname.split('/').pop() || 
-                     '';
-        return decodeURIComponent(title).replace(/[-_]/g, ' ');
-      } catch {
-        return '';
-      }
-    }
-    
-    function detectTutorial(title: string): boolean {
-      const tutorialKeywords = [
-        'como fazer', 'tutorial', 'passo a passo', 'aprenda',
-        'guia', 'instruções', 'configurar', 'instalar', 'criar'
-      ];
-      const lowerTitle = title.toLowerCase();
-      return tutorialKeywords.some(keyword => lowerTitle.includes(keyword));
-    }
-    
-    function detectRecipe(title: string): boolean {
-      const recipeKeywords = [
-        'receita', 'paella', 'cozinhar', 'preparar', 'prato',
-        'comida', 'culinária', 'chef', 'gastronomia', 'ingredientes',
-        'modo de preparo', 'temperar', 'assar', 'fritar'
-      ];
-      const lowerTitle = title.toLowerCase();
-      return recipeKeywords.some(keyword => lowerTitle.includes(keyword));
-    }
-    
-    function generateTutorialSteps(isRecipe: boolean, title: string): string {
-      if (isRecipe) {
-        return `# Ingredientes
-
-- 400g de arroz para paella (ou arroz arbóreo)
-- 500g de frutos do mar variados (camarão, lula, mexilhões)
-- 300g de frango em cubos
-- 1 cebola média picada
-- 3 dentes de alho picados
-- 2 tomates maduros picados
-- 1 pimentão vermelho em tiras
-- 100g de ervilhas frescas ou congeladas
-- Açafrão ou colorau a gosto
-- 1 litro de caldo de peixe ou frango
-- Azeite de oliva
-- Sal e pimenta a gosto
-- Limão para servir
-
-# Modo de Preparo
-
-## 1. Preparação dos Ingredientes
-Separe e prepare todos os ingredientes: pique a cebola, o alho, os tomates e corte o pimentão em tiras. Limpe os frutos do mar e tempere o frango com sal e pimenta.
-
-## 2. Refogue a Base
-Em uma paellera ou frigideira grande, aqueça o azeite e refogue a cebola e o alho até ficarem dourados. Adicione o frango e deixe dourar por todos os lados.
-
-## 3. Adicione os Vegetais
-Acrescente os tomates picados, o pimentão e as ervilhas. Refogue por 3-4 minutos até os tomates começarem a desmanchar.
-
-## 4. Tempere e Adicione o Arroz
-Adicione o açafrão ou colorau, misture bem. Acrescente o arroz e mexa para envolver todos os grãos no tempero, deixando tostar levemente por 2 minutos.
-
-## 5. Adicione o Caldo
-Despeje o caldo quente sobre o arroz. Não mexa mais! Deixe cozinhar em fogo médio-alto por 10 minutos sem mexer.
-
-## 6. Adicione os Frutos do Mar
-Distribua os frutos do mar sobre o arroz, pressionando levemente. Reduza o fogo e cozinhe por mais 10-15 minutos até o arroz absorver todo o líquido.
-
-## 7. Finalize
-Desligue o fogo e deixe descansar por 5 minutos coberto com um pano. Sirva com rodelas de limão.
-
-# Dicas
-
-- O segredo da paella é NÃO mexer o arroz após adicionar o caldo
-- O fundo deve ficar levemente tostado (socarrat) - isso é desejável!
-- Use uma paellera larga para o arroz cozinhar uniformemente
-- Ajuste o sal no final, pois o caldo já tem sal`;
-      } else {
-        return `# Requisitos
-
-- Conhecimento básico de programação
-- Editor de código instalado
-- Acesso à internet
-- Terminal/linha de comando
-
-# Passo a Passo
-
-## 1. Preparação Inicial
-Configure seu ambiente de desenvolvimento instalando as ferramentas necessárias. Verifique se todas as dependências estão disponíveis.
-
-## 2. Instalação de Dependências
-Execute o comando de instalação para baixar todos os pacotes necessários. Aguarde a conclusão do processo.
-
-## 3. Configuração
-Configure as variáveis de ambiente e arquivos de configuração. Certifique-se de que todas as credenciais estão corretas.
-
-## 4. Implementação
-Implemente a funcionalidade principal seguindo as boas práticas. Mantenha o código limpo e bem documentado.
-
-## 5. Testes
-Execute os testes para garantir que tudo está funcionando corretamente. Corrija eventuais erros encontrados.
-
-## 6. Deploy
-Faça o deploy da aplicação para produção. Monitore os logs para garantir que está tudo funcionando.`;
-      }
-    }
     // --- END OF SIMULATION ---
 
     // 2. Find or create a theme
