@@ -80,24 +80,27 @@ export function ShareVideoDialog() {
       return;
     }
 
-    toast.success("Vídeo adicionado! Iniciando processamento...");
-    form.reset();
-    setOpen(false);
-    setLoading(false);
-
     // 2. Invoke the Edge Function to process the video in the background
     const { error: functionError } = await supabase.functions.invoke('process-video', {
       body: { video_id: newVideo.id },
     });
 
+    setLoading(false);
+
     if (functionError) {
       toast.error("O processamento da IA falhou em iniciar.");
       console.error("Error invoking function:", functionError);
-      // The function itself will set the video status to 'Falha'
+      // Update video status to 'Falha'
+      await supabase
+        .from("videos")
+        .update({ status: "Falha" })
+        .eq("id", newVideo.id);
     } else {
-      // Optional: You can show a notification that processing is complete later
-      // by listening to real-time updates on the 'videos' table.
+      toast.success("Vídeo adicionado! Processamento iniciado com sucesso.");
     }
+
+    form.reset();
+    setOpen(false);
   };
 
   return (
