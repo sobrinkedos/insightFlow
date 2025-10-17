@@ -49,18 +49,47 @@ serve(async (req) => {
     // In a real scenario, you would:
     // 1. Download audio from video.url (e.g., using a YouTube downloader library)
     // 2. Transcribe audio using OpenAI Whisper API.
-    // 3. Summarize transcription using OpenAI GPT API.
-    // 4. Extract keywords and generate a title.
+    // 3. Analyze with GPT to detect tutorials and generate step-by-step
     
     // Simulating a delay for processing
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    // Simulate tutorial detection
+    const isTutorial = Math.random() > 0.5; // 50% chance for demo
+    
     const simulated = {
       title: faker.hacker.phrase().replace(/^./, (c) => c.toUpperCase()),
       transcription: faker.lorem.paragraphs(3),
-      summary: faker.lorem.sentence(),
+      summary_short: faker.lorem.sentence(),
+      summary_expanded: faker.lorem.paragraph(),
       keywords: [faker.hacker.noun(), faker.hacker.noun(), faker.hacker.noun()],
+      topics: [faker.hacker.verb(), faker.hacker.adjective()],
+      category: faker.commerce.department(),
+      is_tutorial: isTutorial,
+      tutorial_steps: isTutorial ? generateTutorialSteps() : null,
     };
+    
+    function generateTutorialSteps() {
+      return `# Passo a Passo
+
+## 1. Preparação Inicial
+Configure seu ambiente de desenvolvimento instalando as ferramentas necessárias.
+
+## 2. Instalação de Dependências
+Execute o comando de instalação para baixar todos os pacotes necessários.
+
+## 3. Configuração
+Configure as variáveis de ambiente e arquivos de configuração.
+
+## 4. Implementação
+Implemente a funcionalidade principal seguindo as boas práticas.
+
+## 5. Testes
+Execute os testes para garantir que tudo está funcionando corretamente.
+
+## 6. Deploy
+Faça o deploy da aplicação para produção.`;
+    }
     // --- END OF SIMULATION ---
 
     // 2. Find or create a theme
@@ -103,11 +132,15 @@ serve(async (req) => {
         status: "Processado",
         title: simulated.title,
         transcription: simulated.transcription,
-        metadata: {
-          summary: simulated.summary,
-          keywords: simulated.keywords,
-        },
+        summary_short: simulated.summary_short,
+        summary_expanded: simulated.summary_expanded,
+        topics: simulated.topics,
+        keywords: simulated.keywords,
+        category: simulated.category,
+        is_tutorial: simulated.is_tutorial,
+        tutorial_steps: simulated.tutorial_steps,
         theme_id: themeId,
+        processed_at: new Date().toISOString(),
       })
       .eq("id", video_id);
 

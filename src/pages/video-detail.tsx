@@ -273,7 +273,7 @@ export function VideoDetailPage() {
                   <CardTitle>Resumo Gerado por IA</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {video.summary_short || video.summary_expanded ? (
+                  {video.summary_short || video.summary_expanded || video.tutorial_steps ? (
                     <>
                       {video.summary_short && (
                         <div>
@@ -285,6 +285,17 @@ export function VideoDetailPage() {
                         <div>
                           <h4 className="font-semibold mb-2">Resumo Detalhado</h4>
                           <p className="text-muted-foreground whitespace-pre-wrap">{video.summary_expanded}</p>
+                        </div>
+                      )}
+                      {video.is_tutorial && video.tutorial_steps && (
+                        <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">📚</span>
+                            <h4 className="font-semibold text-primary">Tutorial Detectado</h4>
+                          </div>
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <div className="text-muted-foreground whitespace-pre-wrap">{video.tutorial_steps}</div>
+                          </div>
                         </div>
                       )}
                     </>

@@ -96,6 +96,8 @@ export type Database = {
           url: string
           user_id: string
           is_favorite: boolean
+          is_tutorial: boolean
+          tutorial_steps: string | null
         }
         Insert: {
           created_at?: string
@@ -116,6 +118,8 @@ export type Database = {
           url: string
           user_id: string
           is_favorite?: boolean
+          is_tutorial?: boolean
+          tutorial_steps?: string | null
         }
         Update: {
           created_at?: string
@@ -136,6 +140,8 @@ export type Database = {
           url?: string
           user_id?: string
           is_favorite?: boolean
+          is_tutorial?: boolean
+          tutorial_steps?: string | null
         }
         Relationships: [
           {
