@@ -1,0 +1,57 @@
+{
+  "manifest_version": 2,
+  "name": "InsightShare - Compartilhar Vídeos",
+  "version": "1.0.0",
+  "description": "Compartilhe vídeos do YouTube, Instagram, TikTok e outras plataformas diretamente com o InsightShare",
+  "author": "InsightShare",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "https://*.youtube.com/*",
+    "https://*.instagram.com/*",
+    "https://*.tiktok.com/*",
+    "https://*.vimeo.com/*",
+    "https://*.dailymotion.com/*",
+    "https://*.supabase.co/*"
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "InsightShare - Compartilhar Vídeo"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*",
+        "https://*.instagram.com/*",
+        "https://*.tiktok.com/*",
+        "https://*.vimeo.com/*",
+        "https://*.dailymotion.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "scripts": ["background-firefox.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "insightshare@extension.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

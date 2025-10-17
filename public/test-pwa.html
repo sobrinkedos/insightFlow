@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PWA - InsightShare</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status.success {
+            background: #10b981;
+            color: #fff;
+        }
+        .status.error {
+            background: #ef4444;
+            color: #fff;
+        }
+        .status.warning {
+            background: #f59e0b;
+            color: #000;
+        }
+        button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        code {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de PWA - InsightShare</h1>
+    <p>Use esta página para verificar se o PWA está configurado corretamente.</p>
+
+    <div class="test-section">
+        <h2>1. Service Worker</h2>
+        <p>Status: <span id="sw-status" class="status">Verificando...</span></p>
+        <p id="sw-details"></p>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Manifest</h2>
+        <p>Status: <span id="manifest-status" class="status">Verificando...</span></p>
+        <p id="manifest-details"></p>
+        <button onclick="viewManifest()">Ver Manifest</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Web Share Target</h2>
+        <p>Status: <span id="share-status" class="status">Verificando...</span></p>
+        <p id="share-details"></p>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Instalação</h2>
+        <p>Status: <span id="install-status" class="status">Verificando...</span></p>
+        <p id="install-details"></p>
+        <button id="install-button" style="display: none;">Instalar PWA</button>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Teste de Compartilhamento</h2>
+        <p>Simule um compartilhamento do YouTube:</p>
+        <button onclick="testShare()">Testar Compartilhamento</button>
+        <p id="test-result"></p>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Informações do Navegador</h2>
+        <pre><code id="browser-info"></code></pre>
+    </div>
+
+    <script>
+        // 1. Verificar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) {
+                    document.getElementById('sw-status').textContent = 'Registrado';
+                    document.getElementById('sw-status').className = 'status success';
+                    document.getElementById('sw-details').textContent = `Scope: ${reg.scope}`;
+                } else {
+                    document.getElementById('sw-status').textContent = 'Não registrado';
+                    document.getElementById('sw-status').className = 'status warning';
+                    document.getElementById('sw-details').textContent = 'O service worker será registrado após o build.';
+                }
+            });
+        } else {
+            document.getElementById('sw-status').textContent = 'Não suportado';
+            document.getElementById('sw-status').className = 'status error';
+        }
+
+        // 2. Verificar Manifest
+        fetch('/manifest.webmanifest')
+            .then(res => res.json())
+            .then(manifest => {
+                document.getElementById('manifest-status').textContent = 'Encontrado';
+                document.getElementById('manifest-status').className = 'status success';
+                
+                const hasShareTarget = manifest.share_target ? 'Sim' : 'Não';
+                document.getElementById('manifest-details').innerHTML = `
+                    Nome: ${manifest.name}<br>
+                    Share Target: ${hasShareTarget}
+                `;
+            })
+            .catch(() => {
+                document.getElementById('manifest-status').textContent = 'Não encontrado';
+                document.getElementById('manifest-status').className = 'status error';
+            });
+
+        // 3. Verificar Web Share Target
+        if ('share' in navigator) {
+            document.getElementById('share-status').textContent = 'Suportado';
+            document.getElementById('share-status').className = 'status success';
+            document.getElementById('share-details').textContent = 'Seu navegador suporta Web Share API.';
+        } else {
+            document.getElementById('share-status').textContent = 'Não suportado';
+            document.getElementById('share-status').className = 'status warning';
+            document.getElementById('share-details').textContent = 'Web Share API não disponível neste navegador.';
+        }
+
+        // 4. Verificar instalação
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            document.getElementById('install-status').textContent = 'Disponível';
+            document.getElementById('install-status').className = 'status success';
+            document.getElementById('install-details').textContent = 'O PWA pode ser instalado.';
+            document.getElementById('install-button').style.display = 'inline-block';
+        });
+
+        document.getElementById('install-button').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('install-button').style.display = 'none';
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('install-status').textContent = 'Instalado';
+            document.getElementById('install-status').className = 'status success';
+            document.getElementById('install-details').textContent = 'PWA instalado com sucesso!';
+        });
+
+        // Verificar se já está instalado
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.getElementById('install-status').textContent = 'Instalado';
+            document.getElementById('install-status').className = 'status success';
+            document.getElementById('install-details').textContent = 'Você está usando o PWA instalado.';
+        }
+
+        // 5. Testar compartilhamento
+        function testShare() {
+            const testUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+            const shareUrl = `/share?url=${encodeURIComponent(testUrl)}&title=${encodeURIComponent('Test Video')}&text=${encodeURIComponent('Testing share')}`;
+            
+            document.getElementById('test-result').innerHTML = `
+                <strong>URL de teste gerada:</strong><br>
+                <a href="${shareUrl}" target="_blank" style="color: #3b82f6;">${shareUrl}</a><br>
+                <small>Clique para testar o fluxo de compartilhamento</small>
+            `;
+        }
+
+        // 6. Informações do navegador
+        function viewManifest() {
+            fetch('/manifest.webmanifest')
+                .then(res => res.json())
+                .then(manifest => {
+                    alert(JSON.stringify(manifest, null, 2));
+                });
+        }
+
+        document.getElementById('browser-info').textContent = `
+User Agent: ${navigator.userAgent}
+Platform: ${navigator.platform}
+Language: ${navigator.language}
+Online: ${navigator.onLine}
+Service Worker: ${'serviceWorker' in navigator}
+Web Share: ${'share' in navigator}
+Display Mode: ${window.matchMedia('(display-mode: standalone)').matches ? 'Standalone' : 'Browser'}
+        `.trim();
+    </script>
+</body>
+</html>

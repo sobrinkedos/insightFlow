@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         IgnorableNamespaces="uap uap3">
+  <Identity Name="InsightShare.BrowserExtension"
+            Publisher="CN=InsightShare"
+            Version="1.0.0.0" />
+  <Properties>
+    <DisplayName>InsightShare - Compartilhar Vídeos</DisplayName>
+    <PublisherDisplayName>InsightShare</PublisherDisplayName>
+    <Logo>icons\icon48.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="pt-BR" />
+    <Resource Language="en-US" />
+  </Resources>
+  <Applications>
+    <Application Id="InsightShareExtension" Executable="msedge.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="InsightShare"
+                          Description="Compartilhe vídeos do YouTube, Instagram, TikTok e outras plataformas diretamente com o InsightShare"
+                          BackgroundColor="transparent"
+                          Square150x150Logo="icons\icon128.png"
+                          Square44x44Logo="icons\icon48.png">
+      </uap:VisualElements>
+      <Extensions>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.edge.extension"
+                            Id="InsightShareExtension"
+                            PublicFolder="Extension"
+                            DisplayName="InsightShare - Compartilhar Vídeos">
+            <uap3:Properties>
+              <Capabilities>
+                <Capability Name="websiteContent" />
+                <Capability Name="websiteInfo" />
+                <Capability Name="browserWebRequest" />
+              </Capabilities>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>
