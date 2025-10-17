@@ -25,14 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -168,124 +160,110 @@ export function VideosPage() {
             </TabsTrigger>
         </TabsList>
         <TabsContent value="all" className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-full">Vídeo</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Status</TableHead>
-                      <TableHead className="w-[50px]">
-                        <span className="sr-only">Ações</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                <TableBody>
-                  {loading ? (
-                     Array.from({ length: 10 }).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Skeleton className="w-20 h-14 rounded shrink-0" />
-                                <div className="flex-1 min-w-0 space-y-2">
-                                  <Skeleton className="h-5 w-full max-w-xs" />
-                                  <Skeleton className="h-3 w-20" />
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Skeleton className="h-6 w-20 rounded-full ml-auto" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-8 w-8 ml-auto" />
-                            </TableCell>
-                        </TableRow>
-                    ))
-                  ) : videos.length > 0 ? (
-                    videos.map((video) => (
-                      <TableRow key={video.id} onClick={() => navigate(`/videos/${video.id}`)} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell className="py-3">
-                            <div className="flex items-center gap-3">
-                              <img 
-                                src={getVideoThumbnail(video.url)} 
-                                alt={video.title || 'Thumbnail'}
-                                className="w-20 h-14 object-cover rounded border border-border shrink-0"
-                                onError={(e) => {
-                                  e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
-                                }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                                  <span>•</span>
-                                  <span className="hidden sm:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
-                                </div>
-                              </div>
-                            </div>
-                        </TableCell>
-                        <TableCell className="text-right whitespace-nowrap">
-                            <Badge variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} className={video.status === 'Processando' ? 'animate-pulse' : ''}>
-                                {video.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex justify-end">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                    <Button
-                                        aria-haspopup="true"
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Toggle menu</span>
-                                    </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/videos/${video.id}`)}}>Ver Detalhes</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive" onClick={(e) => e.stopPropagation()}>
-                                        Excluir
-                                    </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                        <TableCell colSpan={3}>
-                            <EmptyState
-                                icon={VideoIcon}
-                                title="Nenhum vídeo encontrado"
-                                description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
-                                action={{
-                                    label: "Compartilhar meu primeiro vídeo",
-                                    onClick: () => {
-                                        document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                                    }
-                                }}
-                                className="py-24"
-                            />
-                        </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-            {videos.length > 0 && (
-                <CardFooter className="justify-between border-t pt-6">
-                    <div className="text-xs text-muted-foreground">
-                        Mostrando <strong>1-{videos.length}</strong> de <strong>{videos.length}</strong> vídeos
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="w-20 h-14 rounded shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <Skeleton className="h-5 w-full max-w-md" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                      <Skeleton className="h-6 w-24 rounded-full" />
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : videos.length > 0 ? (
+            <>
+              <div className="space-y-3">
+                {videos.map((video) => (
+                  <Card 
+                    key={video.id} 
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => navigate(`/videos/${video.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={getVideoThumbnail(video.url)} 
+                          alt={video.title || 'Thumbnail'}
+                          className="w-20 h-14 object-cover rounded border border-border shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate mb-1">{video.title || new URL(video.url).hostname}</div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
+                            <span>•</span>
+                            <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge 
+                            variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
+                            className={video.status === 'Processando' ? 'animate-pulse' : ''}
+                          >
+                            {video.status}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Ações</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/videos/${video.id}`)}}>
+                                Ver Detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive" onClick={(e) => e.stopPropagation()}>
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Card className="mt-4">
+                <CardFooter className="justify-between pt-6">
+                  <div className="text-xs text-muted-foreground">
+                    Mostrando <strong>1-{videos.length}</strong> de <strong>{videos.length}</strong> vídeos
+                  </div>
                 </CardFooter>
-            )}
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-24">
+                <EmptyState
+                  icon={VideoIcon}
+                  title="Nenhum vídeo encontrado"
+                  description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
+                  action={{
+                    label: "Compartilhar meu primeiro vídeo",
+                    onClick: () => {
+                      document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
           </Card>
         </TabsContent>
       </Tabs>
