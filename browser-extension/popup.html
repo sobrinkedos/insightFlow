@@ -216,38 +216,55 @@
       </div>
     </div>
 
-    <div class="card">
-      <form id="shareForm">
+    <!-- Tela de Login -->
+    <div id="loginScreen" class="card hidden">
+      <form id="loginForm">
         <div class="form-group">
-          <label for="apiUrl">URL da API InsightShare</label>
+          <label for="email">Email</label>
           <input 
-            type="url" 
-            id="apiUrl" 
-            placeholder="https://enkpfnqsjjnanlqhjnsv.supabase.co"
+            type="email" 
+            id="email" 
+            placeholder="seu@email.com"
             required
           >
         </div>
 
         <div class="form-group">
-          <label for="apiKey">Chave de API (anon key)</label>
+          <label for="password">Senha</label>
           <input 
             type="password" 
-            id="apiKey" 
-            placeholder="Sua chave de API do Supabase"
+            id="password" 
+            placeholder="Sua senha"
             required
           >
         </div>
 
-        <button type="submit" class="btn btn-primary" id="shareBtn">
-          <span>📤 Compartilhar Vídeo</span>
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          <span>🔐 Entrar</span>
         </button>
       </form>
 
-      <div id="status" class="status hidden"></div>
+      <div class="settings-link" style="margin-top: 12px;">
+        <a href="https://insightshare.vercel.app/signup" target="_blank">Criar conta</a>
+      </div>
     </div>
 
-    <div class="settings-link">
-      <a href="#" id="clearSettings">Limpar configurações salvas</a>
+    <!-- Tela de Compartilhamento -->
+    <div id="shareScreen" class="card hidden">
+      <div class="form-group">
+        <label>Usuário logado</label>
+        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 16px;" id="userEmail"></div>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="shareBtn">
+        <span>📤 Compartilhar Vídeo</span>
+      </button>
+
+      <div id="status" class="status hidden"></div>
+
+      <div class="settings-link" style="margin-top: 12px;">
+        <a href="#" id="logout">Sair</a>
+      </div>
     </div>
   </div>
 

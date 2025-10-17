@@ -1,26 +1,90 @@
-// Load saved settings
-chrome.storage.sync.get(['apiUrl', 'apiKey'], (result) => {
-  if (result.apiUrl) {
-    document.getElementById('apiUrl').value = result.apiUrl;
-  }
-  if (result.apiKey) {
-    document.getElementById('apiKey').value = result.apiKey;
-  }
-});
+// Configuração da API (hardcoded para simplificar)
+const API_URL = 'https://enkpfnqsjjnanlqhjnsv.supabase.co';
+const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NjI4NzcsImV4cCI6MjA1MjUzODg3N30.Yz-Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0Yz0';
 
-// Get current video info
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  const currentTab = tabs[0];
+// Elementos
+const loginScreen = document.getElementById('loginScreen');
+const shareScreen = document.getElementById('shareScreen');
+const videoInfoCard = document.getElementById('videoInfo');
+const loginForm = document.getElementById('loginForm');
+const shareBtn = document.getElementById('shareBtn');
+const logoutBtn = document.getElementById('logout');
+const userEmailEl = document.getElementById('userEmail');
+const statusEl = document.getElementById('status');
+
+let currentVideoUrl = null;
+let currentUser = null;
+
+// Inicializar
+init();
+
+async function init() {
+  // Verificar se há sessão salva
+  const session = await getSession();
   
-  chrome.tabs.sendMessage(currentTab.id, { action: 'getVideoInfo' }, (response) => {
-    if (response && response.url) {
-      displayVideoInfo(response);
-    }
-  });
-});
+  if (session) {
+    currentUser = session.user;
+    showShareScreen();
+  } else {
+    showLoginScreen();
+  }
+  
+  // Obter informações do vídeo
+  getVideoInfo();
+}
 
+// Obter sessão salva
+async function getSession() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['session'], (result) => {
+      resolve(result.session || null);
+    });
+  });
+}
+
+// Salvar sessão
+async function saveSession(session) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ session }, resolve);
+  });
+}
+
+// Limpar sessão
+async function clearSession() {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove(['session'], resolve);
+  });
+}
+
+// Mostrar tela de login
+function showLoginScreen() {
+  loginScreen.classList.remove('hidden');
+  shareScreen.classList.add('hidden');
+}
+
+// Mostrar tela de compartilhamento
+function showShareScreen() {
+  loginScreen.classList.add('hidden');
+  shareScreen.classList.remove('hidden');
+  userEmailEl.textContent = currentUser?.email || 'Usuário';
+}
+
+// Obter informações do vídeo
+function getVideoInfo() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTab = tabs[0];
+    
+    chrome.tabs.sendMessage(currentTab.id, { action: 'getVideoInfo' }, (response) => {
+      if (response && response.url) {
+        currentVideoUrl = response.url;
+        displayVideoInfo(response);
+      }
+    });
+  });
+}
+
+// Exibir informações do vídeo
 function displayVideoInfo(info) {
-  const videoInfoCard = document.getElementById('videoInfo');
   const videoTitle = document.getElementById('videoTitle');
   const videoPlatform = document.getElementById('videoPlatform');
   const videoThumbnail = document.getElementById('videoThumbnail');
@@ -38,127 +102,135 @@ function displayVideoInfo(info) {
   videoInfoCard.classList.remove('hidden');
 }
 
-// Handle form submission
-document.getElementById('shareForm').addEventListener('submit', async (e) => {
+// Login
+loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-
-  const apiUrl = document.getElementById('apiUrl').value.trim();
-  const apiKey = document.getElementById('apiKey').value.trim();
-  const shareBtn = document.getElementById('shareBtn');
-  const status = document.getElementById('status');
-
-  // Save settings
-  chrome.storage.sync.set({ apiUrl, apiKey });
-
-  // Get current tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  // Get video info
-  chrome.tabs.sendMessage(tab.id, { action: 'getVideoInfo' }, async (response) => {
-    if (!response || !response.url) {
-      showStatus('Nenhum vídeo detectado nesta página', 'error');
-      return;
-    }
-
-    // Show loading
-    shareBtn.disabled = true;
-    shareBtn.innerHTML = '<div class="spinner"></div><span>Compartilhando...</span>';
-
-    try {
-      // Share video with InsightShare
-      const result = await shareVideo(apiUrl, apiKey, response.url);
-
-      if (result.success) {
-        showStatus('✅ Vídeo compartilhado com sucesso!', 'success');
-        setTimeout(() => {
-          window.close();
-        }, 2000);
-      } else {
-        showStatus('❌ Erro ao compartilhar: ' + (result.error || 'Erro desconhecido'), 'error');
-      }
-    } catch (error) {
-      showStatus('❌ Erro: ' + error.message, 'error');
-    } finally {
-      shareBtn.disabled = false;
-      shareBtn.innerHTML = '<span>📤 Compartilhar Vídeo</span>';
-    }
-  });
-});
-
-async function shareVideo(apiUrl, apiKey, videoUrl) {
+  
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const loginBtn = document.getElementById('loginBtn');
+  
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<div class="spinner"></div><span>Entrando...</span>';
+  
   try {
-    // First, authenticate or get user
-    const authResponse = await fetch(`${apiUrl}/auth/v1/user`, {
-      headers: {
-        'apikey': apiKey,
-        'Authorization': `Bearer ${apiKey}`
-      }
-    });
-
-    if (!authResponse.ok) {
-      throw new Error('Erro de autenticação. Verifique sua chave de API.');
-    }
-
-    const user = await authResponse.json();
-
-    // Insert video
-    const response = await fetch(`${apiUrl}/rest/v1/videos`, {
+    const response = await fetch(`${API_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
       headers: {
-        'apikey': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
+        'apikey': API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error_description || 'Email ou senha incorretos');
+    }
+    
+    const data = await response.json();
+    currentUser = data.user;
+    
+    // Salvar sessão
+    await saveSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      user: data.user
+    });
+    
+    showShareScreen();
+    showStatus('✅ Login realizado com sucesso!', 'success');
+    
+  } catch (error) {
+    showStatus('❌ ' + error.message, 'error');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<span>🔐 Entrar</span>';
+  }
+});
+
+// Compartilhar vídeo
+shareBtn.addEventListener('click', async () => {
+  if (!currentVideoUrl) {
+    showStatus('❌ Nenhum vídeo detectado nesta página', 'error');
+    return;
+  }
+  
+  const session = await getSession();
+  if (!session) {
+    showStatus('❌ Sessão expirada. Faça login novamente.', 'error');
+    showLoginScreen();
+    return;
+  }
+  
+  shareBtn.disabled = true;
+  shareBtn.innerHTML = '<div class="spinner"></div><span>Compartilhando...</span>';
+  
+  try {
+    // Inserir vídeo
+    const response = await fetch(`${API_URL}/rest/v1/videos`, {
+      method: 'POST',
+      headers: {
+        'apikey': API_KEY,
+        'Authorization': `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        url: videoUrl,
-        user_id: user.id,
+        url: currentVideoUrl,
+        user_id: session.user.id,
         status: 'Processando'
       })
     });
-
+    
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Erro ao compartilhar vídeo');
     }
-
+    
     const data = await response.json();
     const videoId = data[0]?.id;
-
-    if (!videoId) {
-      throw new Error('Erro ao obter ID do vídeo');
+    
+    if (videoId) {
+      // Processar vídeo
+      fetch(`${API_URL}/functions/v1/process-video`, {
+        method: 'POST',
+        headers: {
+          'apikey': API_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ video_id: videoId })
+      }).catch(console.error);
     }
-
-    // Trigger processing
-    await fetch(`${apiUrl}/functions/v1/process-video`, {
-      method: 'POST',
-      headers: {
-        'apikey': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ video_id: videoId })
-    });
-
-    return { success: true };
+    
+    showStatus('✅ Vídeo compartilhado com sucesso!', 'success');
+    setTimeout(() => window.close(), 2000);
+    
   } catch (error) {
-    return { success: false, error: error.message };
+    showStatus('❌ ' + error.message, 'error');
+  } finally {
+    shareBtn.disabled = false;
+    shareBtn.innerHTML = '<span>📤 Compartilhar Vídeo</span>';
   }
-}
-
-function showStatus(message, type) {
-  const status = document.getElementById('status');
-  status.textContent = message;
-  status.className = `status ${type}`;
-  status.classList.remove('hidden');
-}
-
-// Clear settings
-document.getElementById('clearSettings').addEventListener('click', (e) => {
-  e.preventDefault();
-  chrome.storage.sync.clear(() => {
-    document.getElementById('apiUrl').value = '';
-    document.getElementById('apiKey').value = '';
-    showStatus('Configurações limpas', 'info');
-  });
 });
+
+// Logout
+logoutBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  await clearSession();
+  currentUser = null;
+  showLoginScreen();
+  showStatus('Você saiu da conta', 'info');
+});
+
+// Mostrar status
+function showStatus(message, type) {
+  statusEl.textContent = message;
+  statusEl.className = `status ${type}`;
+  statusEl.classList.remove('hidden');
+  
+  setTimeout(() => {
+    statusEl.classList.add('hidden');
+  }, 5000);
+}
