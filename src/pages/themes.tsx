@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FileDown,
   Layers,
-  ListFilter,
   MoreHorizontal,
-  PlusCircle,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
 
@@ -21,27 +18,12 @@ import {
 } from "@/components/ui/card"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
@@ -97,147 +79,116 @@ export function ThemesPage() {
     <div className="container py-8">
       <PageHeader
         title="Meus Temas"
-        description="Gerencie seus temas e veja o progresso da consolidação."
-      >
-        <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1">
-                  <ListFilter className="h-4 w-4" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Filtrar
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem checked>
-                  Ativo
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem>Rascunho</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem>
-                  Arquivado
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button size="sm" variant="outline" className="h-9 gap-1">
-              <FileDown className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Exportar
-              </span>
-            </Button>
-            <Button size="sm" className="h-9 gap-1">
-              <PlusCircle className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Adicionar Tema
-              </span>
-            </Button>
-          </div>
-      </PageHeader>
+        description="Seus vídeos organizados automaticamente por temas pela IA."
+      />
       
-      <Tabs defaultValue="all" className="mt-8">
-        <TabsList>
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="active">Ativos</TabsTrigger>
-            <TabsTrigger value="draft">Rascunhos</TabsTrigger>
-            <TabsTrigger value="archived" className="hidden sm:flex">
-                Arquivados
-            </TabsTrigger>
-        </TabsList>
-        <TabsContent value="all" className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tema</TableHead>
-                    <TableHead className="w-[140px]">Vídeos</TableHead>
-                    <TableHead className="hidden md:table-cell w-[200px]">
-                      Última Atualização
-                    </TableHead>
-                    <TableHead className="w-[80px]">
-                      <span className="sr-only">Ações</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                     Array.from({ length: 8 }).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell><Skeleton className="h-6 w-64" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                            <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                        </TableRow>
-                    ))
-                  ) : themes.length > 0 ? (
-                    themes.map((theme) => (
-                      <TableRow key={theme.id} onClick={() => navigate(`/themes/${theme.id}`)} className="cursor-pointer hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                              <div className="font-semibold">{theme.title}</div>
-                              <div className="text-xs text-muted-foreground hidden md:block max-w-lg truncate">{theme.description}</div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{theme.video_count} vídeos</Badge>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                              {formatDistanceToNow(new Date(theme.created_at), { addSuffix: true })}
-                          </TableCell>
-                          <TableCell>
-                              <div className="flex justify-end">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                    <Button
-                                        aria-haspopup="true"
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Toggle menu</span>
-                                    </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/themes/${theme.id}`)}}>Ver Detalhes</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Editar</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive" onClick={(e) => e.stopPropagation()}>
-                                        Excluir
-                                    </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                          </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                        <TableCell colSpan={4}>
-                            <EmptyState
-                                icon={Layers}
-                                title="Nenhum tema encontrado"
-                                description="Adicione vídeos e a IA irá agrupá-los em temas automaticamente."
-                                className="py-24"
-                            />
-                        </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            {themes.length > 0 && (
-                <CardFooter className="justify-between border-t pt-6">
-                    <div className="text-xs text-muted-foreground">
-                        Mostrando <strong>1-{themes.length}</strong> de <strong>{themes.length}</strong> temas
-                    </div>
-                    {/* Pagination can be implemented here when data grows */}
-                </CardFooter>
-            )}
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <div className="mt-8">
+        <div>
+          {loading ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : themes.length > 0 ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {themes.map((theme) => (
+                  <Card 
+                    key={theme.id} 
+                    className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:border-primary/50"
+                    onClick={() => navigate(`/themes/${theme.id}`)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Layers className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-base line-clamp-1 group-hover:text-primary transition-colors">
+                              {theme.title}
+                            </CardTitle>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Ações</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/themes/${theme.id}`)}}>
+                              Ver Detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive" 
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      {theme.description && (
+                        <CardDescription className="line-clamp-2 mt-2">
+                          {theme.description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-4">
+                          <Badge variant="secondary" className="font-normal">
+                            {theme.video_count} {theme.video_count === 1 ? 'vídeo' : 'vídeos'}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(theme.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
+                <p>
+                  Mostrando <strong>{themes.length}</strong> {themes.length === 1 ? 'tema' : 'temas'}
+                </p>
+              </div>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-24">
+                <EmptyState
+                  icon={Layers}
+                  title="Nenhum tema encontrado"
+                  description="Adicione vídeos e a IA irá agrupá-los em temas automaticamente."
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
