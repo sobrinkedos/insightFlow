@@ -70,6 +70,14 @@ export function Header() {
                 >
                   Vídeos Recentes
                 </NavLink>
+                <NavLink
+                  to="/favorites"
+                  className={({ isActive }) =>
+                    `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
+                  }
+                >
+                  Favoritos
+                </NavLink>
               </>
             )}
             <NavLink

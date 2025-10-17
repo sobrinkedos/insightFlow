@@ -5,6 +5,7 @@ import {
   ListFilter,
   MoreHorizontal,
   Video as VideoIcon,
+  Heart,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
 
@@ -91,6 +92,25 @@ export function VideosPage() {
     
     setVideos(data || []);
     setLoading(false);
+  };
+
+  const toggleFavorite = async (videoId: string, currentState: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { error } = await supabase
+      .from('videos')
+      .update({ is_favorite: !currentState })
+      .eq('id', videoId);
+
+    if (error) {
+      console.error('Error toggling favorite:', error);
+      return;
+    }
+
+    // Atualizar localmente
+    setVideos(videos.map(v => 
+      v.id === videoId ? { ...v, is_favorite: !currentState } : v
+    ));
   };
 
   useEffect(() => {
@@ -211,6 +231,15 @@ export function VideosPage() {
                           >
                             {video.status}
                           </Badge>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
+                          >
+                            <Heart 
+                              className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
+                            />
+                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button

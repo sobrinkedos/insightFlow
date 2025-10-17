@@ -11,6 +11,7 @@ import { ProtectedRoute } from "./components/protected-route";
 import { ThemeDetailPage } from "./pages/theme-detail";
 import { VideoDetailPage } from "./pages/video-detail";
 import { SharePage } from "./pages/share";
+import { FavoritesPage } from "./pages/favorites";
 
 function App() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function App() {
               <Route path="/themes/:id" element={<ThemeDetailPage />} />
               <Route path="/videos" element={<VideosPage />} />
               <Route path="/videos/:id" element={<VideoDetailPage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
             </Route>
           </Routes>
         </AnimatePresence>

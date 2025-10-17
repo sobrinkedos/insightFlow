@@ -95,6 +95,7 @@ export type Database = {
           processed_at: string | null
           url: string
           user_id: string
+          is_favorite: boolean
         }
         Insert: {
           created_at?: string
@@ -114,6 +115,7 @@ export type Database = {
           processed_at?: string | null
           url: string
           user_id: string
+          is_favorite?: boolean
         }
         Update: {
           created_at?: string
@@ -133,6 +135,7 @@ export type Database = {
           processed_at?: string | null
           url?: string
           user_id?: string
+          is_favorite?: boolean
         }
         Relationships: [
           {
