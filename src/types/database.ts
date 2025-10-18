@@ -76,6 +76,58 @@ export type Database = {
           },
         ]
       }
+      video_progress: {
+        Row: {
+          id: string
+          user_id: string
+          video_id: string
+          watched_time: number
+          duration: number | null
+          progress_percentage: number | null
+          completed: boolean
+          last_watched_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          video_id: string
+          watched_time?: number
+          duration?: number | null
+          completed?: boolean
+          last_watched_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          video_id?: string
+          watched_time?: number
+          duration?: number | null
+          completed?: boolean
+          last_watched_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_progress_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           created_at: string
@@ -181,3 +233,4 @@ export type Database = {
 
 export type Theme = Database['public']['Tables']['themes']['Row'] & { video_count: number };
 export type Video = Database['public']['Tables']['videos']['Row'];
+export type VideoProgress = Database['public']['Tables']['video_progress']['Row'];

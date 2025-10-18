@@ -9,6 +9,8 @@ import {
   Trash2,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
+import { VideoProgressIndicator } from "@/components/video-progress-indicator"
+import { useVideosProgress } from "@/hooks/use-videos-progress"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -81,6 +83,11 @@ export function VideosPage() {
   const navigate = useNavigate();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const { progressMap } = useVideosProgress({
+    videoIds: videos.map(v => v.id),
+    userId: user?.id || null,
+  });
 
   const fetchVideos = async () => {
     if (!user) return;
@@ -240,11 +247,14 @@ export function VideosPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm md:text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                          <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground mb-1">
                             <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
                             <span className="hidden md:inline">•</span>
                             <span className="hidden md:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
                           </div>
+                          <VideoProgressIndicator 
+                            progress={progressMap.get(video.id) || null}
+                          />
                         </div>
                         <div className="flex items-center gap-1 md:gap-2 shrink-0">
                           <Badge 

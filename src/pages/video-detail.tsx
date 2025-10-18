@@ -248,6 +248,7 @@ export function VideoDetailPage() {
           {embedUrl && (
             <div className="rounded-lg overflow-hidden border border-border bg-card">
               <VideoPlayer 
+                videoId={video.id}
                 embedUrl={embedUrl} 
                 title={video.title || "YouTube video player"}
               />
