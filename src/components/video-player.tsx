@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Maximize, Minimize, RotateCw, Play } from "lucide-react";
+import { Maximize, Minimize, RotateCw, Play, Clock, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useVideoProgress } from "@/hooks/use-video-progress";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
 
 // Declarar tipos do YouTube IFrame API
 declare global {
@@ -26,6 +27,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [resumeTime, setResumeTime] = useState<number>(0);
   const [playerReady, setPlayerReady] = useState(false);
+  const [manualTime, setManualTime] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -287,6 +289,50 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleCaptureCurrentTime = () => {
+    if (!playerRef.current || !playerReady || !user) {
+      toast.error("Player não está pronto ou você não está logado.");
+      return;
+    }
+
+    try {
+      const currentTime = playerRef.current.getCurrentTime();
+      const duration = playerRef.current.getDuration();
+      
+      if (currentTime && duration) {
+        const formattedTime = formatTime(currentTime);
+        setManualTime(formattedTime);
+        toast.success(`Tempo capturado: ${formattedTime}`);
+      } else {
+        toast.error("Não foi possível capturar o tempo. Tente pausar o vídeo primeiro.");
+      }
+    } catch (error) {
+      console.error('Error capturing time:', error);
+      toast.error("Erro ao capturar tempo. Digite manualmente.");
+    }
+  };
+
+  const handleSaveProgress = () => {
+    if (!manualTime || !user) return;
+
+    const parts = manualTime.split(':').map(p => parseInt(p));
+    let seconds = 0;
+    
+    if (parts.length === 2) {
+      seconds = parts[0] * 60 + parts[1];
+    } else if (parts.length === 3) {
+      seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else {
+      toast.error("Formato inválido. Use MM:SS ou HH:MM:SS");
+      return;
+    }
+
+    const estimatedDuration = progress?.duration || seconds * 2;
+    updateProgress(seconds, estimatedDuration);
+    toast.success(`Progresso salvo em ${manualTime}`);
+    setManualTime("");
+  };
+
   return (
     <div
       ref={containerRef}
@@ -390,6 +436,51 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
           )}
         </Button>
       </div>
+
+      {/* Controle manual de progresso */}
+      {!isFullscreen && user && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              placeholder="Ex: 5:30 ou 1:05:30"
+              value={manualTime}
+              onChange={(e) => setManualTime(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && manualTime) {
+                  handleSaveProgress();
+                }
+              }}
+              className="flex-1 px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCaptureCurrentTime}
+              disabled={!playerReady}
+              title="Capturar tempo atual do vídeo automaticamente"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Capturar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveProgress}
+              disabled={!manualTime}
+            >
+              Salvar
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground px-3">
+            {playerReady ? (
+              <>💡 Dica: Pause o vídeo e clique em "Capturar" para pegar o tempo automaticamente</>
+            ) : (
+              <>⏳ Aguardando player carregar...</>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Mensagem de orientação */}
       {isFullscreen && !isLandscape && (

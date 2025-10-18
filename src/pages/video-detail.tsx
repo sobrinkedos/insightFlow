@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
-import { VideoPlayerSimple } from "@/components/video-player-simple";
+import { VideoPlayer } from "@/components/video-player";
 
 const getYoutubeEmbedUrl = (url: string): string | null => {
   try {
@@ -247,7 +247,7 @@ export function VideoDetailPage() {
         <div className="lg:col-span-2 space-y-8">
           {embedUrl && (
             <div className="rounded-lg overflow-hidden border border-border bg-card">
-              <VideoPlayerSimple 
+              <VideoPlayer 
                 videoId={video.id}
                 embedUrl={embedUrl} 
                 title={video.title || "YouTube video player"}
