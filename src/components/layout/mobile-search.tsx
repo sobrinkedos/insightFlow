@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +13,15 @@ import {
 export function MobileSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implementar lógica de busca aqui
-    console.log("Searching for:", query);
-    setOpen(false);
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      setOpen(false);
+      setQuery("");
+    }
   };
 
   return (
@@ -42,7 +46,7 @@ export function MobileSearch() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Pesquisar vídeos, temas..."
+                placeholder="Pesquisar vídeos..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9 pr-9"

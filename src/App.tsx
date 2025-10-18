@@ -13,6 +13,7 @@ import { ThemeDetailPage } from "./pages/theme-detail";
 import { VideoDetailPage } from "./pages/video-detail";
 import { SharePage } from "./pages/share";
 import { FavoritesPage } from "./pages/favorites";
+import SearchPage from "./pages/search";
 
 function App() {
   const location = useLocation();
@@ -34,7 +35,9 @@ function App() {
               <Route path="/themes/:id" element={<ThemeDetailPage />} />
               <Route path="/videos" element={<VideosPage />} />
               <Route path="/videos/:id" element={<VideoDetailPage />} />
+              <Route path="/video/:id" element={<VideoDetailPage />} />
               <Route path="/favorites" element={<FavoritesPage />} />
+              <Route path="/search" element={<SearchPage />} />
             </Route>
           </Routes>
         </AnimatePresence>
