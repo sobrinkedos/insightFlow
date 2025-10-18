@@ -32,18 +32,34 @@ export default function SearchPage() {
     const searchVideos = async () => {
       setLoading(true);
       
-      // Busca por título, resumo ou palavras-chave
-      const { data, error } = await supabase
-        .from("videos")
-        .select("id, title, summary, keywords, thumbnail_url, created_at")
-        .eq("user_id", user.id)
-        .or(`title.ilike.%${query}%,summary.ilike.%${query}%,keywords.cs.{${query}}`)
-        .order("created_at", { ascending: false });
+      try {
+        // Busca todos os vídeos do usuário
+        const { data, error } = await supabase
+          .from("videos")
+          .select("id, title, summary, keywords, thumbnail_url, created_at")
+          .eq("user_id", user.id)
+          .eq("status", "Concluído")
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Erro ao buscar vídeos:", error);
-      } else {
-        setResults(data || []);
+        if (error) {
+          console.error("Erro ao buscar vídeos:", error);
+          setResults([]);
+        } else {
+          // Filtra localmente por título, resumo ou keywords
+          const searchLower = query.toLowerCase();
+          const filtered = (data || []).filter((video) => {
+            const titleMatch = video.title?.toLowerCase().includes(searchLower);
+            const summaryMatch = video.summary?.toLowerCase().includes(searchLower);
+            const keywordsMatch = video.keywords?.some((keyword: string) =>
+              keyword.toLowerCase().includes(searchLower)
+            );
+            return titleMatch || summaryMatch || keywordsMatch;
+          });
+          setResults(filtered);
+        }
+      } catch (err) {
+        console.error("Erro na busca:", err);
+        setResults([]);
       }
       
       setLoading(false);
