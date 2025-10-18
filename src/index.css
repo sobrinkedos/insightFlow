@@ -94,17 +94,46 @@
   /* Fullscreen video styles */
   :fullscreen {
     background-color: black;
+    width: 100vw;
+    height: 100vh;
   }
   
   :-webkit-full-screen {
     background-color: black;
+    width: 100vw;
+    height: 100vh;
   }
   
   :-moz-full-screen {
     background-color: black;
+    width: 100vw;
+    height: 100vh;
   }
   
   :-ms-fullscreen {
+    background-color: black;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  /* Suporte a orientação landscape em fullscreen */
+  @media screen and (orientation: landscape) {
+    :fullscreen iframe,
+    :-webkit-full-screen iframe,
+    :-moz-full-screen iframe {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+    }
+  }
+  
+  /* Esconder controles nativos do navegador em fullscreen */
+  :fullscreen::backdrop {
+    background-color: black;
+  }
+  
+  :-webkit-full-screen::backdrop {
     background-color: black;
   }
 
