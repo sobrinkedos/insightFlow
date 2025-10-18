@@ -123,14 +123,14 @@ export function ThemesPage() {
                     className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:border-primary/50"
                     onClick={() => navigate(`/themes/${theme.id}`)}
                   >
-                    <CardHeader className="pb-3">
+                    <CardHeader className="pb-3 p-4 md:p-6">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Layers className="h-5 w-5" />
+                        <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
+                          <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Layers className="h-4 w-4 md:h-5 md:w-5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base line-clamp-1 group-hover:text-primary transition-colors">
+                            <CardTitle className="text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
                               {theme.title}
                             </CardTitle>
                           </div>
@@ -140,7 +140,7 @@ export function ThemesPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8 opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreHorizontal className="h-4 w-4" />
@@ -166,15 +166,15 @@ export function ThemesPage() {
                         </DropdownMenu>
                       </div>
                       {theme.description && (
-                        <CardDescription className="line-clamp-2 mt-2">
+                        <CardDescription className="line-clamp-2 mt-2 text-xs md:text-sm">
                           {theme.description}
                         </CardDescription>
                       )}
                     </CardHeader>
-                    <CardContent className="pb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-4">
-                          <Badge variant="secondary" className="font-normal">
+                    <CardContent className="pb-4 p-4 pt-0 md:p-6 md:pt-0">
+                      <div className="flex items-center justify-between text-xs md:text-sm flex-wrap gap-2">
+                        <div className="flex items-center gap-2 md:gap-4">
+                          <Badge variant="secondary" className="font-normal text-[10px] md:text-xs">
                             {theme.video_count} {theme.video_count === 1 ? 'vídeo' : 'vídeos'}
                           </Badge>
                         </div>

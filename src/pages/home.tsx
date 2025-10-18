@@ -45,19 +45,19 @@ const ThemeCard = ({ theme }: { theme: Theme }) => (
       transition={{ type: "spring", stiffness: 300 }}
     >
       <Card className="flex flex-col h-full bg-card/50 backdrop-blur-sm border-white/10 transition-shadow duration-300 hover:shadow-primary/20 hover:shadow-lg">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Layers className="h-5 w-5 text-primary" />
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+              <Layers className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             </div>
-            <CardTitle className="text-lg leading-tight">{theme.title}</CardTitle>
+            <CardTitle className="text-base md:text-lg leading-tight line-clamp-2 flex-1">{theme.title}</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="flex-grow">
-          <CardDescription className="line-clamp-2">{theme.description || "Nenhuma descrição para este tema."}</CardDescription>
+        <CardContent className="flex-grow p-4 pt-0 md:p-6 md:pt-0">
+          <CardDescription className="line-clamp-2 text-xs md:text-sm">{theme.description || "Nenhuma descrição para este tema."}</CardDescription>
         </CardContent>
-        <CardContent>
-          <p className="text-sm font-medium text-muted-foreground">{theme.video_count || 0} vídeos no tema</p>
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">{theme.video_count || 0} vídeo{theme.video_count !== 1 ? 's' : ''}</p>
         </CardContent>
       </Card>
     </motion.div>
@@ -116,42 +116,45 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                                     whileHover={{ scale: 1.01 }}
                                     transition={{ type: "spring", stiffness: 300 }}
                                     onClick={() => navigate(`/videos/${video.id}`)}
-                                    className="flex gap-4 p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                                    className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all group"
                                 >
-                                    {thumbnail && (
-                                        <div className="relative h-20 w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                            <img 
-                                                src={thumbnail} 
-                                                alt={video.title || "Thumbnail"} 
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                        </div>
-                                    )}
-                                    <div className="flex-1 min-w-0 flex flex-col justify-between">
-                                        <div>
-                                            <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                                                {video.title || "Sem título"}
-                                            </h3>
-                                            {video.channel && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    {video.channel}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-3 mt-2">
-                                            <span className="text-xs text-muted-foreground">
-                                                {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
-                                            </span>
-                                            {video.category && (
-                                                <span className="text-xs text-muted-foreground">
-                                                    • {video.category}
+                                    <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
+                                        {thumbnail && (
+                                            <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                                <img 
+                                                    src={thumbnail} 
+                                                    alt={video.title || "Thumbnail"} 
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
+                                                    {video.title || "Sem título"}
+                                                </h3>
+                                                {video.channel && (
+                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                                        {video.channel}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-2 text-[10px] md:text-xs text-muted-foreground">
+                                                <span className="truncate">
+                                                    {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                                                 </span>
-                                            )}
+                                                {video.category && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span className="truncate">{video.category}</span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center">
-                                        <span className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                                    <div className="flex md:items-center justify-end md:justify-center">
+                                        <span className={`px-2 md:px-3 py-1 text-[10px] md:text-xs rounded-full font-medium transition-colors whitespace-nowrap ${
                                             video.status === 'Concluído' 
                                                 ? 'bg-green-500/20 text-green-400' 
                                                 : video.status === 'Processando' 
@@ -501,24 +504,24 @@ export function HomePage() {
           {/* Favoritos */}
           {favoriteVideos.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-red-500" />
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <Heart className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
                   Vídeos Favoritos
                 </CardTitle>
-                <CardDescription>Seus vídeos marcados como favoritos</CardDescription>
+                <CardDescription className="text-xs md:text-sm">Seus vídeos marcados como favoritos</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
                 {favoriteVideos.map((video) => {
                   const thumbnail = getYouTubeThumbnail(video.url);
                   return (
                     <Link 
                       key={video.id}
                       to={`/videos/${video.id}`}
-                      className="flex gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+                      className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors group"
                     >
                       {thumbnail ? (
-                        <div className="relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                        <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
                           <img 
                             src={thumbnail} 
                             alt={video.title || "Thumbnail"} 
@@ -526,15 +529,15 @@ export function HomePage() {
                           />
                         </div>
                       ) : (
-                        <div className="flex w-20 h-14 flex-shrink-0 items-center justify-center rounded-md bg-muted">
-                          <VideoIcon className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex w-16 h-12 md:w-20 md:h-14 flex-shrink-0 items-center justify-center rounded-md bg-muted">
+                          <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                        <p className="font-medium text-xs md:text-sm line-clamp-2 group-hover:text-primary transition-colors">
                           {video.title || "Sem título"}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">
                           {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                         </p>
                       </div>
@@ -548,34 +551,34 @@ export function HomePage() {
           {/* Top Temas */}
           {topThemes.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                   Principais Temas
                 </CardTitle>
-                <CardDescription>Temas com mais vídeos</CardDescription>
+                <CardDescription className="text-xs md:text-sm">Temas com mais vídeos</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
                 {topThemes.map((theme) => (
                   <Link 
                     key={theme.id}
                     to={`/themes/${theme.id}`}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Layers className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                      <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                        <Layers className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-xs md:text-sm group-hover:text-primary transition-colors line-clamp-1">
                           {theme.title}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[10px] md:text-xs text-muted-foreground">
                           {theme.video_count} vídeo{theme.video_count !== 1 ? 's' : ''}
                         </p>
                       </div>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                   </Link>
                 ))}
               </CardContent>
