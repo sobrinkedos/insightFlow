@@ -39,6 +39,11 @@ export function VideoDetailPage() {
   const [recentVideos, setRecentVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Scroll to top when video changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
+
   useEffect(() => {
     const fetchVideoDetails = async () => {
       if (!user || !id) return;
