@@ -287,22 +287,9 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
   };
 
   const handleResumeVideo = () => {
-    setShowResumePrompt(false);
-    
     if (!playerReady) {
       toast.info("Aguardando player carregar...");
-      // Tentar novamente quando o player estiver pronto
-      const checkReady = setInterval(() => {
-        if (playerRef.current && playerReady) {
-          clearInterval(checkReady);
-          playerRef.current.seekTo(resumeTime, true);
-          playerRef.current.playVideo();
-          toast.success(`Retomando em ${formatTime(resumeTime)}`);
-        }
-      }, 500);
-      
-      // Timeout de 10 segundos
-      setTimeout(() => clearInterval(checkReady), 10000);
+      // Não fechar o modal ainda, aguardar player ficar pronto
       return;
     }
     
@@ -311,16 +298,18 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
         playerRef.current.seekTo(resumeTime, true);
         playerRef.current.playVideo();
         toast.success(`Retomando em ${formatTime(resumeTime)}`);
+        // Fechar modal apenas após sucesso
+        setShowResumePrompt(false);
       } catch (error) {
         console.error('Error resuming video:', error);
         toast.error("Erro ao retomar vídeo. Tente novamente.");
       }
+    } else {
+      toast.error("Player não encontrado.");
     }
   };
 
   const handleStartFromBeginning = () => {
-    setShowResumePrompt(false);
-    
     if (!playerReady) {
       toast.info("Aguardando player carregar...");
       return;
@@ -330,9 +319,14 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
       try {
         playerRef.current.seekTo(0, true);
         playerRef.current.playVideo();
+        // Fechar modal apenas após sucesso
+        setShowResumePrompt(false);
       } catch (error) {
         console.error('Error starting from beginning:', error);
+        toast.error("Erro ao iniciar vídeo.");
       }
+    } else {
+      toast.error("Player não encontrado.");
     }
   };
 
