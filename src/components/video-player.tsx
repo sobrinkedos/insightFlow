@@ -287,24 +287,36 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
   };
 
   const handleResumeVideo = () => {
+    console.log('=== handleResumeVideo ===');
+    console.log('playerReady:', playerReady);
+    console.log('playerRef.current:', playerRef.current);
+    console.log('resumeTime:', resumeTime);
+    console.log('showResumePrompt antes:', showResumePrompt);
+    
     if (!playerReady) {
+      console.log('❌ Player não está pronto');
       toast.info("Aguardando player carregar...");
-      // Não fechar o modal ainda, aguardar player ficar pronto
       return;
     }
     
     if (playerRef.current) {
       try {
+        console.log('Executando seekTo...');
         playerRef.current.seekTo(resumeTime, true);
+        console.log('Executando playVideo...');
         playerRef.current.playVideo();
+        console.log('✅ Sucesso! Fechando modal...');
         toast.success(`Retomando em ${formatTime(resumeTime)}`);
-        // Fechar modal apenas após sucesso
+        
+        // Fechar modal
         setShowResumePrompt(false);
+        console.log('setShowResumePrompt(false) chamado');
       } catch (error) {
-        console.error('Error resuming video:', error);
+        console.error('❌ Error resuming video:', error);
         toast.error("Erro ao retomar vídeo. Tente novamente.");
       }
     } else {
+      console.log('❌ Player não encontrado');
       toast.error("Player não encontrado.");
     }
   };
@@ -401,6 +413,9 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     toast.success(`Progresso salvo em ${manualTime}`);
     setManualTime("");
   };
+
+  // Log do estado do modal
+  console.log('Render - showResumePrompt:', showResumePrompt);
 
   return (
     <div
