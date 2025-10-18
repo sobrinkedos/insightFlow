@@ -1,35 +1,26 @@
 import { useState, useRef, useEffect } from "react";
-import { Maximize, Minimize, RotateCw, Play } from "lucide-react";
+import { Maximize, Minimize, RotateCw, Play, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useVideoProgress } from "@/hooks/use-video-progress";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
 
-// Declarar tipos do YouTube IFrame API
-declare global {
-  interface Window {
-    YT: any;
-    onYouTubeIframeAPIReady: () => void;
-  }
-}
-
-interface VideoPlayerProps {
+interface VideoPlayerSimpleProps {
   videoId: string;
   embedUrl: string;
   title?: string;
   className?: string;
 }
 
-export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayerProps) {
+export function VideoPlayerSimple({ videoId, embedUrl, title, className }: VideoPlayerSimpleProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [resumeTime, setResumeTime] = useState<number>(0);
-  const [playerReady, setPlayerReady] = useState(false);
+  const [manualTime, setManualTime] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
-  const playerContainerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout>();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   
   const { user } = useAuth();
   const { progress, updateProgress } = useVideoProgress({
@@ -43,110 +34,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     },
   });
 
-  // Extrair YouTube video ID da URL
-  const getYouTubeVideoId = (url: string): string | null => {
-    try {
-      const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      return pathParts[pathParts.length - 1] || null;
-    } catch {
-      return null;
-    }
-  };
-
-  const youtubeVideoId = getYouTubeVideoId(embedUrl);
-
-  // Carregar YouTube IFrame API
   useEffect(() => {
-    if (!youtubeVideoId) return;
-
-    // Verificar se a API já está carregada
-    if (window.YT && window.YT.Player) {
-      initializePlayer();
-      return;
-    }
-
-    // Carregar script da API
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-    // Callback quando a API estiver pronta
-    window.onYouTubeIframeAPIReady = () => {
-      initializePlayer();
-    };
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-    };
-  }, [youtubeVideoId]);
-
-  const initializePlayer = () => {
-    if (!playerContainerRef.current || !youtubeVideoId) return;
-
-    playerRef.current = new window.YT.Player(playerContainerRef.current, {
-      videoId: youtubeVideoId,
-      playerVars: {
-        autoplay: 0,
-        rel: 0,
-        modestbranding: 1,
-        enablejsapi: 1,
-      },
-      events: {
-        onReady: onPlayerReady,
-        onStateChange: onPlayerStateChange,
-      },
-    });
-  };
-
-  const onPlayerReady = () => {
-    setPlayerReady(true);
-  };
-
-  const onPlayerStateChange = (event: any) => {
-    // 1 = playing
-    if (event.data === 1) {
-      startProgressTracking();
-    } else {
-      stopProgressTracking();
-    }
-  };
-
-  const startProgressTracking = () => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-
-    progressIntervalRef.current = setInterval(() => {
-      if (playerRef.current && user) {
-        try {
-          const currentTime = playerRef.current.getCurrentTime();
-          const duration = playerRef.current.getDuration();
-          
-          if (currentTime && duration) {
-            updateProgress(currentTime, duration);
-          }
-        } catch (error) {
-          console.error('Error tracking progress:', error);
-        }
-      }
-    }, 5000); // Atualizar a cada 5 segundos
-  };
-
-  const stopProgressTracking = () => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-  };
-
-  useEffect(() => {
-    // Detectar mudanças de fullscreen
     const handleFullscreenChange = () => {
       const fullscreenElement = 
         document.fullscreenElement ||
@@ -157,13 +45,11 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
       setIsFullscreen(!!fullscreenElement);
     };
 
-    // Detectar mudanças de orientação
     const handleOrientationChange = () => {
       const isNowLandscape = window.innerWidth > window.innerHeight;
       setIsLandscape(isNowLandscape);
     };
 
-    // Adicionar listeners
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
@@ -172,7 +58,6 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     window.addEventListener("resize", handleOrientationChange);
     window.addEventListener("orientationchange", handleOrientationChange);
     
-    // Verificar estado inicial
     handleOrientationChange();
 
     return () => {
@@ -191,8 +76,6 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
         await element.requestFullscreen();
       } else if ((element as any).webkitRequestFullscreen) {
         await (element as any).webkitRequestFullscreen();
-      } else if ((element as any).webkitEnterFullscreen) {
-        await (element as any).webkitEnterFullscreen();
       } else if ((element as any).mozRequestFullScreen) {
         await (element as any).mozRequestFullScreen();
       } else if ((element as any).msRequestFullscreen) {
@@ -211,8 +94,6 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
         await document.exitFullscreen();
       } else if ((document as any).webkitExitFullscreen) {
         await (document as any).webkitExitFullscreen();
-      } else if ((document as any).webkitCancelFullScreen) {
-        await (document as any).webkitCancelFullScreen();
       } else if ((document as any).mozCancelFullScreen) {
         await (document as any).mozCancelFullScreen();
       } else if ((document as any).msExitFullscreen) {
@@ -223,62 +104,54 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     }
   };
 
-  const lockOrientation = async () => {
-    // Tentar bloquear orientação após um pequeno delay
-    setTimeout(async () => {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock("landscape");
-          console.log("✅ Orientation locked to landscape");
-        } else if ((screen as any).lockOrientation) {
-          (screen as any).lockOrientation("landscape");
-          console.log("✅ Orientation locked (webkit)");
-        }
-      } catch (err) {
-        console.log("⚠️ Orientation lock not supported:", err);
-      }
-    }, 200);
-  };
-
-  const unlockOrientation = () => {
-    try {
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      } else if ((screen as any).unlockOrientation) {
-        (screen as any).unlockOrientation();
-      }
-    } catch (err) {
-      console.log("Orientation unlock not needed");
-    }
-  };
-
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
 
     if (!isFullscreen) {
-      const success = await enterFullscreen(containerRef.current);
-      if (success) {
-        await lockOrientation();
-      }
+      await enterFullscreen(containerRef.current);
     } else {
       await exitFullscreen();
-      unlockOrientation();
     }
   };
 
   const handleResumeVideo = () => {
     setShowResumePrompt(false);
-    if (playerRef.current && playerReady) {
-      playerRef.current.seekTo(resumeTime, true);
-      playerRef.current.playVideo();
+    if (iframeRef.current) {
+      const currentSrc = iframeRef.current.src;
+      const baseUrl = currentSrc.split('?')[0];
+      const newSrc = `${baseUrl}?autoplay=1&start=${Math.floor(resumeTime)}&rel=0&modestbranding=1`;
+      iframeRef.current.src = newSrc;
     }
   };
 
   const handleStartFromBeginning = () => {
     setShowResumePrompt(false);
-    if (playerRef.current && playerReady) {
-      playerRef.current.seekTo(0, true);
+  };
+
+  const handleSaveProgress = () => {
+    if (!manualTime || !user) return;
+
+    // Parse time format MM:SS or HH:MM:SS
+    const parts = manualTime.split(':').map(p => parseInt(p));
+    let seconds = 0;
+    
+    if (parts.length === 2) {
+      // MM:SS
+      seconds = parts[0] * 60 + parts[1];
+    } else if (parts.length === 3) {
+      // HH:MM:SS
+      seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else {
+      toast.error("Formato inválido. Use MM:SS ou HH:MM:SS");
+      return;
     }
+
+    // Estimar duração (pode ser ajustado)
+    const estimatedDuration = progress?.duration || seconds * 2;
+    
+    updateProgress(seconds, estimatedDuration);
+    toast.success(`Progresso salvo em ${manualTime}`);
+    setManualTime("");
   };
 
   const formatTime = (seconds: number): string => {
@@ -310,8 +183,13 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
         "relative w-full",
         isFullscreen ? "h-full" : "aspect-video"
       )}>
-        <div
-          ref={playerContainerRef}
+        <iframe
+          ref={iframeRef}
+          src={`${embedUrl}?autoplay=0&rel=0&modestbranding=1`}
+          title={title || "Video player"}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          allowFullScreen
           className="w-full h-full rounded-md"
           style={isFullscreen ? {
             width: '100%',
@@ -390,6 +268,27 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
           )}
         </Button>
       </div>
+
+      {/* Controle manual de progresso */}
+      {!isFullscreen && user && (
+        <div className="mt-3 flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Ex: 5:30 ou 1:05:30"
+            value={manualTime}
+            onChange={(e) => setManualTime(e.target.value)}
+            className="flex-1 px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <Button
+            size="sm"
+            onClick={handleSaveProgress}
+            disabled={!manualTime}
+          >
+            Salvar Progresso
+          </Button>
+        </div>
+      )}
 
       {/* Mensagem de orientação */}
       {isFullscreen && !isLandscape && (
