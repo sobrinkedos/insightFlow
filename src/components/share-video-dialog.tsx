@@ -33,10 +33,18 @@ const shareVideoSchema = z.object({
 
 type ShareVideoFormValues = z.infer<typeof shareVideoSchema>;
 
-export function ShareVideoDialog() {
+interface ShareVideoDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVideoDialogProps = {}) {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   const form = useForm<ShareVideoFormValues>({
     resolver: zodResolver(shareVideoSchema),

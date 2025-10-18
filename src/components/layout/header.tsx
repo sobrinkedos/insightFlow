@@ -15,6 +15,8 @@ import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { ShareVideoDialog } from "../share-video-dialog";
+import { MobileNav } from "./mobile-nav";
+import { MobileSearch } from "./mobile-search";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -34,11 +36,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-14 md:h-16 items-center px-4">
+        <MobileNav />
+        
         <div className="mr-4 hidden md:flex">
           <Link to="/" className="mr-6 flex items-center space-x-2">
             <BrainCircuit className="h-6 w-6 text-primary" />
-            <span className="hidden font-bold sm:inline-block">
+            <span className="font-bold">
               InsightShare
             </span>
           </Link>
@@ -91,8 +95,15 @@ export function Header() {
             </NavLink>
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
+        <Link to="/" className="flex md:hidden items-center space-x-2 flex-1">
+          <BrainCircuit className="h-6 w-6 text-primary" />
+          <span className="font-bold text-base">
+            InsightShare
+          </span>
+        </Link>
+
+        <div className="flex flex-1 items-center justify-end space-x-2 md:justify-end">
+          <div className="hidden md:block w-full flex-1 md:w-auto md:flex-none">
             <form>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -108,7 +119,10 @@ export function Header() {
             <Loader2 className="h-6 w-6 animate-spin" />
           ) : user ? (
             <>
-              <ShareVideoDialog />
+              <MobileSearch />
+              <div className="hidden md:block">
+                <ShareVideoDialog />
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -149,7 +163,7 @@ export function Header() {
               </DropdownMenu>
             </>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Button variant="ghost" onClick={() => navigate('/login')}>Login</Button>
               <Button onClick={() => navigate('/signup')}>Cadastre-se</Button>
             </div>

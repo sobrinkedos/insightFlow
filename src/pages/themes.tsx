@@ -92,31 +92,31 @@ export function ThemesPage() {
   }, [user]);
 
   return (
-    <div className="container py-8">
+    <div className="container py-6 md:py-8 px-4">
       <PageHeader
         title="Meus Temas"
         description="Seus vídeos organizados automaticamente por temas pela IA."
       />
       
-      <div className="mt-8">
+      <div className="mt-6 md:mt-8">
         <div>
           {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i} className="overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-full" />
+                  <CardHeader className="pb-3 p-4 md:p-6">
+                    <Skeleton className="h-5 md:h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-3 md:h-4 w-full" />
                   </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-4 w-1/2" />
+                  <CardContent className="p-4 md:p-6">
+                    <Skeleton className="h-3 md:h-4 w-1/2" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : themes.length > 0 ? (
             <>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {themes.map((theme) => (
                   <Card 
                     key={theme.id} 

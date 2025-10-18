@@ -342,64 +342,64 @@ export function HomePage() {
 
   return (
     <motion.div 
-        className="container py-12"
+        className="container py-6 md:py-12 px-4"
         initial="initial"
         animate="in"
         exit="out"
         variants={pageVariants}
         transition={pageTransition}
     >
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
-        <p className="text-lg text-muted-foreground">Bem-vindo de volta ao seu centro de conhecimento.</p>
+      <div className="mb-8 md:mb-12">
+        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
+        <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-12">
+      <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mb-8 md:mb-12">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Vídeos</CardTitle>
-            <VideoIcon className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
+            <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVideos}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+            <div className="text-xl md:text-2xl font-bold">{stats.totalVideos}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos na sua biblioteca
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Temas Criados</CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
+            <Layers className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalThemes}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+            <div className="text-xl md:text-2xl font-bold">{stats.totalThemes}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               Organizados automaticamente
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Processados Hoje</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
+            <Zap className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.processedToday}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+            <div className="text-xl md:text-2xl font-bold">{stats.processedToday}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos adicionados hoje
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Favoritos</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
+            <Heart className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.favorites}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+            <div className="text-xl md:text-2xl font-bold">{stats.favorites}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos marcados como favoritos
             </p>
           </CardContent>
@@ -413,7 +413,7 @@ export function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ delay: 0.2 }}
-          className="mb-12"
+          className="mb-8 md:mb-12"
         >
           <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
@@ -425,21 +425,21 @@ export function HomePage() {
             >
               <X className="h-4 w-4" />
             </Button>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
+                    <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                     <Badge variant="secondary" className="text-xs">Novo</Badge>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">
+                  <h3 className="text-lg md:text-xl font-bold mb-2">
                     Extensões de Navegador Disponíveis!
                   </h3>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-sm md:text-base text-muted-foreground mb-4">
                     Compartilhe vídeos do YouTube, Instagram, TikTok e mais diretamente do seu navegador. 
                     Disponível para Chrome, Edge e Firefox.
                   </p>
-                  <Button asChild>
+                  <Button asChild size="sm" className="md:h-9">
                     <Link to="/extensions">
                       <Download className="mr-2 h-4 w-4" />
                       Baixar Extensões
@@ -457,19 +457,19 @@ export function HomePage() {
         </motion.div>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-16">
+        <div className="lg:col-span-2 space-y-8 md:space-y-16">
           {featuredThemes.length > 0 && (
             <section>
-              <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-semibold tracking-tight">Temas em Destaque</h2>
-                  <Button variant="ghost" asChild>
-                      <Link to="/themes">Ver todos <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <h2 className="text-xl md:text-2xl font-semibold tracking-tight">Temas em Destaque</h2>
+                  <Button variant="ghost" size="sm" asChild className="text-xs md:text-sm">
+                      <Link to="/themes">Ver todos <ArrowRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" /></Link>
                   </Button>
               </div>
               
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-4 md:gap-6 md:grid-cols-2">
                   {featuredThemes.map((theme) => (
                       <ThemeCard theme={theme} key={theme.id} />
                   ))}

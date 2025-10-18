@@ -156,12 +156,12 @@ export function VideosPage() {
   }, [user]);
 
   return (
-    <div className="container py-8">
+    <div className="container py-6 md:py-8 px-4">
       <PageHeader
         title="Vídeos Recentes"
         description="Gerencie todos os seus vídeos compartilhados."
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-9 gap-1">
@@ -192,16 +192,16 @@ export function VideosPage() {
           </div>
       </PageHeader>
       
-      <Tabs defaultValue="all" className="mt-8">
-        <TabsList>
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="processing">Processando</TabsTrigger>
-            <TabsTrigger value="processed">Processados</TabsTrigger>
-            <TabsTrigger value="failed" className="hidden sm:flex">
+      <Tabs defaultValue="all" className="mt-6 md:mt-8">
+        <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
+            <TabsTrigger value="all" className="text-xs md:text-sm">Todos</TabsTrigger>
+            <TabsTrigger value="processing" className="text-xs md:text-sm">Processando</TabsTrigger>
+            <TabsTrigger value="processed" className="text-xs md:text-sm">Processados</TabsTrigger>
+            <TabsTrigger value="failed" className="hidden md:flex text-xs md:text-sm">
               Falha
             </TabsTrigger>
         </TabsList>
-        <TabsContent value="all" className="mt-4">
+        <TabsContent value="all" className="mt-4 md:mt-6">
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 10 }).map((_, i) => (
@@ -228,38 +228,39 @@ export function VideosPage() {
                     className="cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
+                    <CardContent className="p-3 md:p-4">
+                      <div className="flex items-center gap-2 md:gap-3">
                         <img 
                           src={getVideoThumbnail(video.url)} 
                           alt={video.title || 'Thumbnail'}
-                          className="w-20 h-14 object-cover rounded border border-border shrink-0"
+                          className="w-16 h-12 md:w-20 md:h-14 object-cover rounded border border-border shrink-0"
                           onError={(e) => {
                             e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
                           }}
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="font-medium text-sm md:text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
+                          <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground">
                             <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                            <span className="hidden md:inline">•</span>
+                            <span className="hidden md:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1 md:gap-2 shrink-0">
                           <Badge 
                             variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
-                            className={video.status === 'Processando' ? 'animate-pulse' : ''}
+                            className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse' : ''} hidden md:inline-flex`}
                           >
                             {video.status}
                           </Badge>
                           <Button
                             size="icon"
                             variant="ghost"
+                            className="h-8 w-8 md:h-9 md:w-9"
                             onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
                           >
                             <Heart 
-                              className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
+                              className={`h-3 w-3 md:h-4 md:w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
                             />
                           </Button>
                           <DropdownMenu>
@@ -267,9 +268,10 @@ export function VideosPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
+                                className="h-8 w-8 md:h-9 md:w-9"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontal className="h-3 w-3 md:h-4 md:w-4" />
                                 <span className="sr-only">Ações</span>
                               </Button>
                             </DropdownMenuTrigger>
