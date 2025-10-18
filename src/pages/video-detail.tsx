@@ -310,8 +310,8 @@ export function VideoDetailPage() {
                 <CardHeader>
                   <CardTitle>Transcrição Completa</CardTitle>
                 </CardHeader>
-                <CardContent className="text-muted-foreground space-y-4 max-h-[500px] overflow-y-auto">
-                   <p className="whitespace-pre-wrap">{video.transcription || "A transcrição deste vídeo ainda não foi gerada."}</p>
+                <CardContent className="text-muted-foreground space-y-4">
+                   <p className="whitespace-pre-wrap break-words">{video.transcription || "A transcrição deste vídeo ainda não foi gerada."}</p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -379,7 +379,7 @@ export function VideoDetailPage() {
                   Mesma categoria: {video.category}
                 </p>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 overflow-hidden">
                 {relatedVideos.map((v) => (
                   <VideoCard key={v.id} video={v} />
                 ))}
@@ -397,7 +397,7 @@ export function VideoDetailPage() {
                 Adicionados recentemente
               </p>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 overflow-hidden">
               {recentVideos.length > 0 ? (
                 recentVideos.map((v) => (
                   <VideoCard key={v.id} video={v} />

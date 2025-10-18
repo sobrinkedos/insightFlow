@@ -20,6 +20,21 @@ import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 
+const getYouTubeThumbnail = (url: string): string | null => {
+  try {
+    const videoUrl = new URL(url);
+    let videoId: string | null = null;
+    if (videoUrl.hostname.includes("youtube.com")) {
+      videoId = videoUrl.searchParams.get("v");
+    } else if (videoUrl.hostname.includes("youtu.be")) {
+      videoId = videoUrl.pathname.slice(1);
+    }
+    return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+  } catch {
+    return null;
+  }
+};
+
 export function ThemeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -231,27 +246,45 @@ export function ThemeDetailPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               {videos.length > 0 ? (
-                videos.map((video, index) => (
-                  <div key={video.id}>
-                    <Link to={`/videos/${video.id}`} className="block hover:bg-muted/50 p-2 rounded-lg -m-2 transition-colors">
-                        <div className="flex items-start gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                            <Film className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1">
+                videos.map((video, index) => {
+                  const thumbnail = getYouTubeThumbnail(video.url);
+                  console.log('Video URL:', video.url, 'Thumbnail:', thumbnail);
+                  return (
+                    <div key={video.id}>
+                      <Link to={`/videos/${video.id}`} className="block hover:bg-muted/50 p-2 rounded-lg -m-2 transition-colors">
+                        <div className="flex items-start gap-3">
+                          {thumbnail ? (
+                            <div className="relative w-24 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                              <img 
+                                src={thumbnail} 
+                                alt={video.title || "Thumbnail"} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  console.error('Erro ao carregar imagem:', thumbnail);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex w-24 h-16 flex-shrink-0 items-center justify-center rounded-md bg-muted">
+                              <Film className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
                             <p className="font-medium leading-tight line-clamp-2">
-                            {video.title || "Sem título"}
+                              {video.title || "Sem título"}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                            Adicionado{" "}
-                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Adicionado{" "}
+                              {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
                             </p>
+                          </div>
                         </div>
-                        </div>
-                    </Link>
-                    {index < videos.length - 1 && <Separator className="mt-4" />}
-                  </div>
-                ))
+                      </Link>
+                      {index < videos.length - 1 && <Separator className="mt-4" />}
+                    </div>
+                  );
+                })
               ) : (
                 <p className="py-10 text-center text-sm text-muted-foreground">
                   Nenhum vídeo associado a este tema ainda.

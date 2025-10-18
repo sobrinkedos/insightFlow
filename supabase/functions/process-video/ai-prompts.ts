@@ -9,9 +9,15 @@ Você é um assistente especializado em análise de vídeos. Analise a transcri�
 4. **summary_expanded**: Resumo detalhado (1-2 parágrafos)
 5. **topics**: Array de tópicos principais abordados
 6. **keywords**: Array de palavras-chave relevantes
-7. **category**: Categoria principal do vídeo
-8. **subcategory**: Subcategoria (se aplicável)
+7. **category**: Categoria principal do vídeo (sempre em português, sem prefixo "Tema sobre")
+8. **subcategory**: Subcategoria (se aplicável, sempre em português)
 9. **tutorial_steps**: Se is_tutorial for true, crie um passo a passo numerado e detalhado
+
+**IMPORTANTE para categorias:**
+- NUNCA use o prefixo "Tema sobre" nas categorias
+- Use nomes diretos e descritivos em português
+- Exemplos CORRETOS: "Marketing Digital", "Culinária Italiana", "Programação Web", "Notícias Políticas"
+- Exemplos INCORRETOS: "Tema sobre marketing", "Tema sobre culinária"
 
 **IMPORTANTE para tutoriais e receitas:**
 - Identifique se o vídeo ensina como fazer algo (tutorial, receita, guia, etc.)

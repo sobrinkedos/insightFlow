@@ -40,16 +40,32 @@ export function ThemesPage() {
   const fetchThemes = async () => {
     if (!user) return;
     setLoading(true);
+    
+    // Buscar apenas temas que têm vídeos associados
+    const { data: themesWithVideos } = await supabase
+      .from('theme_videos')
+      .select('theme_id')
+      .not('theme_id', 'is', null);
+    
+    const themeIds = [...new Set(themesWithVideos?.map(tv => tv.theme_id) || [])];
+    
+    if (themeIds.length === 0) {
+      setThemes([]);
+      setLoading(false);
+      return;
+    }
+    
     const { data } = await supabase
       .from('themes')
-      .select('*, videos(count)')
+      .select('*, theme_videos(video_id)')
       .eq('user_id', user.id)
+      .in('id', themeIds)
       .order('created_at', { ascending: false });
     
     // Processar os dados para extrair o count
     const processedData = (data || []).map(theme => ({
       ...theme,
-      video_count: Array.isArray(theme.videos) && theme.videos[0]?.count || 0
+      video_count: theme.theme_videos?.length || 0
     }));
     
     setThemes(processedData as any);

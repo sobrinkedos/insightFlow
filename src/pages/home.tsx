@@ -24,7 +24,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
 import { EmptyState } from "@/components/empty-state";
-import { Layers, Video as VideoIcon, ArrowRight, Download, Sparkles, X } from "lucide-react";
+import { Layers, Video as VideoIcon, ArrowRight, Download, Sparkles, X, TrendingUp, Clock, Heart, Zap } from "lucide-react";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -180,7 +180,10 @@ export function HomePage() {
   const navigate = useNavigate();
   const [featuredThemes, setFeaturedThemes] = useState<Theme[]>([]);
   const [recentVideos, setRecentVideos] = useState<Video[]>([]);
+  const [favoriteVideos, setFavoriteVideos] = useState<Video[]>([]);
+  const [topThemes, setTopThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ totalVideos: 0, totalThemes: 0, processedToday: 0, favorites: 0 });
   const [showExtensionBanner, setShowExtensionBanner] = useState(() => {
     return localStorage.getItem('hideExtensionBanner') !== 'true';
   });
@@ -212,16 +215,70 @@ export function HomePage() {
           .order('created_at', { ascending: false })
           .limit(5);
 
-        const [{ data: themesData }, { data: videosData }] = await Promise.all([themesPromise, videosPromise]);
+        const favoritesPromise = supabase
+          .from('videos')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_favorite', true)
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-        // Add video_count to themes
-        const themesWithCount = (themesData || []).map((theme: any) => ({
-          ...theme,
-          video_count: theme.theme_videos?.length || 0,
-        }));
+        const topThemesPromise = supabase
+          .from('themes')
+          .select(`
+            *,
+            theme_videos(video_id)
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
+        // Fetch stats
+        const statsPromise = Promise.all([
+          supabase.from('videos').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('themes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('videos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', new Date(new Date().setHours(0,0,0,0)).toISOString()),
+          supabase.from('videos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_favorite', true),
+        ]);
+
+        const [
+          { data: themesData }, 
+          { data: videosData }, 
+          { data: favoritesData },
+          { data: topThemesData },
+          statsResults
+        ] = await Promise.all([themesPromise, videosPromise, favoritesPromise, topThemesPromise, statsPromise]);
+
+        // Process stats
+        const newStats = {
+          totalVideos: statsResults[0].count || 0,
+          totalThemes: statsResults[1].count || 0,
+          processedToday: statsResults[2].count || 0,
+          favorites: statsResults[3].count || 0,
+        };
+        setStats(newStats);
+
+        // Add video_count to themes and filter only themes with videos
+        const themesWithCount = (themesData || [])
+          .map((theme: any) => ({
+            ...theme,
+            video_count: theme.theme_videos?.length || 0,
+          }))
+          .filter((theme: any) => theme.video_count > 0);
+
+        // Process top themes
+        const processedTopThemes = (topThemesData || [])
+          .map((theme: any) => ({
+            ...theme,
+            video_count: theme.theme_videos?.length || 0,
+          }))
+          .filter((theme: any) => theme.video_count > 0)
+          .sort((a: any, b: any) => b.video_count - a.video_count)
+          .slice(0, 5);
+        
         setFeaturedThemes(themesWithCount);
         setRecentVideos(videosData || []);
+        setFavoriteVideos(favoritesData || []);
+        setTopThemes(processedTopThemes);
         setLoading(false);
       };
       fetchData();
@@ -297,6 +354,58 @@ export function HomePage() {
         <p className="text-lg text-muted-foreground">Bem-vindo de volta ao seu centro de conhecimento.</p>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-12">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Vídeos</CardTitle>
+            <VideoIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalVideos}</div>
+            <p className="text-xs text-muted-foreground">
+              Vídeos na sua biblioteca
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Temas Criados</CardTitle>
+            <Layers className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalThemes}</div>
+            <p className="text-xs text-muted-foreground">
+              Organizados automaticamente
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Processados Hoje</CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.processedToday}</div>
+            <p className="text-xs text-muted-foreground">
+              Vídeos adicionados hoje
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Favoritos</CardTitle>
+            <Heart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.favorites}</div>
+            <p className="text-xs text-muted-foreground">
+              Vídeos marcados como favoritos
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Extensions Banner */}
       {showExtensionBanner && (
         <motion.div
@@ -348,47 +457,132 @@ export function HomePage() {
         </motion.div>
       )}
       
-      <section className="mb-16">
-        <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold tracking-tight">Temas em Destaque</h2>
-            <Button variant="ghost" asChild>
-                <Link to="/themes">Ver todos <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-        </div>
-        
-        {featuredThemes.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {featuredThemes.map((theme) => (
-                    <ThemeCard theme={theme} key={theme.id} />
-                ))}
-            </div>
-        ) : (
-            <EmptyState
-                icon={Layers}
-                title="Nenhum tema criado"
-                description="Os temas são criados automaticamente quando vídeos com assuntos semelhantes são adicionados."
-                className="h-64"
-            />
-        )}
-      </section>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-16">
+          {featuredThemes.length > 0 && (
+            <section>
+              <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold tracking-tight">Temas em Destaque</h2>
+                  <Button variant="ghost" asChild>
+                      <Link to="/themes">Ver todos <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2">
+                  {featuredThemes.map((theme) => (
+                      <ThemeCard theme={theme} key={theme.id} />
+                  ))}
+              </div>
+            </section>
+          )}
 
-      <section>
-        {recentVideos.length > 0 ? (
-            <RecentVideosTable videos={recentVideos} loading={loading} />
-        ) : (
-            <EmptyState
-                icon={VideoIcon}
-                title="Nenhum vídeo adicionado"
-                description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
-                action={{
-                    label: "Compartilhar meu primeiro vídeo",
-                    onClick: () => {
-                        document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                    }
-                }}
-            />
-        )}
-      </section>
+          <section>
+            {recentVideos.length > 0 ? (
+                <RecentVideosTable videos={recentVideos} loading={loading} />
+            ) : (
+                <EmptyState
+                    icon={VideoIcon}
+                    title="Nenhum vídeo adicionado"
+                    description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
+                    action={{
+                        label: "Compartilhar meu primeiro vídeo",
+                        onClick: () => {
+                            document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        }
+                    }}
+                />
+            )}
+          </section>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Favoritos */}
+          {favoriteVideos.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-500" />
+                  Vídeos Favoritos
+                </CardTitle>
+                <CardDescription>Seus vídeos marcados como favoritos</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {favoriteVideos.map((video) => {
+                  const thumbnail = getYouTubeThumbnail(video.url);
+                  return (
+                    <Link 
+                      key={video.id}
+                      to={`/videos/${video.id}`}
+                      className="flex gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+                    >
+                      {thumbnail ? (
+                        <div className="relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                          <img 
+                            src={thumbnail} 
+                            alt={video.title || "Thumbnail"} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex w-20 h-14 flex-shrink-0 items-center justify-center rounded-md bg-muted">
+                          <VideoIcon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                          {video.title || "Sem título"}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Top Temas */}
+          {topThemes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Principais Temas
+                </CardTitle>
+                <CardDescription>Temas com mais vídeos</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {topThemes.map((theme) => (
+                  <Link 
+                    key={theme.id}
+                    to={`/themes/${theme.id}`}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Layers className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                          {theme.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {theme.video_count} vídeo{theme.video_count !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 }
