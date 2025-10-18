@@ -32,15 +32,21 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout>();
+  const promptShownRef = useRef(false); // Prevenir múltiplas exibições
   
   const { user } = useAuth();
   const { progress, updateProgress } = useVideoProgress({
     videoId,
     userId: user?.id || null,
     onProgressLoaded: (loadedProgress) => {
+      // Só mostrar prompt uma vez
+      if (promptShownRef.current) return;
+      
       if (loadedProgress && loadedProgress.watched_time > 10 && !loadedProgress.completed) {
+        console.log('Mostrando prompt de retomada:', loadedProgress.watched_time);
         setResumeTime(loadedProgress.watched_time);
         setShowResumePrompt(true);
+        promptShownRef.current = true;
       }
     },
   });
@@ -413,9 +419,6 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     toast.success(`Progresso salvo em ${manualTime}`);
     setManualTime("");
   };
-
-  // Log do estado do modal
-  console.log('Render - showResumePrompt:', showResumePrompt);
 
   return (
     <div
