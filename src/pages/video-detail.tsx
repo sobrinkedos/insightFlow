@@ -246,14 +246,12 @@ export function VideoDetailPage() {
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           {embedUrl && (
-            <Card>
-              <CardContent className="p-2">
-                <VideoPlayer 
-                  embedUrl={embedUrl} 
-                  title={video.title || "YouTube video player"}
-                />
-              </CardContent>
-            </Card>
+            <div className="rounded-lg overflow-hidden border border-border bg-card">
+              <VideoPlayer 
+                embedUrl={embedUrl} 
+                title={video.title || "YouTube video player"}
+              />
+            </div>
           )}
 
           <Tabs defaultValue="summary" className="w-full">
