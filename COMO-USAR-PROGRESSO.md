@@ -11,14 +11,21 @@ O sistema agora possui **duas versões** do player de vídeo:
 
 ### Como Funciona
 
-#### 1. Salvamento Manual de Progresso
+#### 1. Salvamento de Progresso
 
-Enquanto assiste um vídeo, você pode salvar manualmente onde parou:
+Você tem **duas opções** para salvar onde parou:
 
+**Opção A: Captura Automática (Recomendado)**
+1. Pause o vídeo no YouTube
+2. Clique no botão "Capturar" abaixo do player
+3. O tempo atual é capturado e salvo automaticamente
+4. Pronto! ✅
+
+**Opção B: Digite Manualmente**
 1. Pause o vídeo no YouTube
 2. Anote o tempo atual (ex: 5:30)
 3. Digite o tempo no campo abaixo do player
-4. Clique em "Salvar Progresso"
+4. Clique em "Salvar" ou pressione Enter
 
 **Formatos aceitos:**
 - `MM:SS` - Exemplo: `5:30` (5 minutos e 30 segundos)
@@ -45,12 +52,24 @@ Na página de vídeos (`/videos`):
 
 ## 📱 Exemplo de Uso
 
-### Cenário 1: Assistir um Vídeo Longo
+### Cenário 1: Assistir um Vídeo Longo (Captura Automática)
+
+```
+1. Abra o vídeo
+2. Assista até onde quiser
+3. Precisa parar? Pause o vídeo
+4. Clique em "Capturar" - pronto! Salvo automaticamente
+5. Volte depois
+6. Clique em "Continuar" no prompt
+7. O vídeo começa exatamente onde você parou
+```
+
+### Cenário 1B: Assistir um Vídeo Longo (Manual)
 
 ```
 1. Abra o vídeo
 2. Assista até 15:30
-3. Precisa parar? Digite "15:30" e clique em "Salvar Progresso"
+3. Precisa parar? Digite "15:30" e clique em "Salvar"
 4. Volte depois
 5. Clique em "Continuar" no prompt
 6. O vídeo começa em 15:30 automaticamente
@@ -87,7 +106,9 @@ Na página de vídeos (`/videos`):
 │                          [🔲]       │ ← Fullscreen
 └─────────────────────────────────────┘
 ┌─────────────────────────────────────┐
-│ 🕐 [5:30        ] [Salvar Progresso]│ ← Controle Manual
+│ 🕐 [5:30    ] [💾 Capturar] [Salvar]│ ← Controle
+│ 💡 Dica: Clique em "Capturar" para  │
+│    pegar o tempo atual automaticam. │
 └─────────────────────────────────────┘
 ```
 
@@ -117,31 +138,38 @@ Na página de vídeos (`/videos`):
 
 ## 🔧 Dicas e Truques
 
-### Dica 1: Atalhos de Teclado
-- Use os controles nativos do YouTube (espaço, setas, etc)
-- Pause antes de salvar o progresso
+### Dica 1: Use a Captura Automática
+- **Mais rápido**: Um clique e pronto
+- **Mais preciso**: Pega o tempo exato do vídeo
+- **Mais fácil**: Não precisa digitar nada
+- Pause o vídeo antes de capturar
 
-### Dica 2: Precisão
-- Seja preciso ao digitar o tempo
+### Dica 2: Atalho de Teclado
+- Digite o tempo e pressione **Enter** para salvar
+- Use os controles nativos do YouTube (espaço, setas, etc)
+
+### Dica 3: Precisão Manual
+- Se digitar manualmente, seja preciso
 - Use o formato correto (MM:SS ou HH:MM:SS)
 - O sistema valida automaticamente
 
-### Dica 3: Sincronização
+### Dica 4: Sincronização
 - O progresso é salvo no banco de dados
 - Funciona em qualquer dispositivo
 - Basta fazer login com a mesma conta
 
-### Dica 4: Vídeos Completos
+### Dica 5: Vídeos Completos
 - Não precisa salvar manualmente quando terminar
 - Salve em 95%+ do vídeo
 - O sistema marca como completo automaticamente
 
 ## ⚠️ Limitações Atuais
 
-### Salvamento Manual
-- ❌ Não salva automaticamente enquanto assiste
+### Captura de Tempo
+- ✅ Captura automática com um clique
+- ✅ Opção manual disponível
 - ✅ Você controla quando salvar
-- ✅ Mais confiável e compatível
+- ✅ Confiável e compatível
 
 ### Compatibilidade
 - ✅ Funciona em todos os navegadores

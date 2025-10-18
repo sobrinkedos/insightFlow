@@ -1,10 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { Maximize, Minimize, RotateCw, Play, Clock } from "lucide-react";
+import { Maximize, Minimize, RotateCw, Play, Clock, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useVideoProgress } from "@/hooks/use-video-progress";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
+
+// Declarar tipos do YouTube IFrame API
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 
 interface VideoPlayerSimpleProps {
   videoId: string;
@@ -19,8 +27,10 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [resumeTime, setResumeTime] = useState<number>(0);
   const [manualTime, setManualTime] = useState<string>("");
+  const [playerReady, setPlayerReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<any>(null);
   
   const { user } = useAuth();
   const { progress, updateProgress } = useVideoProgress({
@@ -33,6 +43,67 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
       }
     },
   });
+
+  // Extrair YouTube video ID da URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      return pathParts[pathParts.length - 1] || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const youtubeVideoId = getYouTubeVideoId(embedUrl);
+
+  // Carregar YouTube IFrame API
+  useEffect(() => {
+    if (!youtubeVideoId) return;
+
+    // Verificar se a API já está carregada
+    if (window.YT && window.YT.Player) {
+      initializePlayer();
+      return;
+    }
+
+    // Carregar script da API
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+
+    // Callback quando a API estiver pronta
+    window.onYouTubeIframeAPIReady = () => {
+      initializePlayer();
+    };
+
+    return () => {
+      if (playerRef.current) {
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          // Ignorar erros ao destruir
+        }
+      }
+    };
+  }, [youtubeVideoId]);
+
+  const initializePlayer = () => {
+    if (!iframeRef.current || !youtubeVideoId || playerRef.current) return;
+
+    try {
+      playerRef.current = new window.YT.Player(iframeRef.current, {
+        events: {
+          onReady: () => setPlayerReady(true),
+        },
+      });
+    } catch (error) {
+      console.error('Error initializing YouTube player:', error);
+    }
+  };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -126,6 +197,32 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
 
   const handleStartFromBeginning = () => {
     setShowResumePrompt(false);
+  };
+
+  const handleCaptureCurrentTime = () => {
+    if (!playerRef.current || !playerReady || !user) {
+      toast.error("Player não está pronto. Tente novamente em alguns segundos.");
+      return;
+    }
+
+    try {
+      const currentTime = playerRef.current.getCurrentTime();
+      const duration = playerRef.current.getDuration();
+      
+      if (currentTime && duration) {
+        const formattedTime = formatTime(currentTime);
+        setManualTime(formattedTime);
+        
+        // Salvar automaticamente
+        updateProgress(currentTime, duration);
+        toast.success(`Progresso capturado e salvo: ${formattedTime}`);
+      } else {
+        toast.error("Não foi possível capturar o tempo. Tente pausar o vídeo primeiro.");
+      }
+    } catch (error) {
+      console.error('Error capturing time:', error);
+      toast.error("Erro ao capturar tempo. Digite manualmente.");
+    }
   };
 
   const handleSaveProgress = () => {
@@ -271,22 +368,44 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
 
       {/* Controle manual de progresso */}
       {!isFullscreen && user && (
-        <div className="mt-3 flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Ex: 5:30 ou 1:05:30"
-            value={manualTime}
-            onChange={(e) => setManualTime(e.target.value)}
-            className="flex-1 px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <Button
-            size="sm"
-            onClick={handleSaveProgress}
-            disabled={!manualTime}
-          >
-            Salvar Progresso
-          </Button>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              placeholder="Ex: 5:30 ou 1:05:30"
+              value={manualTime}
+              onChange={(e) => setManualTime(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && manualTime) {
+                  handleSaveProgress();
+                }
+              }}
+              className="flex-1 px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCaptureCurrentTime}
+              disabled={!playerReady}
+              title="Capturar tempo atual do vídeo"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Capturar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveProgress}
+              disabled={!manualTime}
+            >
+              Salvar
+            </Button>
+          </div>
+          {playerReady && (
+            <p className="text-xs text-muted-foreground px-3">
+              💡 Dica: Clique em "Capturar" para pegar o tempo atual automaticamente
+            </p>
+          )}
         </div>
       )}
 
