@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Film, Bot, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, Bot, Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date-utils";
 import { toast } from "sonner";
 
@@ -43,6 +43,7 @@ export function ThemeDetailPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [consolidating, setConsolidating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const fetchThemeDetails = async () => {
@@ -195,9 +196,33 @@ export function ThemeDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {theme?.consolidated_summary ? (
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {theme.consolidated_summary}
-                </p>
+                <>
+                  <div 
+                    className={`text-muted-foreground whitespace-pre-wrap ${
+                      !isExpanded ? 'line-clamp-4 md:line-clamp-none' : ''
+                    }`}
+                  >
+                    {theme.consolidated_summary}
+                  </div>
+                  
+                  {/* Botão de expandir apenas no mobile */}
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="md:hidden flex items-center gap-2 text-sm text-primary hover:underline mt-2"
+                  >
+                    {isExpanded ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Ver menos
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Ver mais
+                      </>
+                    )}
+                  </button>
+                </>
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground mb-4">
