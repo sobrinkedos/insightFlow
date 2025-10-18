@@ -546,22 +546,24 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
                   handleSaveProgress();
                 }
               }}
-              className="flex-1 px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="flex-1 min-w-0 px-2 md:px-3 py-1.5 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <Button
-              size="sm"
+              size="icon"
               variant="outline"
               onClick={handleCaptureCurrentTime}
               disabled={!playerReady}
               title="Capturar tempo atual do vídeo automaticamente"
+              className="shrink-0 h-8 w-8 md:h-9 md:w-auto md:px-3"
             >
-              <Save className="h-4 w-4 mr-1" />
-              Capturar
+              <Save className="h-4 w-4" />
+              <span className="hidden md:inline md:ml-1">Capturar</span>
             </Button>
             <Button
               size="sm"
               onClick={handleSaveProgress}
               disabled={!manualTime}
+              className="shrink-0"
             >
               Salvar
             </Button>
