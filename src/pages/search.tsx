@@ -9,12 +9,27 @@ import { VideoProgressIndicator } from "@/components/video-progress-indicator";
 
 interface SearchResult {
   id: string;
+  url: string;
   title: string;
-  summary: string;
+  summary_short: string;
+  summary_expanded: string;
   keywords: string[];
-  thumbnail_url: string | null;
+  tags: string[];
   created_at: string;
 }
+
+// Função para extrair o ID do vídeo do YouTube
+const getYouTubeVideoId = (url: string): string | null => {
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[7].length === 11) ? match[7] : null;
+};
+
+// Função para gerar URL da thumbnail do YouTube
+const getYouTubeThumbnail = (url: string): string => {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : "";
+};
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -36,10 +51,12 @@ export default function SearchPage() {
         // Busca todos os vídeos do usuário
         const { data, error } = await supabase
           .from("videos")
-          .select("id, title, summary, keywords, thumbnail_url, created_at")
+          .select("id, url, title, summary_short, summary_expanded, keywords, tags, created_at")
           .eq("user_id", user.id)
-          .eq("status", "Concluído")
           .order("created_at", { ascending: false });
+
+        console.log("Vídeos encontrados:", data?.length);
+        console.log("Query de busca:", query);
 
         if (error) {
           console.error("Erro ao buscar vídeos:", error);
@@ -49,12 +66,16 @@ export default function SearchPage() {
           const searchLower = query.toLowerCase();
           const filtered = (data || []).filter((video) => {
             const titleMatch = video.title?.toLowerCase().includes(searchLower);
-            const summaryMatch = video.summary?.toLowerCase().includes(searchLower);
+            const summaryShortMatch = video.summary_short?.toLowerCase().includes(searchLower);
+            const summaryExpandedMatch = video.summary_expanded?.toLowerCase().includes(searchLower);
             const keywordsMatch = video.keywords?.some((keyword: string) =>
               keyword.toLowerCase().includes(searchLower)
             );
-            return titleMatch || summaryMatch || keywordsMatch;
+            
+            return titleMatch || summaryShortMatch || summaryExpandedMatch || keywordsMatch;
           });
+          
+          console.log("Resultados filtrados:", filtered.length);
           setResults(filtered);
         }
       } catch (err) {
@@ -111,11 +132,11 @@ export default function SearchPage() {
             <Link key={video.id} to={`/video/${video.id}`}>
               <Card className="h-full hover:shadow-lg transition-shadow">
                 <CardHeader className="p-0">
-                  {video.thumbnail_url ? (
+                  {getYouTubeThumbnail(video.url) ? (
                     <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
                       <img
-                        src={video.thumbnail_url}
-                        alt={video.title}
+                        src={getYouTubeThumbnail(video.url)}
+                        alt={video.title || "Video"}
                         className="object-cover w-full h-full"
                       />
                       <VideoProgressIndicator videoId={video.id} />
@@ -130,7 +151,7 @@ export default function SearchPage() {
                 <CardContent className="p-4">
                   <CardTitle className="text-lg mb-2 line-clamp-2">{video.title}</CardTitle>
                   <CardDescription className="line-clamp-3 mb-3">
-                    {video.summary}
+                    {video.summary_short || video.summary_expanded}
                   </CardDescription>
                   {video.keywords && video.keywords.length > 0 && (
                     <div className="flex flex-wrap gap-1">
