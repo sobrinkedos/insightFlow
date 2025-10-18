@@ -114,9 +114,9 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button id="share-video-trigger">
-          <Plus className="mr-2 h-4 w-4" />
-          Compartilhar Vídeo
+        <Button id="share-video-trigger" size="sm" className="text-xs md:text-sm">
+          <Plus className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Compartilhar Vídeo</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

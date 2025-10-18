@@ -102,7 +102,7 @@ export function Header() {
           </span>
         </Link>
 
-        <div className="flex flex-1 items-center justify-end space-x-2 md:justify-end">
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="hidden md:block w-full flex-1 md:w-auto md:flex-none">
             <form>
               <div className="relative">
@@ -120,13 +120,11 @@ export function Header() {
           ) : user ? (
             <>
               <MobileSearch />
-              <div className="hidden md:block">
-                <ShareVideoDialog />
-              </div>
+              <ShareVideoDialog />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-8 w-8 md:h-9 md:w-9">
                       <AvatarImage src={user.user_metadata.avatar_url} alt={user.email || ''} />
                       <AvatarFallback>{getAvatarFallback(user.email)}</AvatarFallback>
                     </Avatar>
