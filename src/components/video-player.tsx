@@ -270,16 +270,51 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
 
   const handleResumeVideo = () => {
     setShowResumePrompt(false);
-    if (playerRef.current && playerReady) {
-      playerRef.current.seekTo(resumeTime, true);
-      playerRef.current.playVideo();
+    
+    if (!playerReady) {
+      toast.info("Aguardando player carregar...");
+      // Tentar novamente quando o player estiver pronto
+      const checkReady = setInterval(() => {
+        if (playerRef.current && playerReady) {
+          clearInterval(checkReady);
+          playerRef.current.seekTo(resumeTime, true);
+          playerRef.current.playVideo();
+          toast.success(`Retomando em ${formatTime(resumeTime)}`);
+        }
+      }, 500);
+      
+      // Timeout de 10 segundos
+      setTimeout(() => clearInterval(checkReady), 10000);
+      return;
+    }
+    
+    if (playerRef.current) {
+      try {
+        playerRef.current.seekTo(resumeTime, true);
+        playerRef.current.playVideo();
+        toast.success(`Retomando em ${formatTime(resumeTime)}`);
+      } catch (error) {
+        console.error('Error resuming video:', error);
+        toast.error("Erro ao retomar vídeo. Tente novamente.");
+      }
     }
   };
 
   const handleStartFromBeginning = () => {
     setShowResumePrompt(false);
-    if (playerRef.current && playerReady) {
-      playerRef.current.seekTo(0, true);
+    
+    if (!playerReady) {
+      toast.info("Aguardando player carregar...");
+      return;
+    }
+    
+    if (playerRef.current) {
+      try {
+        playerRef.current.seekTo(0, true);
+        playerRef.current.playVideo();
+      } catch (error) {
+        console.error('Error starting from beginning:', error);
+      }
     }
   };
 
@@ -402,16 +437,23 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
                   variant="outline"
                   className="flex-1"
                   onClick={handleStartFromBeginning}
+                  disabled={!playerReady}
                 >
                   Começar do início
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={handleResumeVideo}
+                  disabled={!playerReady}
                 >
-                  Continuar
+                  {playerReady ? 'Continuar' : 'Carregando...'}
                 </Button>
               </div>
+              {!playerReady && (
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  ⏳ Aguardando player carregar...
+                </p>
+              )}
             </div>
           </div>
         )}
