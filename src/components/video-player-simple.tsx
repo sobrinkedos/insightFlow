@@ -132,43 +132,72 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
     setShowResumePrompt(false);
   };
 
-  const handleCaptureCurrentTime = () => {
+  const handleCaptureCurrentTime = async () => {
     if (!user) {
       toast.error("Você precisa estar logado para salvar o progresso.");
       return;
     }
 
-    // Abrir prompt para o usuário digitar o tempo
-    const time = window.prompt(
-      "Digite o tempo atual do vídeo (formato: MM:SS ou HH:MM:SS):\n\n" +
-      "Exemplo: 5:30 ou 1:05:30\n\n" +
-      "Dica: Pause o vídeo e veja o tempo no player do YouTube"
-    );
-
-    if (!time) return;
-
-    // Validar e salvar
-    const parts = time.trim().split(':').map(p => parseInt(p));
-    let seconds = 0;
-    
-    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      // MM:SS
-      seconds = parts[0] * 60 + parts[1];
-    } else if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
-      // HH:MM:SS
-      seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else {
-      toast.error("Formato inválido. Use MM:SS ou HH:MM:SS");
+    if (!iframeRef.current) {
+      toast.error("Player não encontrado.");
       return;
     }
 
-    const formattedTime = formatTime(seconds);
-    setManualTime(formattedTime);
-    
-    // Estimar duração
-    const estimatedDuration = progress?.duration || seconds * 2;
-    updateProgress(seconds, estimatedDuration);
-    toast.success(`Progresso salvo: ${formattedTime}`);
+    try {
+      // Tentar obter o tempo via postMessage
+      const iframe = iframeRef.current;
+      
+      // Criar um listener temporário para a resposta
+      const messagePromise = new Promise<{currentTime: number, duration: number}>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Timeout'));
+        }, 3000);
+
+        const handler = (event: MessageEvent) => {
+          if (event.origin !== 'https://www.youtube.com') return;
+          
+          try {
+            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            
+            if (data.event === 'infoDelivery' && data.info) {
+              clearTimeout(timeout);
+              window.removeEventListener('message', handler);
+              resolve({
+                currentTime: data.info.currentTime || 0,
+                duration: data.info.duration || 0
+              });
+            }
+          } catch (e) {
+            // Ignorar
+          }
+        };
+
+        window.addEventListener('message', handler);
+      });
+
+      // Solicitar informações do player
+      iframe.contentWindow?.postMessage('{"event":"listening","id":1}', '*');
+      
+      // Aguardar resposta
+      const { currentTime, duration } = await messagePromise;
+      
+      if (currentTime > 0 && duration > 0) {
+        const formattedTime = formatTime(currentTime);
+        setManualTime(formattedTime);
+        toast.success(`Tempo capturado: ${formattedTime}`);
+      } else {
+        throw new Error('Tempo inválido');
+      }
+    } catch (error) {
+      // Fallback: pedir para digitar manualmente
+      toast.info("Não foi possível capturar automaticamente. Veja o tempo no player e digite abaixo.");
+      
+      // Focar no input
+      const input = document.querySelector('input[placeholder*="5:30"]') as HTMLInputElement;
+      if (input) {
+        input.focus();
+      }
+    }
   };
 
   const handleSaveProgress = () => {
@@ -333,7 +362,7 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
               size="sm"
               variant="outline"
               onClick={handleCaptureCurrentTime}
-              title="Abrir prompt para digitar o tempo atual"
+              title="Capturar tempo atual do vídeo automaticamente"
             >
               <Save className="h-4 w-4 mr-1" />
               Capturar
@@ -347,7 +376,7 @@ export function VideoPlayerSimple({ videoId, embedUrl, title, className }: Video
             </Button>
           </div>
           <p className="text-xs text-muted-foreground px-3">
-            💡 Dica: Clique em "Capturar" para abrir um prompt rápido, ou digite diretamente no campo
+            💡 Dica: Pause o vídeo e clique em "Capturar" para pegar o tempo automaticamente
           </p>
         </div>
       )}

@@ -15,12 +15,14 @@ O sistema agora possui **duas versões** do player de vídeo:
 
 Você tem **duas opções** para salvar onde parou:
 
-**Opção A: Captura com Prompt (Recomendado)**
-1. Pause o vídeo no YouTube e veja o tempo
+**Opção A: Captura Automática (Recomendado)**
+1. Pause o vídeo no YouTube
 2. Clique no botão "Capturar" abaixo do player
-3. Um prompt aparece pedindo o tempo
-4. Digite o tempo (ex: 5:30) e confirme
-5. Pronto! Salvo automaticamente ✅
+3. O tempo é capturado automaticamente e aparece no campo
+4. Clique em "Salvar" para confirmar
+5. Pronto! ✅
+
+*Nota: Se a captura automática não funcionar, você pode digitar manualmente*
 
 **Opção B: Digite Manualmente**
 1. Pause o vídeo no YouTube
@@ -53,17 +55,18 @@ Na página de vídeos (`/videos`):
 
 ## 📱 Exemplo de Uso
 
-### Cenário 1: Assistir um Vídeo Longo (Captura com Prompt)
+### Cenário 1: Assistir um Vídeo Longo (Captura Automática)
 
 ```
 1. Abra o vídeo
-2. Assista até onde quiser (ex: 15:30)
+2. Assista até onde quiser
 3. Precisa parar? Pause o vídeo
 4. Clique em "Capturar"
-5. Digite "15:30" no prompt e confirme
-6. Pronto! Salvo automaticamente
-7. Volte depois e clique em "Continuar"
-8. O vídeo começa exatamente onde você parou
+5. O tempo aparece automaticamente no campo (ex: 15:30)
+6. Clique em "Salvar"
+7. Pronto! Progresso salvo
+8. Volte depois e clique em "Continuar"
+9. O vídeo começa exatamente onde você parou
 ```
 
 ### Cenário 1B: Assistir um Vídeo Longo (Manual)
@@ -141,9 +144,9 @@ Na página de vídeos (`/videos`):
 ## 🔧 Dicas e Truques
 
 ### Dica 1: Use o Botão Capturar
-- **Mais rápido**: Abre um prompt direto
-- **Mais fácil**: Não precisa clicar no campo
-- **Validação automática**: Verifica o formato
+- **Automático**: Pega o tempo do player
+- **Mais rápido**: Um clique e pronto
+- **Mais preciso**: Tempo exato do vídeo
 - Pause o vídeo antes de capturar
 
 ### Dica 2: Atalho de Teclado
@@ -168,8 +171,8 @@ Na página de vídeos (`/videos`):
 ## ⚠️ Limitações Atuais
 
 ### Captura de Tempo
-- ✅ Prompt rápido com um clique
-- ✅ Digitação direta no campo
+- ✅ Captura automática do player
+- ✅ Fallback para digitação manual
 - ✅ Você controla quando salvar
 - ✅ Confiável e compatível
 
