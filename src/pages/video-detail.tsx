@@ -306,12 +306,12 @@ export function VideoDetailPage() {
               </Card>
             </TabsContent>
             <TabsContent value="transcription">
-              <Card>
+              <Card className="overflow-hidden">
                 <CardHeader>
                   <CardTitle>Transcrição Completa</CardTitle>
                 </CardHeader>
-                <CardContent className="text-muted-foreground space-y-4">
-                   <p className="whitespace-pre-wrap break-words">{video.transcription || "A transcrição deste vídeo ainda não foi gerada."}</p>
+                <CardContent className="text-muted-foreground space-y-4 overflow-hidden">
+                   <p className="whitespace-pre-wrap break-words overflow-hidden">{video.transcription || "A transcrição deste vídeo ainda não foi gerada."}</p>
                 </CardContent>
               </Card>
             </TabsContent>
