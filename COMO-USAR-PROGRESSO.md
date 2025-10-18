@@ -15,11 +15,12 @@ O sistema agora possui **duas versões** do player de vídeo:
 
 Você tem **duas opções** para salvar onde parou:
 
-**Opção A: Captura Automática (Recomendado)**
-1. Pause o vídeo no YouTube
+**Opção A: Captura com Prompt (Recomendado)**
+1. Pause o vídeo no YouTube e veja o tempo
 2. Clique no botão "Capturar" abaixo do player
-3. O tempo atual é capturado e salvo automaticamente
-4. Pronto! ✅
+3. Um prompt aparece pedindo o tempo
+4. Digite o tempo (ex: 5:30) e confirme
+5. Pronto! Salvo automaticamente ✅
 
 **Opção B: Digite Manualmente**
 1. Pause o vídeo no YouTube
@@ -52,16 +53,17 @@ Na página de vídeos (`/videos`):
 
 ## 📱 Exemplo de Uso
 
-### Cenário 1: Assistir um Vídeo Longo (Captura Automática)
+### Cenário 1: Assistir um Vídeo Longo (Captura com Prompt)
 
 ```
 1. Abra o vídeo
-2. Assista até onde quiser
+2. Assista até onde quiser (ex: 15:30)
 3. Precisa parar? Pause o vídeo
-4. Clique em "Capturar" - pronto! Salvo automaticamente
-5. Volte depois
-6. Clique em "Continuar" no prompt
-7. O vídeo começa exatamente onde você parou
+4. Clique em "Capturar"
+5. Digite "15:30" no prompt e confirme
+6. Pronto! Salvo automaticamente
+7. Volte depois e clique em "Continuar"
+8. O vídeo começa exatamente onde você parou
 ```
 
 ### Cenário 1B: Assistir um Vídeo Longo (Manual)
@@ -138,10 +140,10 @@ Na página de vídeos (`/videos`):
 
 ## 🔧 Dicas e Truques
 
-### Dica 1: Use a Captura Automática
-- **Mais rápido**: Um clique e pronto
-- **Mais preciso**: Pega o tempo exato do vídeo
-- **Mais fácil**: Não precisa digitar nada
+### Dica 1: Use o Botão Capturar
+- **Mais rápido**: Abre um prompt direto
+- **Mais fácil**: Não precisa clicar no campo
+- **Validação automática**: Verifica o formato
 - Pause o vídeo antes de capturar
 
 ### Dica 2: Atalho de Teclado
@@ -166,8 +168,8 @@ Na página de vídeos (`/videos`):
 ## ⚠️ Limitações Atuais
 
 ### Captura de Tempo
-- ✅ Captura automática com um clique
-- ✅ Opção manual disponível
+- ✅ Prompt rápido com um clique
+- ✅ Digitação direta no campo
 - ✅ Você controla quando salvar
 - ✅ Confiável e compatível
 
