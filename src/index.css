@@ -90,6 +90,23 @@
       -webkit-overflow-scrolling: touch;
     }
   }
+  
+  /* Fullscreen video styles */
+  :fullscreen {
+    background-color: black;
+  }
+  
+  :-webkit-full-screen {
+    background-color: black;
+  }
+  
+  :-moz-full-screen {
+    background-color: black;
+  }
+  
+  :-ms-fullscreen {
+    background-color: black;
+  }
 
   body.dark {
     background-image: radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, hsl(var(--background)) 0);

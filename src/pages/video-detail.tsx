@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { VideoPlayer } from "@/components/video-player";
 
 const getYoutubeEmbedUrl = (url: string): string | null => {
   try {
@@ -247,16 +248,10 @@ export function VideoDetailPage() {
           {embedUrl && (
             <Card>
               <CardContent className="p-2">
-                <div className="aspect-video">
-                  <iframe
-                    src={embedUrl}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full rounded-md"
-                  ></iframe>
-                </div>
+                <VideoPlayer 
+                  embedUrl={embedUrl} 
+                  title={video.title || "YouTube video player"}
+                />
               </CardContent>
             </Card>
           )}
