@@ -33,26 +33,26 @@ ALTER TABLE public.video_progress ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own video progress"
   ON public.video_progress
   FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 -- Usuários podem inserir seu próprio progresso
 CREATE POLICY "Users can insert own video progress"
   ON public.video_progress
   FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((select auth.uid()) = user_id);
 
 -- Usuários podem atualizar seu próprio progresso
 CREATE POLICY "Users can update own video progress"
   ON public.video_progress
   FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id)
+  WITH CHECK ((select auth.uid()) = user_id);
 
 -- Usuários podem deletar seu próprio progresso
 CREATE POLICY "Users can delete own video progress"
   ON public.video_progress
   FOR DELETE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 -- Trigger para atualizar updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_video_progress_updated_at()
