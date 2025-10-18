@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Film, Bot, Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Film, Bot, Sparkles, Loader2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date-utils";
 import { toast } from "sonner";
 
@@ -44,6 +44,8 @@ export function ThemeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [consolidating, setConsolidating] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const videosPerPage = 10;
 
   useEffect(() => {
     const fetchThemeDetails = async () => {
@@ -241,7 +243,97 @@ export function ThemeDetailPage() {
               )}
             </CardContent>
           </Card>
+        </div>
 
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vídeos Relacionados</CardTitle>
+              <CardDescription>
+                {videos.length} vídeo(s) neste tema.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {videos.length > 0 ? (
+                <>
+                  {videos
+                    .slice((currentPage - 1) * videosPerPage, currentPage * videosPerPage)
+                    .map((video, index) => {
+                      const thumbnail = getYouTubeThumbnail(video.url);
+                      return (
+                        <div key={video.id}>
+                          <Link to={`/videos/${video.id}`} className="block hover:bg-muted/50 p-2 rounded-lg -m-2 transition-colors">
+                            <div className="flex items-start gap-3">
+                              {thumbnail ? (
+                                <div className="relative w-24 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                  <img 
+                                    src={thumbnail} 
+                                    alt={video.title || "Thumbnail"} 
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex w-24 h-16 flex-shrink-0 items-center justify-center rounded-md bg-muted">
+                                  <Film className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium leading-tight line-clamp-2">
+                                  {video.title || "Sem título"}
+                                </p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Adicionado{" "}
+                                  {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                          {index < Math.min(videosPerPage, videos.length - (currentPage - 1) * videosPerPage) - 1 && (
+                            <Separator className="mt-4" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  
+                  {/* Paginação */}
+                  {videos.length > videosPerPage && (
+                    <div className="flex items-center justify-between pt-4 border-t">
+                      <p className="text-sm text-muted-foreground">
+                        Mostrando {(currentPage - 1) * videosPerPage + 1} - {Math.min(currentPage * videosPerPage, videos.length)} de {videos.length}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.min(Math.ceil(videos.length / videosPerPage), p + 1))}
+                          disabled={currentPage >= Math.ceil(videos.length / videosPerPage)}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="py-10 text-center text-sm text-muted-foreground">
+                  Nenhum vídeo associado a este tema ainda.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Palavras-chave movidas para depois dos vídeos */}
           <Card>
             <CardHeader>
               <CardTitle>Palavras-chave</CardTitle>
@@ -255,64 +347,6 @@ export function ThemeDetailPage() {
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Nenhuma palavra-chave gerada ainda. Consolide o tema para gerar.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Vídeos Relacionados</CardTitle>
-              <CardDescription>
-                {videos.length} vídeo(s) neste tema.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              {videos.length > 0 ? (
-                videos.map((video, index) => {
-                  const thumbnail = getYouTubeThumbnail(video.url);
-                  console.log('Video URL:', video.url, 'Thumbnail:', thumbnail);
-                  return (
-                    <div key={video.id}>
-                      <Link to={`/videos/${video.id}`} className="block hover:bg-muted/50 p-2 rounded-lg -m-2 transition-colors">
-                        <div className="flex items-start gap-3">
-                          {thumbnail ? (
-                            <div className="relative w-24 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                              <img 
-                                src={thumbnail} 
-                                alt={video.title || "Thumbnail"} 
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  console.error('Erro ao carregar imagem:', thumbnail);
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex w-24 h-16 flex-shrink-0 items-center justify-center rounded-md bg-muted">
-                              <Film className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium leading-tight line-clamp-2">
-                              {video.title || "Sem título"}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Adicionado{" "}
-                              {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                      {index < videos.length - 1 && <Separator className="mt-4" />}
-                    </div>
-                  );
-                })
-              ) : (
-                <p className="py-10 text-center text-sm text-muted-foreground">
-                  Nenhum vídeo associado a este tema ainda.
                 </p>
               )}
             </CardContent>
