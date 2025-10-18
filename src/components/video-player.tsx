@@ -91,23 +91,41 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
 
   const initializePlayer = () => {
     if (!playerContainerRef.current || !youtubeVideoId) return;
+    
+    // Evitar criar múltiplos players
+    if (playerRef.current) return;
 
-    playerRef.current = new window.YT.Player(playerContainerRef.current, {
-      videoId: youtubeVideoId,
-      playerVars: {
-        autoplay: 0,
-        rel: 0,
-        modestbranding: 1,
-        enablejsapi: 1,
-      },
-      events: {
-        onReady: onPlayerReady,
-        onStateChange: onPlayerStateChange,
-      },
-    });
+    try {
+      playerRef.current = new window.YT.Player(playerContainerRef.current, {
+        videoId: youtubeVideoId,
+        playerVars: {
+          autoplay: 0,
+          rel: 0,
+          modestbranding: 1,
+          enablejsapi: 1,
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+        },
+      });
+      console.log('✅ Player criado:', playerRef.current);
+    } catch (error) {
+      console.error('❌ Erro ao criar player:', error);
+    }
   };
 
-  const onPlayerReady = () => {
+  const onPlayerReady = (event: any) => {
+    console.log('✅ Player pronto!', event.target);
+    console.log('Métodos disponíveis:', {
+      getCurrentTime: typeof event.target.getCurrentTime,
+      getDuration: typeof event.target.getDuration,
+      seekTo: typeof event.target.seekTo,
+      playVideo: typeof event.target.playVideo,
+    });
+    
+    // Garantir que playerRef aponta para o player correto
+    playerRef.current = event.target;
     setPlayerReady(true);
   };
 
@@ -325,24 +343,46 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
   };
 
   const handleCaptureCurrentTime = () => {
-    if (!playerRef.current || !playerReady || !user) {
-      toast.error("Player não está pronto ou você não está logado.");
+    console.log('=== Capturando tempo ===');
+    console.log('playerRef.current:', playerRef.current);
+    console.log('playerReady:', playerReady);
+    console.log('user:', user);
+
+    if (!user) {
+      toast.error("Você precisa estar logado.");
+      return;
+    }
+
+    if (!playerRef.current) {
+      toast.error("Player não encontrado. Aguarde o carregamento.");
+      return;
+    }
+
+    if (!playerReady) {
+      toast.error("Player ainda não está pronto. Aguarde alguns segundos.");
       return;
     }
 
     try {
+      console.log('Tentando getCurrentTime...');
       const currentTime = playerRef.current.getCurrentTime();
-      const duration = playerRef.current.getDuration();
+      console.log('currentTime:', currentTime);
       
-      if (currentTime && duration) {
+      console.log('Tentando getDuration...');
+      const duration = playerRef.current.getDuration();
+      console.log('duration:', duration);
+      
+      if (currentTime !== undefined && currentTime >= 0 && duration && duration > 0) {
         const formattedTime = formatTime(currentTime);
         setManualTime(formattedTime);
         toast.success(`Tempo capturado: ${formattedTime}`);
+        console.log('✅ Sucesso! Tempo:', formattedTime);
       } else {
+        console.log('❌ Valores inválidos:', { currentTime, duration });
         toast.error("Não foi possível capturar o tempo. Tente pausar o vídeo primeiro.");
       }
     } catch (error) {
-      console.error('Error capturing time:', error);
+      console.error('❌ Erro ao capturar:', error);
       toast.error("Erro ao capturar tempo. Digite manualmente.");
     }
   };
