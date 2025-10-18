@@ -56,12 +56,16 @@ CREATE POLICY "Users can delete own video progress"
 
 -- Trigger para atualizar updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_video_progress_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TRIGGER update_video_progress_updated_at_trigger
   BEFORE UPDATE ON public.video_progress
