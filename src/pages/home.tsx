@@ -185,6 +185,7 @@ export function HomePage() {
   const [recentVideos, setRecentVideos] = useState<Video[]>([]);
   const [favoriteVideos, setFavoriteVideos] = useState<Video[]>([]);
   const [topThemes, setTopThemes] = useState<Theme[]>([]);
+  const [watchedVideos, setWatchedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalVideos: 0, totalThemes: 0, processedToday: 0, favorites: 0 });
   const [showExtensionBanner, setShowExtensionBanner] = useState(() => {
@@ -226,6 +227,13 @@ export function HomePage() {
           .order('created_at', { ascending: false })
           .limit(5);
 
+        const watchedPromise = supabase
+          .from('video_progress')
+          .select('video_id, last_watched_at, videos(*)')
+          .eq('user_id', user.id)
+          .order('last_watched_at', { ascending: false })
+          .limit(5);
+
         const topThemesPromise = supabase
           .from('themes')
           .select(`
@@ -248,8 +256,9 @@ export function HomePage() {
           { data: videosData }, 
           { data: favoritesData },
           { data: topThemesData },
+          { data: watchedData },
           statsResults
-        ] = await Promise.all([themesPromise, videosPromise, favoritesPromise, topThemesPromise, statsPromise]);
+        ] = await Promise.all([themesPromise, videosPromise, favoritesPromise, topThemesPromise, watchedPromise, statsPromise]);
 
         // Process stats
         const newStats = {
@@ -278,10 +287,16 @@ export function HomePage() {
           .sort((a: any, b: any) => b.video_count - a.video_count)
           .slice(0, 5);
         
+        // Process watched videos
+        const watchedVideosList = (watchedData || [])
+          .map((wp: any) => wp.videos)
+          .filter(Boolean);
+
         setFeaturedThemes(themesWithCount);
         setRecentVideos(videosData || []);
         setFavoriteVideos(favoritesData || []);
         setTopThemes(processedTopThemes);
+        setWatchedVideos(watchedVideosList);
         setLoading(false);
       };
       fetchData();
@@ -497,6 +512,70 @@ export function HomePage() {
                 />
             )}
           </section>
+
+          {/* Últimos Vídeos Assistidos */}
+          {watchedVideos.length > 0 && (
+            <section>
+              <Card className="bg-card/50 backdrop-blur-sm border-white/10">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" />
+                        Últimos Vídeos Assistidos
+                      </CardTitle>
+                      <CardDescription>Continue de onde você parou</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {watchedVideos.map((video) => {
+                      const thumbnail = getYouTubeThumbnail(video.url);
+                      return (
+                        <motion.div
+                          key={video.id}
+                          whileHover={{ scale: 1.01 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          onClick={() => navigate(`/videos/${video.id}`)}
+                          className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                        >
+                          <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
+                            {thumbnail && (
+                              <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                <img 
+                                  src={thumbnail} 
+                                  alt={video.title || "Thumbnail"} 
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                  <Clock className="h-3 w-3 inline mr-1" />
+                                  Assistido
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0 flex flex-col justify-between">
+                              <div>
+                                <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
+                                  {video.title || "Sem título"}
+                                </h3>
+                                {video.channel && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                    {video.channel}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
         </div>
 
         {/* Sidebar */}
