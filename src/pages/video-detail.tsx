@@ -15,16 +15,38 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/video-player";
 
-const getYoutubeEmbedUrl = (url: string): string | null => {
+const getVideoEmbedUrl = (url: string): string | null => {
   try {
     const videoUrl = new URL(url);
-    let videoId: string | null = null;
+    
+    // YouTube
     if (videoUrl.hostname.includes("youtube.com")) {
-      videoId = videoUrl.searchParams.get("v");
+      const videoId = videoUrl.searchParams.get("v");
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
     } else if (videoUrl.hostname.includes("youtu.be")) {
-      videoId = videoUrl.pathname.slice(1);
+      const videoId = videoUrl.pathname.slice(1);
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
     }
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    
+    // Instagram
+    if (videoUrl.hostname.includes("instagram.com")) {
+      // Instagram não permite embed direto, então retornamos a URL original
+      // O componente VideoPlayer vai lidar com isso
+      return url;
+    }
+    
+    // TikTok
+    if (videoUrl.hostname.includes("tiktok.com")) {
+      return url;
+    }
+    
+    // Vimeo
+    if (videoUrl.hostname.includes("vimeo.com")) {
+      const videoId = videoUrl.pathname.slice(1);
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+    }
+    
+    return null;
   } catch (e) {
     return null;
   }
@@ -166,7 +188,7 @@ export function VideoDetailPage() {
     );
   }
 
-  const embedUrl = getYoutubeEmbedUrl(video.url);
+  const embedUrl = getVideoEmbedUrl(video.url);
   
   const getYouTubeThumbnail = (url: string): string | null => {
     try {

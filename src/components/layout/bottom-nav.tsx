@@ -12,7 +12,7 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border/40 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border/40 md:hidden print:hidden">
         <div className="flex items-center justify-around h-16 px-2">
           <NavLink
             to="/"
@@ -82,7 +82,10 @@ export function BottomNav() {
         </div>
       </nav>
 
-      <ShareVideoDialog open={shareOpen} onOpenChange={setShareOpen} />
+      {/* Dialog só renderiza em mobile */}
+      <div className="md:hidden">
+        <ShareVideoDialog open={shareOpen} onOpenChange={setShareOpen} />
+      </div>
     </>
   );
 }

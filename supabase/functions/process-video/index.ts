@@ -15,15 +15,25 @@ const corsHeaders = {
 };
 
 // Helper functions
-function extractVideoId(url: string): string | null {
+function extractVideoId(url: string): { id: string; platform: string } | null {
   try {
     const urlObj = new URL(url);
     
     // YouTube formats: youtube.com/watch?v=ID or youtu.be/ID
     if (urlObj.hostname.includes('youtube.com')) {
-      return urlObj.searchParams.get('v');
+      const id = urlObj.searchParams.get('v');
+      return id ? { id, platform: 'youtube' } : null;
     } else if (urlObj.hostname.includes('youtu.be')) {
-      return urlObj.pathname.slice(1).split('?')[0];
+      const id = urlObj.pathname.slice(1).split('?')[0];
+      return id ? { id, platform: 'youtube' } : null;
+    }
+    
+    // Instagram formats: instagram.com/p/ID or instagram.com/reel/ID
+    if (urlObj.hostname.includes('instagram.com')) {
+      const match = urlObj.pathname.match(/\/(p|reel|tv)\/([^\/\?]+)/);
+      if (match) {
+        return { id: match[2], platform: 'instagram' };
+      }
     }
     
     return null;
@@ -32,26 +42,61 @@ function extractVideoId(url: string): string | null {
   }
 }
 
-async function getVideoInfo(videoId: string): Promise<{ title: string; description: string } | null> {
+async function getVideoInfo(videoId: string, platform: string): Promise<{ title: string; description: string } | null> {
   try {
-    // Usando a API do YouTube Data v3 (você precisa configurar YOUTUBE_API_KEY)
-    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
-    if (!youtubeApiKey) {
-      console.warn("YOUTUBE_API_KEY not set, skipping video info fetch");
-      return null;
-    }
+    if (platform === 'youtube') {
+      // Usando a API do YouTube Data v3 (você precisa configurar YOUTUBE_API_KEY)
+      const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
+      if (!youtubeApiKey) {
+        console.warn("YOUTUBE_API_KEY not set, skipping video info fetch");
+        return null;
+      }
 
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
-    );
-    
-    const data = await response.json();
-    
-    if (data.items && data.items.length > 0) {
-      const snippet = data.items[0].snippet;
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
+      );
+      
+      const data = await response.json();
+      
+      if (data.items && data.items.length > 0) {
+        const snippet = data.items[0].snippet;
+        return {
+          title: snippet.title,
+          description: snippet.description,
+        };
+      }
+    } else if (platform === 'instagram') {
+      // Para Instagram, tentamos múltiplas abordagens
+      const instagramToken = Deno.env.get("INSTAGRAM_ACCESS_TOKEN");
+      
+      // Tentativa 1: oEmbed API do Facebook
+      try {
+        const oembedUrl = instagramToken 
+          ? `https://graph.facebook.com/v18.0/instagram_oembed?url=https://www.instagram.com/p/${videoId}/&access_token=${instagramToken}`
+          : `https://graph.facebook.com/v18.0/instagram_oembed?url=https://www.instagram.com/p/${videoId}/`;
+        
+        const response = await fetch(oembedUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Instagram oEmbed response:", data);
+          
+          if (data.title || data.author_name) {
+            return {
+              title: data.title || `Post de ${data.author_name || 'Instagram'}`,
+              description: data.title || `Conteúdo compartilhado por ${data.author_name || 'usuário do Instagram'}. ${data.html ? 'Vídeo ou imagem do Instagram.' : ''}`,
+            };
+          }
+        }
+      } catch (error) {
+        console.warn("Instagram oEmbed failed:", error);
+      }
+      
+      // Fallback: informações genéricas mas úteis
+      console.warn("Using Instagram fallback with generic info");
       return {
-        title: snippet.title,
-        description: snippet.description,
+        title: `Conteúdo do Instagram`,
+        description: `Post do Instagram (ID: ${videoId}). Este é um conteúdo compartilhado da plataforma Instagram. Para análise mais detalhada, a IA irá gerar insights baseados nas informações disponíveis.`,
       };
     }
     
@@ -143,19 +188,22 @@ serve(async (req) => {
       throw new Error(`Video not found: ${videoError?.message}`);
     }
 
-    // 2. Extract video ID from URL
-    const videoId = extractVideoId(video.url);
-    if (!videoId) {
-      throw new Error("Invalid YouTube URL");
+    // 2. Extract video ID and platform from URL
+    const videoData = extractVideoId(video.url);
+    if (!videoData) {
+      throw new Error("URL de vídeo inválida ou plataforma não suportada");
     }
 
+    const { id: videoId, platform } = videoData;
+
     // 3. Get video info (title and description)
-    let videoInfo = await getVideoInfo(videoId);
+    let videoInfo = await getVideoInfo(videoId, platform);
     if (!videoInfo) {
       // Fallback: usar informações básicas do vídeo
+      const platformName = platform === 'youtube' ? 'YouTube' : 'Instagram';
       videoInfo = {
-        title: `Vídeo do YouTube`,
-        description: `Análise de vídeo do YouTube. Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.`,
+        title: `Vídeo do ${platformName}`,
+        description: `Análise de vídeo do ${platformName}. ${platform === 'youtube' ? `Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.` : `Configure INSTAGRAM_ACCESS_TOKEN para obter mais informações.`}`,
       };
     }
 
