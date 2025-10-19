@@ -92,11 +92,14 @@ export function ThemesPage() {
   }, [user]);
 
   return (
-    <div className="container py-6 md:py-8 px-4">
-      <PageHeader
-        title="Meus Temas"
-        description="Seus vídeos organizados automaticamente por temas pela IA."
-      />
+    <>
+      <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-60" />
+      <div className="fixed inset-0 -z-10 bg-pattern-dots" />
+      <div className="container py-6 md:py-8 px-4 relative">
+        <PageHeader
+          title="Meus Temas"
+          description="Seus vídeos organizados automaticamente por temas pela IA."
+        />
       
       <div className="mt-6 md:mt-8">
         <div>
@@ -206,6 +209,7 @@ export function ThemesPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

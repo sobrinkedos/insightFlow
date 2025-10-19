@@ -153,11 +153,14 @@ export function ThemeDetailPage() {
   }
 
   return (
-    <div className="container py-8 px-4">
-      <PageHeader
-        title={theme.title}
-        description={theme.description || "Detalhes do tema consolidado."}
-      >
+    <>
+      <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-50" />
+      <div className="fixed inset-0 -z-10 bg-pattern-dots" />
+      <div className="container py-8 px-4 relative">
+        <PageHeader
+          title={theme.title}
+          description={theme.description || "Detalhes do tema consolidado."}
+        >
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
@@ -353,6 +356,7 @@ export function ThemeDetailPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

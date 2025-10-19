@@ -165,17 +165,67 @@
   body.dark {
     background: hsl(var(--background));
     background-image: 
-      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(262, 52%, 47%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(173, 80%, 40%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(217, 91%, 60%, 0.1) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(262, 52%, 47%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(173, 80%, 40%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(217, 91%, 60%, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
   }
   
   body.light {
     background: hsl(var(--background));
     background-image: 
-      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(262, 52%, 47%, 0.05) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(262, 52%, 47%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(173, 80%, 40%, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+  
+  /* Background patterns */
+  .bg-pattern-dots {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--primary) / 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+  
+  .bg-pattern-grid {
+    background-image: 
+      linear-gradient(hsl(var(--border) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
+  .bg-mesh-gradient {
+    background: 
+      radial-gradient(at 40% 20%, hsla(217, 91%, 60%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(262, 52%, 47%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(173, 80%, 40%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(217, 91%, 60%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(262, 52%, 47%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(173, 80%, 40%, 0.2) 0px, transparent 50%);
+  }
+  
+  .bg-animated-gradient {
+    background: linear-gradient(
+      -45deg,
+      hsla(217, 91%, 60%, 0.1),
+      hsla(262, 52%, 47%, 0.1),
+      hsla(173, 80%, 40%, 0.1),
+      hsla(217, 91%, 60%, 0.1)
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+  
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
   
   .container {

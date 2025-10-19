@@ -366,15 +366,18 @@ export function HomePage() {
   }
 
   return (
-    <motion.div 
-        className="container py-6 md:py-12 px-4"
+    <>
+      <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-50" />
+      <div className="fixed inset-0 -z-10 bg-pattern-dots" />
+      <motion.div 
+        className="container py-6 md:py-12 px-4 relative"
         initial="initial"
         animate="in"
         exit="out"
         variants={pageVariants}
         transition={pageTransition}
-    >
-      <div className="mb-8 md:mb-12">
+      >
+        <div className="mb-8 md:mb-12">
         <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
         <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
       </div>
@@ -685,6 +688,7 @@ export function HomePage() {
           )}
         </div>
       </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }

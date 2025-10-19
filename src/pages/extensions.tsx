@@ -37,13 +37,15 @@ export function ExtensionsPage() {
 
   return (
     <motion.div
-      className="container py-12 px-4"
+      className="container py-12 px-4 relative"
       initial="initial"
       animate="in"
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
     >
+      <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-50" />
+      <div className="fixed inset-0 -z-10 bg-pattern-dots" />
       {/* Hero Section */}
       <div className="text-center mb-16">
         <Badge className="mb-4" variant="secondary">

@@ -110,11 +110,14 @@ export function FavoritesPage() {
   }, [user]);
 
   return (
-    <div className="container py-6 md:py-8 px-4">
-      <PageHeader
-        title="Favoritos"
-        description="Seus vídeos favoritos em um só lugar."
-      />
+    <>
+      <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-60" />
+      <div className="fixed inset-0 -z-10 bg-pattern-dots" />
+      <div className="container py-6 md:py-8 px-4 relative">
+        <PageHeader
+          title="Favoritos"
+          description="Seus vídeos favoritos em um só lugar."
+        />
       
       <div className="mt-6 md:mt-8">
         {loading ? (
@@ -225,6 +228,7 @@ export function FavoritesPage() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

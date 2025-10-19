@@ -98,8 +98,11 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container py-8 px-4">
-      <div className="mb-8">
+    <>
+      <div className="fixed inset-0 -z-10 bg-animated-gradient" />
+      <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
+      <div className="container py-8 px-4 relative">
+        <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Resultados da Busca</h1>
         <p className="text-muted-foreground">
           {loading ? (
@@ -173,6 +176,7 @@ export default function SearchPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

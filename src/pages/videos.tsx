@@ -163,11 +163,14 @@ export function VideosPage() {
   }, [user]);
 
   return (
-    <div className="container py-6 md:py-8 px-4">
-      <PageHeader
-        title="Vídeos Recentes"
-        description="Gerencie todos os seus vídeos compartilhados."
-      >
+    <>
+      <div className="fixed inset-0 -z-10 bg-animated-gradient" />
+      <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
+      <div className="container py-6 md:py-8 px-4 relative">
+        <PageHeader
+          title="Vídeos Recentes"
+          description="Gerencie todos os seus vídeos compartilhados."
+        >
         <div className="flex items-center gap-2 flex-wrap">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -330,6 +333,7 @@ export function VideosPage() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </>
   )
 }

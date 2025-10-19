@@ -243,11 +243,14 @@ export function VideoDetailPage() {
   };
 
   return (
-    <div className="container py-8 px-4">
-      <PageHeader
-        title={video.title || "Detalhes do Vídeo"}
-        description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}
-      >
+    <>
+      <div className="fixed inset-0 -z-10 bg-animated-gradient" />
+      <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-20" />
+      <div className="container py-8 px-4 relative">
+        <PageHeader
+          title={video.title || "Detalhes do Vídeo"}
+          description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}
+        >
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -432,6 +435,7 @@ export function VideoDetailPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
