@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useVideoProgress } from "@/hooks/use-video-progress";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
+import { lockToLandscape, lockToPortrait } from "@/hooks/use-orientation-lock";
 
 // Declarar tipos do YouTube IFrame API
 declare global {
@@ -274,33 +275,17 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     }
   };
 
+  // Funções de orientação agora vêm do hook
   const lockOrientation = async () => {
-    // Tentar bloquear orientação após um pequeno delay
+    // Delay para garantir que o fullscreen foi ativado primeiro
     setTimeout(async () => {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock("landscape");
-          console.log("✅ Orientation locked to landscape");
-        } else if ((screen as any).lockOrientation) {
-          (screen as any).lockOrientation("landscape");
-          console.log("✅ Orientation locked (webkit)");
-        }
-      } catch (err) {
-        console.log("⚠️ Orientation lock not supported:", err);
-      }
+      await lockToLandscape();
     }, 200);
   };
 
-  const unlockOrientation = () => {
-    try {
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      } else if ((screen as any).unlockOrientation) {
-        (screen as any).unlockOrientation();
-      }
-    } catch (err) {
-      console.log("Orientation unlock not needed");
-    }
+  const unlockOrientation = async () => {
+    // Voltar para portrait ao sair do fullscreen (apenas no PWA)
+    await lockToPortrait();
   };
 
   const toggleFullscreen = async () => {

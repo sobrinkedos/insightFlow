@@ -14,9 +14,13 @@ import { VideoDetailPage } from "./pages/video-detail";
 import { SharePage } from "./pages/share";
 import { FavoritesPage } from "./pages/favorites";
 import SearchPage from "./pages/search";
+import { useOrientationLock } from "./hooks/use-orientation-lock";
 
 function App() {
   const location = useLocation();
+  
+  // Bloquear orientação em portrait no PWA (exceto quando em fullscreen)
+  useOrientationLock();
 
   return (
     <div className="relative flex min-h-screen w-full max-w-full flex-col bg-transparent font-sans overflow-x-hidden">
