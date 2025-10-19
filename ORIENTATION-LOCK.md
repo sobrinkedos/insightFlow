@@ -8,9 +8,10 @@ O app agora controla a orientação da tela de forma inteligente quando instalad
 - **Fora do PWA (navegador)**: Orientação livre, funciona normalmente
 - **No PWA**: Tela bloqueada em **portrait (vertical)** por padrão
 
-### Durante Vídeo em Tela Cheia
-- Ao entrar em fullscreen: Orientação muda para **landscape (horizontal)**
-- Ao sair do fullscreen: Volta para **portrait (vertical)**
+### Na Página de Vídeo
+- **Orientação livre**: Pode virar o celular para landscape ou portrait
+- Permite melhor visualização do vídeo sem precisar entrar em fullscreen
+- Ao sair da página de vídeo, volta para portrait automaticamente
 
 ## Implementação
 
@@ -19,35 +20,49 @@ O app agora controla a orientação da tela de forma inteligente quando instalad
 // Detecta se está rodando como PWA
 const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
-// Bloqueia em portrait apenas no PWA
-if (isPWA) {
+// Bloqueia em portrait apenas no PWA (se não for página de vídeo)
+if (isPWA && !allowFreeOrientation) {
   await screen.orientation.lock('portrait');
 }
 ```
 
-### 2. Controle no VideoPlayer
+### 2. Página de Vídeo (`video-detail.tsx`)
 ```typescript
-// Ao entrar em fullscreen
-await lockToLandscape();
+// Permite orientação livre na página de vídeo
+useOrientationLock(true);
+```
 
-// Ao sair do fullscreen
-await lockToPortrait(); // Volta para portrait no PWA
+### 3. Outras Páginas (`App.tsx`)
+```typescript
+// Bloqueia em portrait por padrão
+useOrientationLock();
 ```
 
 ## Benefícios
 
 ✅ **Melhor UX**: Usuário não precisa ficar virando o celular o tempo todo
-✅ **Intuitivo**: Só permite landscape quando faz sentido (vídeo em tela cheia)
+✅ **Intuitivo**: Orientação livre apenas na página de vídeo
+✅ **Flexível**: Pode assistir vídeo em portrait ou landscape sem fullscreen
 ✅ **Não afeta navegador**: Funciona normalmente quando não está instalado
 ✅ **Compatível**: Funciona em iOS e Android
 
 ## Testando
 
-1. Instale o app como PWA no smartphone
-2. Navegue pelo app - deve permanecer em portrait
-3. Abra um vídeo e clique em tela cheia
-4. A orientação deve mudar para landscape automaticamente
-5. Saia da tela cheia - deve voltar para portrait
+### ⚠️ IMPORTANTE: Você precisa REINSTALAR o PWA!
+
+Após fazer deploy das alterações:
+
+1. **Desinstale o PWA atual** do smartphone
+2. **Limpe o cache** do navegador
+3. **Reinstale o app** como PWA
+4. Navegue pelo app - deve permanecer em portrait
+5. Abra uma página de vídeo - orientação fica livre
+6. Vire o celular - deve funcionar normalmente
+7. Volte para outra página - deve bloquear em portrait novamente
+
+### Por que reinstalar?
+
+O manifest.webmanifest é cacheado pelo navegador quando você instala o PWA. Mudanças no manifest (como a orientação) só são aplicadas em uma nova instalação.
 
 ## Notas Técnicas
 

@@ -14,6 +14,7 @@ import { Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/video-player";
+import { useOrientationLock } from "@/hooks/use-orientation-lock";
 
 const getVideoEmbedUrl = (url: string): string | null => {
   try {
@@ -60,6 +61,9 @@ export function VideoDetailPage() {
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [recentVideos, setRecentVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Permitir orientação livre na página de vídeo
+  useOrientationLock(true);
 
   // Scroll to top when video changes
   useEffect(() => {
