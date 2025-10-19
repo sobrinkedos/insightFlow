@@ -255,6 +255,77 @@ serve(async (req) => {
       throw new Error(`Failed to update video: ${updateError.message}`);
     }
 
+    // 8. Create or find theme and link video to it
+    if (processedData.category) {
+      try {
+        // Check if theme already exists for this user and category
+        const { data: existingTheme } = await supabaseAdmin
+          .from("themes")
+          .select("id")
+          .eq("user_id", video.user_id)
+          .eq("title", processedData.category)
+          .single();
+
+        let themeId: string;
+
+        if (existingTheme) {
+          // Theme exists, use it
+          themeId = existingTheme.id;
+          console.log(`Using existing theme: ${themeId}`);
+        } else {
+          // Create new theme
+          const { data: newTheme, error: themeError } = await supabaseAdmin
+            .from("themes")
+            .insert({
+              user_id: video.user_id,
+              title: processedData.category,
+              description: processedData.subcategory || processedData.summary_short,
+              keywords: processedData.keywords,
+            })
+            .select("id")
+            .single();
+
+          if (themeError) {
+            console.error("Error creating theme:", themeError);
+            throw themeError;
+          }
+
+          themeId = newTheme.id;
+          console.log(`Created new theme: ${themeId}`);
+        }
+
+        // Link video to theme (check if link already exists)
+        const { data: existingLink } = await supabaseAdmin
+          .from("theme_videos")
+          .select("*")
+          .eq("theme_id", themeId)
+          .eq("video_id", video_id)
+          .single();
+
+        if (!existingLink) {
+          const { error: linkError } = await supabaseAdmin
+            .from("theme_videos")
+            .insert({
+              theme_id: themeId,
+              video_id: video_id,
+            });
+
+          if (linkError) {
+            console.error("Error linking video to theme:", linkError);
+            throw linkError;
+          }
+
+          console.log(`Linked video ${video_id} to theme ${themeId}`);
+        } else {
+          console.log(`Video ${video_id} already linked to theme ${themeId}`);
+        }
+      } catch (error) {
+        console.error("Error in theme creation/linking:", error);
+        // Don't fail the entire process if theme creation fails
+        // The video is already processed successfully
+      }
+    }
+
     return new Response(JSON.stringify({ message: "Video processed successfully" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
