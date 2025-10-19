@@ -44,15 +44,18 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container px-4">
         {/* Primeira linha: Logo, Busca e Ações do Usuário */}
         <div className="flex h-14 md:h-14 items-center">
           <MobileNav />
           
-          <Link to="/" className="flex items-center space-x-2 mr-4">
-            <BrainCircuit className="h-6 w-6 text-primary" />
-            <span className="font-bold text-base md:text-base">
+          <Link to="/" className="flex items-center space-x-2 mr-4 group">
+            <div className="relative">
+              <BrainCircuit className="h-6 w-6 text-primary transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <span className="font-bold text-base md:text-base bg-gradient-primary bg-clip-text text-transparent">
               InsightShare
             </span>
           </Link>
@@ -68,7 +71,7 @@ export function Header() {
                       placeholder="Pesquisar vídeos..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-[200px] lg:w-[300px] bg-background pl-8"
+                      className="w-[200px] lg:w-[300px] bg-card/50 border-border/50 pl-8 focus:border-primary/50 transition-colors"
                     />
                   </div>
                 </form>

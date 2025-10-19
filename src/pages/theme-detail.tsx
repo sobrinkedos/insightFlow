@@ -116,7 +116,7 @@ export function ThemeDetailPage() {
 
   if (loading) {
     return (
-      <div className="container py-8">
+      <div className="container py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
           <Skeleton className="h-9 w-9" />
           <div className="space-y-2">
@@ -153,7 +153,7 @@ export function ThemeDetailPage() {
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 px-4">
       <PageHeader
         title={theme.title}
         description={theme.description || "Detalhes do tema consolidado."}

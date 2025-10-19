@@ -232,7 +232,7 @@ export function VideosPage() {
                 {videos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
                     <CardContent className="p-3 md:p-4">
@@ -259,7 +259,7 @@ export function VideosPage() {
                         <div className="flex items-center gap-1 md:gap-2 shrink-0">
                           <Badge 
                             variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
-                            className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse' : ''} hidden md:inline-flex`}
+                            className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse-glow' : ''} hidden md:inline-flex`}
                           >
                             {video.status}
                           </Badge>

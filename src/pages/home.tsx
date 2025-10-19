@@ -43,21 +43,25 @@ const ThemeCard = ({ theme }: { theme: Theme }) => (
     <motion.div
       whileHover={{ scale: 1.03, y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
+      className="h-full"
     >
-      <Card className="flex flex-col h-full bg-card/50 backdrop-blur-sm border-white/10 transition-shadow duration-300 hover:shadow-primary/20 hover:shadow-lg">
-        <CardHeader className="p-4 md:p-6">
+      <Card className="flex flex-col h-full glass border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow group relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
+        <CardHeader className="p-4 md:p-6 relative">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
-              <Layers className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+            <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-gradient-primary flex-shrink-0 shadow-sm">
+              <Layers className="h-4 w-4 md:h-5 md:w-5 text-white" />
             </div>
-            <CardTitle className="text-base md:text-lg leading-tight line-clamp-2 flex-1">{theme.title}</CardTitle>
+            <CardTitle className="text-base md:text-lg leading-tight line-clamp-2 flex-1 group-hover:text-primary transition-colors">{theme.title}</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="flex-grow p-4 pt-0 md:p-6 md:pt-0">
+        <CardContent className="flex-grow p-4 pt-0 md:p-6 md:pt-0 relative">
           <CardDescription className="line-clamp-2 text-xs md:text-sm">{theme.description || "Nenhuma descrição para este tema."}</CardDescription>
         </CardContent>
-        <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-          <p className="text-xs md:text-sm font-medium text-muted-foreground">{theme.video_count || 0} vídeo{theme.video_count !== 1 ? 's' : ''}</p>
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+          <Badge variant="secondary" className="text-xs font-medium">
+            {theme.video_count || 0} vídeo{theme.video_count !== 1 ? 's' : ''}
+          </Badge>
         </CardContent>
       </Card>
     </motion.div>
@@ -82,14 +86,17 @@ const getYouTubeThumbnail = (url: string): string | null => {
 const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: boolean }) => {
     const navigate = useNavigate();
     return (
-        <Card className="bg-card/50 backdrop-blur-sm border-white/10">
+        <Card className="glass border-border/50">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Últimos Vídeos Adicionados</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                          <VideoIcon className="h-5 w-5 text-primary" />
+                          Últimos Vídeos Adicionados
+                        </CardTitle>
                         <CardDescription>Seu histórico de conteúdos processados recentemente.</CardDescription>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
+                    <Button variant="ghost" size="sm" asChild className="hover:bg-primary/10 hover:text-primary">
                         <Link to="/videos">Ver todos <ArrowRight className="ml-2 h-4 w-4" /></Link>
                     </Button>
                 </div>
@@ -116,7 +123,7 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                                     whileHover={{ scale: 1.01 }}
                                     transition={{ type: "spring", stiffness: 300 }}
                                     onClick={() => navigate(`/videos/${video.id}`)}
-                                    className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                                    className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                                 >
                                     <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
                                         {thumbnail && (
@@ -324,7 +331,7 @@ export function HomePage() {
 
   if (loading && user) {
       return (
-        <div className="container py-12">
+        <div className="container py-12 px-4">
             <Skeleton className="h-12 w-80 mb-12" />
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
                 {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
@@ -337,7 +344,7 @@ export function HomePage() {
   if (!user) {
     return (
         <motion.div 
-            className="container text-center py-20"
+            className="container text-center py-20 px-4"
             initial="initial"
             animate="in"
             exit="out"
@@ -374,49 +381,61 @@ export function HomePage() {
 
       {/* Stats Cards */}
       <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mb-8 md:mb-12">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+        <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
             <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
-            <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stats.totalVideos}</div>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos na sua biblioteca
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+        <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
             <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
-            <Layers className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-secondary/10">
+              <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stats.totalThemes}</div>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               Organizados automaticamente
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+        <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
             <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
-            <Zap className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-accent/10">
+              <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stats.processedToday}</div>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos adicionados hoje
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+        <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
             <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
-            <Heart className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-red-500/10">
+              <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stats.favorites}</div>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               Vídeos marcados como favoritos
             </p>
@@ -433,8 +452,9 @@ export function HomePage() {
           transition={{ delay: 0.2 }}
           className="mb-8 md:mb-12"
         >
-          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
+          <Card className="glass border-primary/30 overflow-hidden relative group hover:border-primary/50 transition-all">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-primary opacity-5" />
             <Button
               variant="ghost"
               size="icon"
@@ -538,7 +558,7 @@ export function HomePage() {
                           whileHover={{ scale: 1.01 }}
                           transition={{ type: "spring", stiffness: 300 }}
                           onClick={() => navigate(`/videos/${video.id}`)}
-                          className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                          className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                         >
                           <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
                             {thumbnail && (
@@ -597,7 +617,7 @@ export function HomePage() {
                     <Link 
                       key={video.id}
                       to={`/videos/${video.id}`}
-                      className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+                      className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
                     >
                       {thumbnail ? (
                         <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
@@ -642,7 +662,7 @@ export function HomePage() {
                   <Link 
                     key={theme.id}
                     to={`/themes/${theme.id}`}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-primary/5 transition-colors group"
                   >
                     <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                       <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">

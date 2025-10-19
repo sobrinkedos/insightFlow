@@ -120,14 +120,15 @@ export function ThemesPage() {
                 {themes.map((theme) => (
                   <Card 
                     key={theme.id} 
-                    className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:border-primary/50"
+                    className="group cursor-pointer overflow-hidden glass border-border/50 hover:border-primary/50 transition-all hover:shadow-glow hover-lift relative"
                     onClick={() => navigate(`/themes/${theme.id}`)}
                   >
-                    <CardHeader className="pb-3 p-4 md:p-6">
+                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+                    <CardHeader className="pb-3 p-4 md:p-6 relative">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
-                          <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Layers className="h-4 w-4 md:h-5 md:w-5" />
+                          <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-primary shadow-sm">
+                            <Layers className="h-4 w-4 md:h-5 md:w-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <CardTitle className="text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">

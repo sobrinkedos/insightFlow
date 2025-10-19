@@ -155,7 +155,7 @@ export function VideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="container py-8">
+      <div className="container py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
           <Skeleton className="h-9 w-24" />
         </div>
@@ -210,7 +210,7 @@ export function VideoDetailPage() {
     return (
       <Link 
         to={`/videos/${v.id}`} 
-        className="flex gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors group"
+        className="flex gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
       >
         {thumbnail ? (
           <div className="relative w-32 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
@@ -243,7 +243,7 @@ export function VideoDetailPage() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 px-4">
       <PageHeader
         title={video.title || "Detalhes do Vídeo"}
         description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}

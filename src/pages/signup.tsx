@@ -66,14 +66,15 @@ export function SignupPage() {
 
   return (
     <motion.div 
-      className="flex min-h-[calc(100vh-65px)] items-center justify-center p-4"
+      className="flex min-h-[calc(100vh-65px)] items-center justify-center p-4 relative"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mx-auto max-w-sm w-full bg-card/50 backdrop-blur-sm border-white/10">
+      <div className="absolute inset-0 bg-gradient-radial from-secondary/10 via-transparent to-transparent opacity-50" />
+      <Card className="mx-auto max-w-sm w-full glass border-border/50 shadow-glow relative z-10">
         <CardHeader>
-          <CardTitle className="text-xl">Cadastre-se</CardTitle>
+          <CardTitle className="text-xl bg-gradient-primary bg-clip-text text-transparent">Cadastre-se</CardTitle>
           <CardDescription>
             Crie sua conta para começar a organizar seus vídeos
           </CardDescription>

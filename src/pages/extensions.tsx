@@ -37,7 +37,7 @@ export function ExtensionsPage() {
 
   return (
     <motion.div
-      className="container py-12"
+      className="container py-12 px-4"
       initial="initial"
       animate="in"
       exit="out"

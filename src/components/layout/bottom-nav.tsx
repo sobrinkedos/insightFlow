@@ -12,7 +12,7 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border/40 md:hidden print:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-t border-border/40 md:hidden print:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-around h-16 px-2">
           <NavLink
             to="/"
@@ -45,9 +45,9 @@ export function BottomNav() {
 
           <button
             onClick={() => setShareOpen(true)}
-            className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] -mt-6"
+            className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all min-w-[64px] -mt-6 group"
           >
-            <div className="bg-primary text-primary-foreground rounded-full p-3 shadow-lg">
+            <div className="bg-gradient-primary text-primary-foreground rounded-full p-3 shadow-glow group-hover:shadow-glow-lg transition-all group-hover:scale-110">
               <Plus className="h-6 w-6" />
             </div>
           </button>

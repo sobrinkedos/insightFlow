@@ -91,14 +91,14 @@ export default function SearchPage() {
 
   if (!user) {
     return (
-      <div className="container py-8">
+      <div className="container py-8 px-4">
         <p className="text-muted-foreground">Faça login para pesquisar vídeos.</p>
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Resultados da Busca</h1>
         <p className="text-muted-foreground">
