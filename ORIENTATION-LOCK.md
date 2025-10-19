@@ -13,6 +13,11 @@ O app agora controla a orientação da tela de forma inteligente quando instalad
 - Permite melhor visualização do vídeo sem precisar entrar em fullscreen
 - Ao sair da página de vídeo, volta para portrait automaticamente
 
+### Em Fullscreen
+- **Força landscape**: Ao entrar em tela cheia, força orientação horizontal
+- Melhor experiência para assistir vídeos
+- Ao sair do fullscreen, volta para orientação livre da página
+
 ## Implementação
 
 ### 1. Hook Global (`use-orientation-lock.ts`)
@@ -32,7 +37,17 @@ if (isPWA && !allowFreeOrientation) {
 useOrientationLock(true);
 ```
 
-### 3. Outras Páginas (`App.tsx`)
+### 3. VideoPlayer - Fullscreen
+```typescript
+// Ao entrar em fullscreen, força landscape
+if (success) {
+  setTimeout(() => {
+    lockToLandscape();
+  }, 300);
+}
+```
+
+### 4. Outras Páginas (`App.tsx`)
 ```typescript
 // Bloqueia em portrait por padrão
 useOrientationLock();

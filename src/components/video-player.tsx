@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useVideoProgress } from "@/hooks/use-video-progress";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
+import { lockToLandscape } from "@/hooks/use-orientation-lock";
 
 // Declarar tipos do YouTube IFrame API
 declare global {
@@ -278,9 +279,16 @@ export function VideoPlayer({ videoId, embedUrl, title, className }: VideoPlayer
     if (!containerRef.current) return;
 
     if (!isFullscreen) {
-      await enterFullscreen(containerRef.current);
+      const success = await enterFullscreen(containerRef.current);
+      // Forçar landscape quando entrar em fullscreen
+      if (success) {
+        setTimeout(() => {
+          lockToLandscape();
+        }, 300);
+      }
     } else {
       await exitFullscreen();
+      // Não precisa fazer nada ao sair, a página já tem orientação livre
     }
   };
 
