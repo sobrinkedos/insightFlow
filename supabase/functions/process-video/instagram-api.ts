@@ -34,8 +34,9 @@ export class InstagramAPI {
     this.apiHost = Deno.env.get("RAPIDAPI_HOST") || "instagram120.p.rapidapi.com";
     this.baseUrl = `https://${this.apiHost}`;
 
+    // Don't throw error on initialization, check when methods are called
     if (!this.apiKey) {
-      throw new Error("RAPIDAPI_KEY not configured");
+      console.warn("RAPIDAPI_KEY not configured - Instagram API will use fallback");
     }
   }
 
@@ -68,6 +69,10 @@ export class InstagramAPI {
    * Get posts from a user
    */
   async getUserPosts(username: string, maxId: string = ""): Promise<InstagramApiResponse> {
+    if (!this.apiKey) {
+      throw new Error("RAPIDAPI_KEY not configured");
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/api/instagram/posts`, {
         method: "POST",
