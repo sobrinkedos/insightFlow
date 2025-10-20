@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ANALYSIS_PROMPT } from "./ai-prompts.ts";
+import { instagramAPI } from "./instagram-api.ts";
 
 // IMPORTANT: Set these secrets in your Supabase project dashboard:
 // `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`
@@ -66,30 +67,20 @@ async function getVideoInfo(videoId: string, platform: string): Promise<{ title:
         };
       }
     } else if (platform === 'instagram') {
-      // Para Instagram, tentamos múltiplas abordagens
-      const instagramToken = Deno.env.get("INSTAGRAM_ACCESS_TOKEN");
-      
-      // Tentativa 1: oEmbed API do Facebook
+      // Use RapidAPI Instagram integration
       try {
-        const oembedUrl = instagramToken 
-          ? `https://graph.facebook.com/v18.0/instagram_oembed?url=https://www.instagram.com/p/${videoId}/&access_token=${instagramToken}`
-          : `https://graph.facebook.com/v18.0/instagram_oembed?url=https://www.instagram.com/p/${videoId}/`;
+        const fullUrl = `https://www.instagram.com/p/${videoId}/`;
+        const postInfo = await instagramAPI.getPostInfo(fullUrl);
         
-        const response = await fetch(oembedUrl);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Instagram oEmbed response:", data);
-          
-          if (data.title || data.author_name) {
-            return {
-              title: data.title || `Post de ${data.author_name || 'Instagram'}`,
-              description: data.title || `Conteúdo compartilhado por ${data.author_name || 'usuário do Instagram'}. ${data.html ? 'Vídeo ou imagem do Instagram.' : ''}`,
-            };
-          }
+        if (postInfo) {
+          console.log("Instagram API response:", postInfo);
+          return {
+            title: postInfo.title,
+            description: postInfo.description,
+          };
         }
       } catch (error) {
-        console.warn("Instagram oEmbed failed:", error);
+        console.warn("Instagram RapidAPI failed:", error);
       }
       
       // Fallback: informações genéricas mas úteis
