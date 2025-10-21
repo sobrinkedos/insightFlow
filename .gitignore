@@ -1,3 +1,22 @@
 node_modules/
 
 .vercel
+
+# Arquivos temporários e de teste
+_temp_*.ts
+test-*.ts
+insta.md
+
+# Documentação temporária de debug
+CORRECAO-*.md
+DIAGNOSTICO-*.md
+PROBLEMA-*.md
+SOLUCAO-*.md
+SUCESSO-*.md
+TESTE-*.md
+DEPLOY-*.md
+GUIA-*.md
+IMPLEMENTACAO-*.md
+INSTRUCOES-*.md
+README-INSTAGRAM.md
+RESUMO-*.md
