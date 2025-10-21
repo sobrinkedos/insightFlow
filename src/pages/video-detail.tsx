@@ -37,12 +37,12 @@ function TutorialSteps({ steps }: { steps: string }) {
           </ol>
         );
       } else if (typeof firstItem === 'object') {
-        // Array de objetos {step, description}
+        // Array de objetos {step, instruction} ou {step, description}
         return (
           <ol className="space-y-3 list-decimal list-inside">
             {parsed.map((step: any, index: number) => (
               <li key={index} className="text-muted-foreground ml-2">
-                <strong>{step.step || `Passo ${index + 1}`}:</strong> {step.description}
+                <span className="ml-2">{step.instruction || step.description || step.step || 'Sem descrição'}</span>
               </li>
             ))}
           </ol>
