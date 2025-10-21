@@ -22,13 +22,25 @@ function getVideoInfo() {
     videoInfo.thumbnail = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
   }
   
-  // Instagram
+  // Instagram (Reels, Posts, TV)
   else if (url.includes('instagram.com')) {
     videoInfo.platform = 'Instagram';
-    videoInfo.title = document.querySelector('h1')?.textContent || 
+    
+    // Extrair URL limpa (remover parâmetros desnecessários)
+    const match = url.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[^\/\?]+)/);
+    if (match) {
+      videoInfo.url = match[1] + '/';
+    }
+    
+    // Tentar pegar título de várias fontes
+    videoInfo.title = document.querySelector('h1')?.textContent?.trim() || 
                       document.querySelector('meta[property="og:title"]')?.content || 
-                      'Vídeo do Instagram';
-    videoInfo.thumbnail = document.querySelector('meta[property="og:image"]')?.content;
+                      document.querySelector('meta[name="description"]')?.content?.substring(0, 100) ||
+                      'Post do Instagram';
+    
+    // Thumbnail
+    videoInfo.thumbnail = document.querySelector('meta[property="og:image"]')?.content ||
+                         document.querySelector('meta[property="og:image:secure_url"]')?.content;
   }
   
   // TikTok

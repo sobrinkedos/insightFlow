@@ -7,8 +7,8 @@ Extensão universal para Chrome, Edge e Firefox que permite compartilhar vídeos
 - ✅ Detecta automaticamente vídeos em páginas web
 - ✅ Botão flutuante para compartilhamento rápido
 - ✅ Suporte para múltiplas plataformas:
-  - YouTube
-  - Instagram
+  - YouTube (vídeos completos)
+  - Instagram (Reels, Posts, IGTV) ⭐ **Com transcrição de áudio via Whisper API**
   - TikTok
   - Vimeo
   - Dailymotion
