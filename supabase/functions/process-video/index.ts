@@ -19,7 +19,7 @@ const corsHeaders = {
 function extractVideoId(url: string): { id: string; platform: string } | null {
   try {
     const urlObj = new URL(url);
-    
+
     // YouTube formats: youtube.com/watch?v=ID or youtu.be/ID
     if (urlObj.hostname.includes('youtube.com')) {
       const id = urlObj.searchParams.get('v');
@@ -28,7 +28,7 @@ function extractVideoId(url: string): { id: string; platform: string } | null {
       const id = urlObj.pathname.slice(1).split('?')[0];
       return id ? { id, platform: 'youtube' } : null;
     }
-    
+
     // Instagram formats: instagram.com/p/ID or instagram.com/reel/ID
     if (urlObj.hostname.includes('instagram.com')) {
       const match = urlObj.pathname.match(/\/(p|reel|tv)\/([^\/\?]+)/);
@@ -36,14 +36,14 @@ function extractVideoId(url: string): { id: string; platform: string } | null {
         return { id: match[2], platform: 'instagram' };
       }
     }
-    
+
     return null;
   } catch {
     return null;
   }
 }
 
-async function getVideoInfo(videoId: string, platform: string): Promise<{ title: string; description: string } | null> {
+async function getVideoInfo(videoId: string, platform: string, fullUrl: string): Promise<{ title: string; description: string; videoUrl?: string; thumbnailUrl?: string } | null> {
   try {
     if (platform === 'youtube') {
       // Usando a API do YouTube Data v3 (você precisa configurar YOUTUBE_API_KEY)
@@ -56,9 +56,9 @@ async function getVideoInfo(videoId: string, platform: string): Promise<{ title:
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
       );
-      
+
       const data = await response.json();
-      
+
       if (data.items && data.items.length > 0) {
         const snippet = data.items[0].snippet;
         return {
@@ -69,10 +69,9 @@ async function getVideoInfo(videoId: string, platform: string): Promise<{ title:
     } else if (platform === 'instagram') {
       // Use RapidAPI Instagram integration
       try {
-        const fullUrl = `https://www.instagram.com/p/${videoId}/`;
         const postInfo = await instagramAPI.getPostInfo(fullUrl);
-        
-        if (postInfo) {
+
+        if (postInfo && postInfo.description && postInfo.description.length > 50) {
           console.log("Instagram API response:", postInfo);
           return {
             title: postInfo.title,
@@ -82,15 +81,15 @@ async function getVideoInfo(videoId: string, platform: string): Promise<{ title:
       } catch (error) {
         console.warn("Instagram RapidAPI failed:", error);
       }
-      
+
       // Fallback: informações genéricas mas úteis
       console.warn("Using Instagram fallback with generic info");
       return {
         title: `Conteúdo do Instagram`,
-        description: `Post do Instagram (ID: ${videoId}). Este é um conteúdo compartilhado da plataforma Instagram. Para análise mais detalhada, a IA irá gerar insights baseados nas informações disponíveis.`,
+        description: `Post do Instagram. Link: ${fullUrl}.`,
       };
     }
-    
+
     return null;
   } catch (error) {
     console.error("Error fetching video info:", error);
@@ -107,7 +106,7 @@ async function transcribeAudio(audioUrl: string): Promise<string> {
   // 1. Baixar o áudio do YouTube (usando yt-dlp ou similar)
   // 2. Enviar para a API Whisper da OpenAI
   // Por enquanto, vamos usar a descrição do vídeo como fallback
-  
+
   throw new Error("Audio transcription not implemented yet. Use video description as fallback.");
 }
 
@@ -146,16 +145,16 @@ async function analyzeWithGPT(transcription: string, videoTitle: string): Promis
 
   const data = await response.json();
   const content = data.choices[0].message.content;
-  
+
   return JSON.parse(content);
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { 
+    return new Response(null, {
       status: 204,
-      headers: corsHeaders 
+      headers: corsHeaders
     });
   }
 
@@ -191,21 +190,34 @@ serve(async (req) => {
     const { id: videoId, platform } = videoData;
 
     // 3. Get video info (title and description)
-    let videoInfo = await getVideoInfo(videoId, platform);
+    let videoInfo = await getVideoInfo(videoId, platform, video.url);
+    let videoUrl: string | undefined;
+    let thumbnailUrl: string | undefined;
+    
     if (!videoInfo) {
       // Fallback: usar informações básicas do vídeo
       const platformName = platform === 'youtube' ? 'YouTube' : 'Instagram';
       videoInfo = {
         title: `Vídeo do ${platformName}`,
-        description: `Análise de vídeo do ${platformName}. ${platform === 'youtube' ? `Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.` : `Configure INSTAGRAM_ACCESS_TOKEN para obter mais informações.`}`,
+        description: `Análise de vídeo do ${platformName}. ${platform === 'youtube' ? `Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.` : `Link: ${video.url}`}`,
       };
+    } else {
+      // Extract video and thumbnail URLs if available (from Instagram API)
+      videoUrl = videoInfo.videoUrl;
+      thumbnailUrl = videoInfo.thumbnailUrl;
     }
 
     // 4. Use description as transcription (fallback until we implement audio transcription)
     const transcription = videoInfo.description || "Sem descrição disponível";
 
+    // 4.5. For Instagram, add context to help AI understand it's limited data
+    let contextualTranscription = transcription;
+    if (platform === 'instagram' && transcription.length < 100) {
+      contextualTranscription = `[NOTA: Este é um vídeo do Instagram com informações limitadas. Faça uma análise baseada no que está disponível.]\n\n${transcription}`;
+    }
+
     // 5. Analyze with GPT
-    const analysis = await analyzeWithGPT(transcription, videoInfo.title);
+    const analysis = await analyzeWithGPT(contextualTranscription, videoInfo.title);
 
     // 6. Prepare the data
     const processedData = {
@@ -222,22 +234,34 @@ serve(async (req) => {
     };
 
     // 7. Update the video with processed data
+    const updateData: any = {
+      status: "Concluído",
+      title: processedData.title,
+      transcription: processedData.transcription,
+      summary_short: processedData.summary_short,
+      summary_expanded: processedData.summary_expanded,
+      topics: processedData.topics,
+      keywords: processedData.keywords,
+      category: processedData.category,
+      subcategory: processedData.subcategory,
+      is_tutorial: processedData.is_tutorial,
+      tutorial_steps: processedData.tutorial_steps,
+      processed_at: new Date().toISOString(),
+    };
+    
+    // Add video and thumbnail URLs if available (from Instagram API)
+    if (videoUrl) {
+      updateData.video_url = videoUrl;
+      console.log("✅ Saving video_url:", videoUrl.substring(0, 100));
+    }
+    if (thumbnailUrl) {
+      updateData.thumbnail_url = thumbnailUrl;
+      console.log("✅ Saving thumbnail_url:", thumbnailUrl.substring(0, 100));
+    }
+    
     const { error: updateError } = await supabaseAdmin
       .from("videos")
-      .update({
-        status: "Concluído",
-        title: processedData.title,
-        transcription: processedData.transcription,
-        summary_short: processedData.summary_short,
-        summary_expanded: processedData.summary_expanded,
-        topics: processedData.topics,
-        keywords: processedData.keywords,
-        category: processedData.category,
-        subcategory: processedData.subcategory,
-        is_tutorial: processedData.is_tutorial,
-        tutorial_steps: processedData.tutorial_steps,
-        processed_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", video_id);
 
     if (updateError) {
@@ -326,7 +350,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error processing video:", error);
-    
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

@@ -285,6 +285,8 @@ export function VideoDetailPage() {
                 videoId={video.id}
                 embedUrl={embedUrl} 
                 title={video.title || "YouTube video player"}
+                videoUrl={video.video_url}
+                thumbnailUrl={video.thumbnail_url}
               />
             </div>
           )}

@@ -150,6 +150,8 @@ export type Database = {
           is_favorite: boolean
           is_tutorial: boolean
           tutorial_steps: string | null
+          video_url: string | null
+          thumbnail_url: string | null
         }
         Insert: {
           created_at?: string
@@ -172,6 +174,8 @@ export type Database = {
           is_favorite?: boolean
           is_tutorial?: boolean
           tutorial_steps?: string | null
+          video_url?: string | null
+          thumbnail_url?: string | null
         }
         Update: {
           created_at?: string
@@ -194,6 +198,8 @@ export type Database = {
           is_favorite?: boolean
           is_tutorial?: boolean
           tutorial_steps?: string | null
+          video_url?: string | null
+          thumbnail_url?: string | null
         }
         Relationships: [
           {

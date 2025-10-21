@@ -1,171 +1,122 @@
 // Instagram API integration using RapidAPI
-// Docs: https://rapidapi.com/maatootz/api/instagram120
-
-interface InstagramPost {
-  id: string;
-  caption?: string;
-  media_type: string;
-  media_url?: string;
-  video_url?: string;
-  thumbnail_url?: string;
-  permalink?: string;
-  timestamp?: string;
-  username?: string;
-  like_count?: number;
-  comments_count?: number;
-}
-
-interface InstagramApiResponse {
-  data?: {
-    items?: any[];
-    user?: any;
-  };
-  status?: string;
-  message?: string;
-}
+// API: Instagram Downloader (videos4)
+// Docs: https://rapidapi.com/
 
 export class InstagramAPI {
   private apiKey: string;
   private apiHost: string;
-  private baseUrl: string;
 
   constructor() {
     this.apiKey = Deno.env.get("RAPIDAPI_KEY") || "";
-    this.apiHost = Deno.env.get("RAPIDAPI_HOST") || "instagram120.p.rapidapi.com";
-    this.baseUrl = `https://${this.apiHost}`;
+    this.apiHost = "instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com";
 
-    // Don't throw error on initialization, check when methods are called
+    console.log("🔑 RAPIDAPI_KEY configured:", !!this.apiKey);
+    console.log("🔑 RAPIDAPI_KEY length:", this.apiKey.length);
+    console.log("🔑 RAPIDAPI_KEY first 20 chars:", this.apiKey.substring(0, 20));
+    
     if (!this.apiKey) {
-      console.warn("RAPIDAPI_KEY not configured - Instagram API will use fallback");
+      console.warn("⚠️ RAPIDAPI_KEY not configured - Instagram API will use fallback");
     }
   }
 
   /**
-   * Extract username and post ID from Instagram URL
+   * Get post info by URL using RapidAPI Instagram Downloader
+   * This API returns: media array with type, url, thumbnail
    */
-  private parseInstagramUrl(url: string): { username?: string; postId?: string } | null {
+  async getPostInfo(url: string): Promise<{ title: string; description: string; videoUrl?: string; thumbnailUrl?: string } | null> {
     try {
-      const urlObj = new URL(url);
+      console.log("🔍 Fetching Instagram post info for:", url);
+
+      let caption = "";
+      let thumbnailUrl = "";
+      let videoUrl = "";
+
+      // Step 1: Try RapidAPI to get media URLs
+      if (this.apiKey) {
+        try {
+          const apiUrl = `https://${this.apiHost}/convert?url=${encodeURIComponent(url)}`;
+          console.log("📡 Trying RapidAPI Instagram Downloader (videos4)...");
+          console.log("📡 API URL:", apiUrl);
+          console.log("📡 API Host:", this.apiHost);
+          console.log("📡 API Key length:", this.apiKey.length);
+          
+          const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              "x-rapidapi-host": this.apiHost,
+              "x-rapidapi-key": this.apiKey,
+            },
+          });
+
+          console.log("📊 Response status:", response.status, response.statusText);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log("✅ RapidAPI response:", JSON.stringify(data, null, 2));
+            
+            // Extract media URLs
+            if (data.media && Array.isArray(data.media) && data.media.length > 0) {
+              const firstMedia = data.media[0];
+              
+              if (firstMedia.type === "video") {
+                videoUrl = firstMedia.url || "";
+                thumbnailUrl = firstMedia.thumbnail || "";
+                console.log("✅ Found video:", videoUrl.substring(0, 100));
+              } else if (firstMedia.type === "image") {
+                thumbnailUrl = firstMedia.url || firstMedia.thumbnail || "";
+                console.log("✅ Found image:", thumbnailUrl.substring(0, 100));
+              }
+            }
+          } else {
+            const errorText = await response.text();
+            console.warn("⚠️ RapidAPI returned non-OK status:", response.status, errorText);
+          }
+        } catch (apiError) {
+          console.warn("❌ RapidAPI request failed:", apiError);
+        }
+      } else {
+        console.warn("⚠️ RAPIDAPI_KEY not configured");
+      }
       
-      // Format: instagram.com/p/POST_ID or instagram.com/reel/POST_ID
-      const postMatch = urlObj.pathname.match(/\/(p|reel|tv)\/([^\/\?]+)/);
-      if (postMatch) {
-        return { postId: postMatch[2] };
-      }
-
-      // Format: instagram.com/USERNAME
-      const usernameMatch = urlObj.pathname.match(/^\/([^\/\?]+)\/?$/);
-      if (usernameMatch && usernameMatch[1] !== 'p' && usernameMatch[1] !== 'reel') {
-        return { username: usernameMatch[1] };
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Get posts from a user
-   */
-  async getUserPosts(username: string, maxId: string = ""): Promise<InstagramApiResponse> {
-    if (!this.apiKey) {
-      throw new Error("RAPIDAPI_KEY not configured");
-    }
-
-    try {
-      const response = await fetch(`${this.baseUrl}/api/instagram/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-rapidapi-host": this.apiHost,
-          "x-rapidapi-key": this.apiKey,
-        },
-        body: JSON.stringify({
-          username,
-          maxId,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Instagram API error:", errorText);
-        throw new Error(`Instagram API returned ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching Instagram posts:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get post info by URL
-   */
-  async getPostInfo(url: string): Promise<{ title: string; description: string; videoUrl?: string } | null> {
-    try {
-      const parsed = this.parseInstagramUrl(url);
-      
-      if (!parsed || !parsed.postId) {
-        console.warn("Could not parse Instagram URL:", url);
-        return null;
-      }
-
-      // Try to get post info using shortcode
-      // Note: The API might need the username, so we'll try a fallback approach
-      
-      // Fallback: Use oEmbed API (public, no auth needed)
+      // Step 2: Try oEmbed API to get caption/title
       try {
-        const oembedUrl = `https://graph.facebook.com/v18.0/instagram_oembed?url=${encodeURIComponent(url)}`;
+        console.log("📡 Trying Instagram oEmbed API for caption...");
+        const oembedUrl = `https://graph.facebook.com/v18.0/instagram_oembed?url=${encodeURIComponent(url)}&access_token=`;
         const oembedResponse = await fetch(oembedUrl);
         
         if (oembedResponse.ok) {
           const oembedData = await oembedResponse.json();
-          console.log("Instagram oEmbed data:", oembedData);
+          console.log("✅ Instagram oEmbed data:", oembedData);
           
-          return {
-            title: oembedData.title || `Post do Instagram`,
-            description: oembedData.title || `Conteúdo compartilhado no Instagram. ${oembedData.author_name ? `Por: ${oembedData.author_name}` : ''}`,
-            videoUrl: undefined, // oEmbed doesn't provide direct video URL
-          };
+          caption = oembedData.title || "";
+          if (!thumbnailUrl && oembedData.thumbnail_url) {
+            thumbnailUrl = oembedData.thumbnail_url;
+          }
         }
       } catch (oembedError) {
-        console.warn("oEmbed fallback failed:", oembedError);
+        console.warn("⚠️ oEmbed request failed:", oembedError);
       }
 
-      // If all else fails, return generic info
+      // Step 3: Return combined data
+      if (videoUrl || thumbnailUrl || caption) {
+        return {
+          title: caption ? `Post do Instagram: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}` : "Post do Instagram",
+          description: caption || `Vídeo do Instagram. Link: ${url}`,
+          videoUrl: videoUrl || undefined,
+          thumbnailUrl: thumbnailUrl || undefined,
+        };
+      }
+
+      // Fallback: return generic info
+      console.warn("⚠️ No data retrieved, returning generic info");
       return {
-        title: `Post do Instagram`,
-        description: `Conteúdo do Instagram (ID: ${parsed.postId}). Para análise detalhada, configure as credenciais da API.`,
+        title: `Vídeo do Instagram`,
+        description: `Post do Instagram. Link: ${url}. Configure as APIs para obter mais informações.`,
+        videoUrl: undefined,
+        thumbnailUrl: undefined,
       };
     } catch (error) {
-      console.error("Error getting Instagram post info:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Search for a specific post by trying to get user posts
-   * This is a workaround since we might not have direct post access
-   */
-  async findPostByShortcode(username: string, shortcode: string): Promise<any | null> {
-    try {
-      const postsResponse = await this.getUserPosts(username);
-      
-      if (postsResponse.data?.items) {
-        // Try to find the post with matching shortcode
-        const post = postsResponse.data.items.find((item: any) => 
-          item.code === shortcode || item.id === shortcode
-        );
-        
-        return post || null;
-      }
-
-      return null;
-    } catch (error) {
-      console.error("Error finding post by shortcode:", error);
+      console.error("❌ Error getting Instagram post info:", error);
       return null;
     }
   }
