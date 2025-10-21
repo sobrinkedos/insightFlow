@@ -16,6 +16,55 @@ import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/video-player";
 import { useOrientationLock } from "@/hooks/use-orientation-lock";
 
+// Componente para renderizar tutorial steps (pode ser JSON ou Markdown)
+function TutorialSteps({ steps }: { steps: string }) {
+  // Tentar parsear como JSON primeiro
+  try {
+    const parsed = JSON.parse(steps);
+    if (Array.isArray(parsed)) {
+      // É um array de steps
+      return (
+        <ol className="space-y-3 list-decimal list-inside">
+          {parsed.map((step: any, index: number) => (
+            <li key={index} className="text-muted-foreground">
+              <strong>{step.step || `Passo ${index + 1}`}:</strong> {step.description}
+            </li>
+          ))}
+        </ol>
+      );
+    }
+  } catch {
+    // Não é JSON, renderizar como markdown/texto
+  }
+  
+  // Renderizar como markdown simples
+  const lines = steps.split('\n');
+  return (
+    <div className="space-y-2">
+      {lines.map((line, index) => {
+        // Títulos (##)
+        if (line.startsWith('## ')) {
+          return <h3 key={index} className="font-semibold text-foreground mt-4 mb-2">{line.replace('## ', '')}</h3>;
+        }
+        // Títulos (#)
+        if (line.startsWith('# ')) {
+          return <h2 key={index} className="font-bold text-lg text-foreground mt-6 mb-3">{line.replace('# ', '')}</h2>;
+        }
+        // Lista (-)
+        if (line.startsWith('- ')) {
+          return <li key={index} className="ml-4 text-muted-foreground">{line.replace('- ', '')}</li>;
+        }
+        // Linha vazia
+        if (line.trim() === '') {
+          return <br key={index} />;
+        }
+        // Texto normal
+        return <p key={index} className="text-muted-foreground">{line}</p>;
+      })}
+    </div>
+  );
+}
+
 const getVideoEmbedUrl = (url: string): string | null => {
   try {
     const videoUrl = new URL(url);
@@ -324,7 +373,7 @@ export function VideoDetailPage() {
                             <h4 className="font-semibold text-primary">Tutorial Detectado</h4>
                           </div>
                           <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <div className="text-muted-foreground whitespace-pre-wrap">{video.tutorial_steps}</div>
+                            <TutorialSteps steps={video.tutorial_steps} />
                           </div>
                         </div>
                       )}
