@@ -5,7 +5,8 @@
   "description": "Compartilhe vídeos do YouTube, Instagram, TikTok e outras plataformas diretamente com o InsightShare",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "host_permissions": [
     "https://*.youtube.com/*",
