@@ -24,9 +24,10 @@ import { EmptyState } from "@/components/empty-state";
 
 // Função para extrair thumbnail da URL do vídeo ou usar o thumbnail salvo
 function getVideoThumbnail(url: string, thumbnailUrl?: string | null): string {
-  // Se tiver thumbnail_url do banco, usar ele (Instagram, etc)
+  // Se tiver thumbnail_url do banco, usar proxy para evitar CORS
   if (thumbnailUrl) {
-    return thumbnailUrl;
+    // Usar proxy de imagem para evitar erro de CORS do Instagram
+    return `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=120&h=90&fit=cover`;
   }
   
   try {
