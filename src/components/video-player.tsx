@@ -91,6 +91,16 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
 
   const { platform, id: videoIdFromUrl } = detectPlatform(embedUrl);
   const youtubeVideoId = platform === 'youtube' ? videoIdFromUrl : null;
+  
+  // Usar proxy para thumbnails do Instagram para evitar CORS
+  const getThumbnailWithProxy = (url: string | null | undefined): string | undefined => {
+    if (!url) return undefined;
+    // Se for URL do Instagram, usar proxy
+    if (url.includes('cdninstagram.com') || url.includes('fbcdn.net')) {
+      return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=640&h=480&fit=cover`;
+    }
+    return url;
+  };
 
   // Carregar YouTube IFrame API
   useEffect(() => {
@@ -460,7 +470,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
             <video
               className="w-full h-full rounded-md object-contain bg-black"
               controls
-              poster={thumbnailUrl || undefined}
+              poster={getThumbnailWithProxy(thumbnailUrl)}
               src={videoUrl}
               title={title}
             >
