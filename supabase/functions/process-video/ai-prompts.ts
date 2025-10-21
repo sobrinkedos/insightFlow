@@ -27,6 +27,12 @@ Você é um assistente especializado em análise de vídeos. Analise a transcri�
 - Inclua quantidades, medidas e detalhes importantes
 - Use linguagem clara e objetiva
 
+**IMPORTANTE para vídeos do Instagram:**
+- Se a transcrição indicar que é um vídeo do Instagram com informações limitadas, seja honesto sobre isso
+- Faça o melhor possível com as informações disponíveis (legenda, descrição, etc.)
+- Se não houver informações suficientes, indique no resumo que é necessário assistir ao vídeo para análise completa
+- Ainda assim, tente extrair categoria e palavras-chave do que está disponível
+
 **Formato do tutorial_steps para RECEITAS:**
 """
 # Ingredientes
