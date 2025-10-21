@@ -97,17 +97,65 @@ async function getVideoInfo(videoId: string, platform: string, fullUrl: string):
   }
 }
 
-async function transcribeAudio(audioUrl: string): Promise<string> {
+async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | null> {
   if (!openAIKey) {
-    throw new Error("OPENAI_API_KEY not configured");
+    console.warn("OPENAI_API_KEY not configured, skipping Whisper transcription");
+    return null;
   }
 
-  // Para transcrição real, você precisaria:
-  // 1. Baixar o áudio do YouTube (usando yt-dlp ou similar)
-  // 2. Enviar para a API Whisper da OpenAI
-  // Por enquanto, vamos usar a descrição do vídeo como fallback
-
-  throw new Error("Audio transcription not implemented yet. Use video description as fallback.");
+  try {
+    console.log("🎤 Starting Whisper transcription for video:", videoUrl.substring(0, 100));
+    
+    // 1. Download video
+    console.log("📥 Downloading video...");
+    const videoResponse = await fetch(videoUrl);
+    
+    if (!videoResponse.ok) {
+      console.error("Failed to download video:", videoResponse.status);
+      return null;
+    }
+    
+    const videoBlob = await videoResponse.blob();
+    const videoSize = videoBlob.size / (1024 * 1024); // MB
+    console.log(`✅ Video downloaded: ${videoSize.toFixed(2)} MB`);
+    
+    // Whisper API tem limite de 25MB
+    if (videoSize > 25) {
+      console.warn("⚠️ Video too large for Whisper API (>25MB), skipping transcription");
+      return null;
+    }
+    
+    // 2. Send to Whisper API
+    console.log("🎤 Sending to Whisper API...");
+    const formData = new FormData();
+    formData.append('file', videoBlob, 'video.mp4');
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'pt'); // Português
+    formData.append('response_format', 'text');
+    
+    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIKey}`,
+      },
+      body: formData,
+    });
+    
+    if (!whisperResponse.ok) {
+      const errorText = await whisperResponse.text();
+      console.error("Whisper API error:", whisperResponse.status, errorText);
+      return null;
+    }
+    
+    const transcription = await whisperResponse.text();
+    console.log(`✅ Transcription completed: ${transcription.length} characters`);
+    console.log("Preview:", transcription.substring(0, 200));
+    
+    return transcription;
+  } catch (error) {
+    console.error("❌ Error in Whisper transcription:", error);
+    return null;
+  }
 }
 
 async function analyzeWithGPT(transcription: string, videoTitle: string): Promise<any> {
@@ -207,10 +255,23 @@ serve(async (req) => {
       thumbnailUrl = videoInfo.thumbnailUrl;
     }
 
-    // 4. Use description as transcription (fallback until we implement audio transcription)
-    const transcription = videoInfo.description || "Sem descrição disponível";
+    // 4. Get transcription
+    let transcription = videoInfo.description || "Sem descrição disponível";
+    
+    // 4.5. For Instagram with video URL, try Whisper transcription
+    if (platform === 'instagram' && videoUrl) {
+      console.log("🎤 Instagram video detected, attempting Whisper transcription...");
+      const whisperTranscription = await transcribeVideoWithWhisper(videoUrl);
+      
+      if (whisperTranscription && whisperTranscription.length > 50) {
+        console.log("✅ Using Whisper transcription");
+        transcription = whisperTranscription;
+      } else {
+        console.log("⚠️ Whisper transcription failed or too short, using fallback");
+      }
+    }
 
-    // 4.5. For Instagram, add context to help AI understand it's limited data
+    // 4.6. For Instagram without good transcription, add context
     let contextualTranscription = transcription;
     if (platform === 'instagram' && transcription.length < 150) {
       contextualTranscription = `[IMPORTANTE: Este é um vídeo do Instagram. O Instagram não fornece legendas ou descrições automáticas, então as informações são muito limitadas. 
