@@ -22,16 +22,32 @@ function TutorialSteps({ steps }: { steps: string }) {
   try {
     const parsed = JSON.parse(steps);
     if (Array.isArray(parsed)) {
-      // É um array de steps
-      return (
-        <ol className="space-y-3 list-decimal list-inside">
-          {parsed.map((step: any, index: number) => (
-            <li key={index} className="text-muted-foreground">
-              <strong>{step.step || `Passo ${index + 1}`}:</strong> {step.description}
-            </li>
-          ))}
-        </ol>
-      );
+      // Verificar se é array de strings ou objetos
+      const firstItem = parsed[0];
+      
+      if (typeof firstItem === 'string') {
+        // Array de strings simples
+        return (
+          <ol className="space-y-3 list-decimal list-inside">
+            {parsed.map((step: string, index: number) => (
+              <li key={index} className="text-muted-foreground ml-2">
+                <span className="ml-2">{step}</span>
+              </li>
+            ))}
+          </ol>
+        );
+      } else if (typeof firstItem === 'object') {
+        // Array de objetos {step, description}
+        return (
+          <ol className="space-y-3 list-decimal list-inside">
+            {parsed.map((step: any, index: number) => (
+              <li key={index} className="text-muted-foreground ml-2">
+                <strong>{step.step || `Passo ${index + 1}`}:</strong> {step.description}
+              </li>
+            ))}
+          </ol>
+        );
+      }
     }
   } catch {
     // Não é JSON, renderizar como markdown/texto
