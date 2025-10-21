@@ -212,8 +212,18 @@ serve(async (req) => {
 
     // 4.5. For Instagram, add context to help AI understand it's limited data
     let contextualTranscription = transcription;
-    if (platform === 'instagram' && transcription.length < 100) {
-      contextualTranscription = `[NOTA: Este é um vídeo do Instagram com informações limitadas. Faça uma análise baseada no que está disponível.]\n\n${transcription}`;
+    if (platform === 'instagram' && transcription.length < 150) {
+      contextualTranscription = `[IMPORTANTE: Este é um vídeo do Instagram. O Instagram não fornece legendas ou descrições automáticas, então as informações são muito limitadas. 
+
+INSTRUÇÕES ESPECIAIS:
+- Crie um resumo genérico mas útil indicando que é um vídeo do Instagram
+- Use categoria "Redes Sociais" ou "Conteúdo Visual"
+- Adicione palavras-chave relacionadas a Instagram e mídia social
+- No resumo, mencione que para análise completa é necessário assistir ao vídeo
+- Seja honesto sobre a limitação de informações disponíveis]
+
+Informações disponíveis:
+${transcription}`;
     }
 
     // 5. Analyze with GPT

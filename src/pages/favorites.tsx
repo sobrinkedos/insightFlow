@@ -22,8 +22,13 @@ import { Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 
-// Função para extrair thumbnail da URL do vídeo
-function getVideoThumbnail(url: string): string {
+// Função para extrair thumbnail da URL do vídeo ou usar o thumbnail salvo
+function getVideoThumbnail(url: string, thumbnailUrl?: string | null): string {
+  // Se tiver thumbnail_url do banco, usar ele (Instagram, etc)
+  if (thumbnailUrl) {
+    return thumbnailUrl;
+  }
+  
   try {
     const urlObj = new URL(url);
     
@@ -36,6 +41,7 @@ function getVideoThumbnail(url: string): string {
       }
     }
     
+    // Instagram (SVG placeholder - fallback se não tiver thumbnail_url)
     if (urlObj.hostname.includes('instagram.com')) {
       return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjkwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iOTAiIGZpbGw9IiNFNDQwNUYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkluc3RhZ3JhbTwvdGV4dD48L3N2Zz4=';
     }
@@ -148,7 +154,7 @@ export function FavoritesPage() {
                 <CardContent className="p-3 md:p-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <img 
-                      src={getVideoThumbnail(video.url)} 
+                      src={getVideoThumbnail(video.url, video.thumbnail_url)} 
                       alt={video.title || 'Thumbnail'}
                       className="w-16 h-12 md:w-20 md:h-14 object-cover rounded border border-border shrink-0"
                       onError={(e) => {
