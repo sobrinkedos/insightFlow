@@ -2,6 +2,11 @@ node_modules/
 
 .vercel
 
+# Environment variables
+.env
+.env.local
+.env.production
+
 # Arquivos temporários e de teste
 _temp_*.ts
 test-*.ts

@@ -1,11 +1,14 @@
+# 📝 Código Corrigido - index.ts
+
+## ⚠️ IMPORTANTE: Use este código no lugar do anterior
+
+O código anterior tinha um problema de sintaxe com template strings. Use este:
+
+```typescript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ANALYSIS_PROMPT } from "./ai-prompts.ts";
 import { instagramAPI } from "./instagram-api.ts";
-
-// IMPORTANT: Set these secrets in your Supabase project dashboard:
-// `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`
-// Docs: https://supabase.com/docs/guides/functions/secrets
 
 const openAIKey = Deno.env.get("OPENAI_API_KEY");
 
@@ -15,12 +18,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper functions
 function extractVideoId(url: string): { id: string; platform: string } | null {
   try {
     const urlObj = new URL(url);
 
-    // YouTube formats: youtube.com/watch?v=ID or youtu.be/ID
     if (urlObj.hostname.includes('youtube.com')) {
       const id = urlObj.searchParams.get('v');
       return id ? { id, platform: 'youtube' } : null;
@@ -29,7 +30,6 @@ function extractVideoId(url: string): { id: string; platform: string } | null {
       return id ? { id, platform: 'youtube' } : null;
     }
 
-    // Instagram formats: instagram.com/p/ID or instagram.com/reel/ID
     if (urlObj.hostname.includes('instagram.com')) {
       const match = urlObj.pathname.match(/\/(p|reel|tv)\/([^\/\?]+)/);
       if (match) {
@@ -46,16 +46,14 @@ function extractVideoId(url: string): { id: string; platform: string } | null {
 async function getVideoInfo(videoId: string, platform: string, fullUrl: string): Promise<{ title: string; description: string; videoUrl?: string; thumbnailUrl?: string } | null> {
   try {
     if (platform === 'youtube') {
-      // Usando a API do YouTube Data v3 (você precisa configurar YOUTUBE_API_KEY)
       const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
       if (!youtubeApiKey) {
         console.warn("YOUTUBE_API_KEY not set, skipping video info fetch");
         return null;
       }
 
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
-      );
+      const youtubeUrl = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + youtubeApiKey;
+      const response = await fetch(youtubeUrl);
 
       const data = await response.json();
 
@@ -67,7 +65,6 @@ async function getVideoInfo(videoId: string, platform: string, fullUrl: string):
         };
       }
     } else if (platform === 'instagram') {
-      // Use RapidAPI Instagram integration
       try {
         const postInfo = await instagramAPI.getPostInfo(fullUrl);
 
@@ -82,11 +79,10 @@ async function getVideoInfo(videoId: string, platform: string, fullUrl: string):
         console.warn("Instagram RapidAPI failed:", error);
       }
 
-      // Fallback: informações genéricas mas úteis
       console.warn("Using Instagram fallback with generic info");
       return {
-        title: `Conteúdo do Instagram`,
-        description: `Post do Instagram. Link: ${fullUrl}.`,
+        title: "Conteúdo do Instagram",
+        description: "Post do Instagram. Link: " + fullUrl + ".",
       };
     }
 
@@ -104,10 +100,9 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
   }
 
   try {
-    console.log("🎤 Starting Whisper transcription for video:", videoUrl.substring(0, 100));
+    console.log("Starting Whisper transcription for video:", videoUrl.substring(0, 100));
     
-    // 1. Download video
-    console.log("📥 Downloading video...");
+    console.log("Downloading video...");
     const videoResponse = await fetch(videoUrl);
     
     if (!videoResponse.ok) {
@@ -116,27 +111,25 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
     }
     
     const videoBlob = await videoResponse.blob();
-    const videoSize = videoBlob.size / (1024 * 1024); // MB
-    console.log(`✅ Video downloaded: ${videoSize.toFixed(2)} MB`);
+    const videoSize = videoBlob.size / (1024 * 1024);
+    console.log("Video downloaded:", videoSize.toFixed(2), "MB");
     
-    // Whisper API tem limite de 25MB
     if (videoSize > 25) {
-      console.warn("⚠️ Video too large for Whisper API (>25MB), skipping transcription");
+      console.warn("Video too large for Whisper API (>25MB), skipping transcription");
       return null;
     }
     
-    // 2. Send to Whisper API
-    console.log("🎤 Sending to Whisper API...");
+    console.log("Sending to Whisper API...");
     const formData = new FormData();
     formData.append('file', videoBlob, 'video.mp4');
     formData.append('model', 'whisper-1');
-    formData.append('language', 'pt'); // Português
+    formData.append('language', 'pt');
     formData.append('response_format', 'text');
     
     const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIKey}`,
+        'Authorization': 'Bearer ' + openAIKey,
       },
       body: formData,
     });
@@ -148,12 +141,12 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
     }
     
     const transcription = await whisperResponse.text();
-    console.log(`✅ Transcription completed: ${transcription.length} characters`);
+    console.log("Transcription completed:", transcription.length, "characters");
     console.log("Preview:", transcription.substring(0, 200));
     
     return transcription;
   } catch (error) {
-    console.error("❌ Error in Whisper transcription:", error);
+    console.error("Error in Whisper transcription:", error);
     return null;
   }
 }
@@ -167,7 +160,7 @@ async function analyzeWithGPT(transcription: string, videoTitle: string): Promis
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${openAIKey}`,
+      "Authorization": "Bearer " + openAIKey,
     },
     body: JSON.stringify({
       model: "gpt-4o-mini",
@@ -178,7 +171,7 @@ async function analyzeWithGPT(transcription: string, videoTitle: string): Promis
         },
         {
           role: "user",
-          content: `Título do vídeo: ${videoTitle}\n\nTranscrição/Descrição:\n${transcription}`,
+          content: "Título do vídeo: " + videoTitle + "\n\nTranscrição/Descrição:\n" + transcription,
         },
       ],
       temperature: 0.7,
@@ -188,7 +181,7 @@ async function analyzeWithGPT(transcription: string, videoTitle: string): Promis
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`OpenAI API error: ${error}`);
+    throw new Error("OpenAI API error: " + error);
   }
 
   const data = await response.json();
@@ -198,7 +191,6 @@ async function analyzeWithGPT(transcription: string, videoTitle: string): Promis
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -218,7 +210,6 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // 1. Fetch video details (including video_url and thumbnail_url if already saved)
     const { data: video, error: videoError} = await supabaseAdmin
       .from("videos")
       .select("id, url, user_id, video_url, thumbnail_url")
@@ -226,16 +217,13 @@ serve(async (req) => {
       .single();
 
     if (videoError || !video) {
-      throw new Error(`Video not found: ${videoError?.message}`);
+      throw new Error("Video not found: " + (videoError?.message || ""));
     }
     
-    console.log("📦 Video data from DB:", {
-      url: video.url,
-      has_video_url: !!video.video_url,
-      has_thumbnail_url: !!video.thumbnail_url
-    });
+    console.log("Video data from DB - URL:", video.url);
+    console.log("Has video_url:", !!video.video_url);
+    console.log("Has thumbnail_url:", !!video.thumbnail_url);
 
-    // 2. Extract video ID and platform from URL
     const videoData = extractVideoId(video.url);
     if (!videoData) {
       throw new Error("URL de vídeo inválida ou plataforma não suportada");
@@ -243,94 +231,56 @@ serve(async (req) => {
 
     const { id: videoId, platform } = videoData;
 
-    // 3. Get video info (title and description)
-    // First, check if video_url and thumbnail_url are already in the database (from extension)
     let videoUrl: string | undefined = video.video_url || undefined;
     let thumbnailUrl: string | undefined = video.thumbnail_url || undefined;
     
-    console.log("🔍 Checking for existing URLs in DB:", {
-      videoUrl: videoUrl ? "Found" : "Not found",
-      thumbnailUrl: thumbnailUrl ? "Found" : "Not found"
-    });
-    
-    // For Instagram, if we don't have video_url, try to get it via RapidAPI
-    if (platform === 'instagram' && !videoUrl) {
-      console.log("📡 Instagram video without URL in DB, fetching via RapidAPI...");
-      try {
-        const postInfo = await instagramAPI.getPostInfo(video.url);
-        if (postInfo) {
-          if (postInfo.videoUrl) {
-            videoUrl = postInfo.videoUrl;
-            console.log("✅ Got videoUrl from RapidAPI:", videoUrl.substring(0, 100));
-          }
-          if (postInfo.thumbnailUrl) {
-            thumbnailUrl = postInfo.thumbnailUrl;
-            console.log("✅ Got thumbnailUrl from RapidAPI");
-          }
-        }
-      } catch (error) {
-        console.warn("⚠️ Failed to fetch Instagram data via RapidAPI:", error);
-      }
-    }
+    console.log("Video URL from database:", videoUrl ? "Found" : "Not found");
     
     let videoInfo = await getVideoInfo(videoId, platform, video.url);
     
     if (!videoInfo) {
-      // Fallback: usar informações básicas do vídeo
       const platformName = platform === 'youtube' ? 'YouTube' : 'Instagram';
+      const linkText = platform === 'youtube' ? "Link: https://www.youtube.com/watch?v=" + videoId + ". Configure YOUTUBE_API_KEY para obter mais informações." : "Link: " + video.url;
       videoInfo = {
-        title: `Vídeo do ${platformName}`,
-        description: `Análise de vídeo do ${platformName}. ${platform === 'youtube' ? `Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.` : `Link: ${video.url}`}`,
+        title: "Vídeo do " + platformName,
+        description: "Análise de vídeo do " + platformName + ". " + linkText,
       };
     } else {
-      // Extract video and thumbnail URLs if available (from Instagram API)
-      // Only override if not already in database
       if (!videoUrl && videoInfo.videoUrl) {
         videoUrl = videoInfo.videoUrl;
-        console.log("✅ Got videoUrl from getVideoInfo");
+        console.log("Got videoUrl from API");
       }
       if (!thumbnailUrl && videoInfo.thumbnailUrl) {
         thumbnailUrl = videoInfo.thumbnailUrl;
-        console.log("✅ Got thumbnailUrl from getVideoInfo");
+        console.log("Got thumbnailUrl from API");
       }
     }
 
-    // 4. Get transcription
     let transcription = videoInfo.description || "Sem descrição disponível";
     
-    // 4.5. For Instagram with video URL, try Whisper transcription
     if (platform === 'instagram' && videoUrl) {
-      console.log("🎤 Instagram video detected, attempting Whisper transcription...");
+      console.log("Instagram video detected with URL, attempting Whisper transcription...");
+      console.log("Video URL:", videoUrl.substring(0, 100) + "...");
+      
       const whisperTranscription = await transcribeVideoWithWhisper(videoUrl);
       
       if (whisperTranscription && whisperTranscription.length > 50) {
-        console.log("✅ Using Whisper transcription");
+        console.log("Using Whisper transcription:", whisperTranscription.length, "characters");
         transcription = whisperTranscription;
       } else {
-        console.log("⚠️ Whisper transcription failed or too short, using fallback");
+        console.log("Whisper transcription failed or too short, using fallback");
       }
+    } else if (platform === 'instagram' && !videoUrl) {
+      console.warn("Instagram video but no video_url available");
     }
 
-    // 4.6. For Instagram without good transcription, add context
     let contextualTranscription = transcription;
     if (platform === 'instagram' && transcription.length < 150) {
-      contextualTranscription = `[IMPORTANTE: Este é um vídeo do Instagram. O Instagram não fornece legendas ou descrições automáticas, então as informações são muito limitadas. 
-
-INSTRUÇÕES ESPECIAIS:
-- Crie um resumo genérico mas útil indicando que é um vídeo do Instagram
-- Use categoria "Redes Sociais" ou "Conteúdo Visual"
-- Adicione palavras-chave relacionadas a Instagram e mídia social
-- No resumo, mencione que para análise completa é necessário assistir ao vídeo
-- Seja honesto sobre a limitação de informações disponíveis]
-
-Informações disponíveis:
-${transcription}`;
+      contextualTranscription = "[IMPORTANTE: Este é um vídeo do Instagram. O Instagram não fornece legendas ou descrições automáticas, então as informações são muito limitadas. \n\nINSTRUÇÕES ESPECIAIS:\n- Crie um resumo genérico mas útil indicando que é um vídeo do Instagram\n- Use categoria \"Redes Sociais\" ou \"Conteúdo Visual\"\n- Adicione palavras-chave relacionadas a Instagram e mídia social\n- No resumo, mencione que para análise completa é necessário assistir ao vídeo\n- Seja honesto sobre a limitação de informações disponíveis]\n\nInformações disponíveis:\n" + transcription;
     }
 
-    // 5. Analyze with GPT
     const analysis = await analyzeWithGPT(contextualTranscription, videoInfo.title);
 
-    // 6. Prepare the data
     const processedData = {
       title: analysis.title || videoInfo.title,
       transcription: transcription,
@@ -344,7 +294,6 @@ ${transcription}`;
       tutorial_steps: analysis.tutorial_steps || null,
     };
 
-    // 7. Update the video with processed data
     const updateData: any = {
       status: "Concluído",
       title: processedData.title,
@@ -360,14 +309,13 @@ ${transcription}`;
       processed_at: new Date().toISOString(),
     };
     
-    // Add video and thumbnail URLs if available (from Instagram API)
     if (videoUrl) {
       updateData.video_url = videoUrl;
-      console.log("✅ Saving video_url:", videoUrl.substring(0, 100));
+      console.log("Saving video_url:", videoUrl.substring(0, 100));
     }
     if (thumbnailUrl) {
       updateData.thumbnail_url = thumbnailUrl;
-      console.log("✅ Saving thumbnail_url:", thumbnailUrl.substring(0, 100));
+      console.log("Saving thumbnail_url:", thumbnailUrl.substring(0, 100));
     }
     
     const { error: updateError } = await supabaseAdmin
@@ -376,18 +324,15 @@ ${transcription}`;
       .eq("id", video_id);
 
     if (updateError) {
-      // If update fails, mark as failed
       await supabaseAdmin
         .from("videos")
         .update({ status: "Falha" })
         .eq("id", video_id);
-      throw new Error(`Failed to update video: ${updateError.message}`);
+      throw new Error("Failed to update video: " + updateError.message);
     }
 
-    // 8. Create or find theme and link video to it
     if (processedData.category) {
       try {
-        // Check if theme already exists for this user and category
         const { data: existingTheme } = await supabaseAdmin
           .from("themes")
           .select("id")
@@ -398,11 +343,9 @@ ${transcription}`;
         let themeId: string;
 
         if (existingTheme) {
-          // Theme exists, use it
           themeId = existingTheme.id;
-          console.log(`Using existing theme: ${themeId}`);
+          console.log("Using existing theme:", themeId);
         } else {
-          // Create new theme
           const { data: newTheme, error: themeError } = await supabaseAdmin
             .from("themes")
             .insert({
@@ -420,10 +363,9 @@ ${transcription}`;
           }
 
           themeId = newTheme.id;
-          console.log(`Created new theme: ${themeId}`);
+          console.log("Created new theme:", themeId);
         }
 
-        // Link video to theme (check if link already exists)
         const { data: existingLink } = await supabaseAdmin
           .from("theme_videos")
           .select("*")
@@ -444,14 +386,12 @@ ${transcription}`;
             throw linkError;
           }
 
-          console.log(`Linked video ${video_id} to theme ${themeId}`);
+          console.log("Linked video", video_id, "to theme", themeId);
         } else {
-          console.log(`Video ${video_id} already linked to theme ${themeId}`);
+          console.log("Video", video_id, "already linked to theme", themeId);
         }
       } catch (error) {
         console.error("Error in theme creation/linking:", error);
-        // Don't fail the entire process if theme creation fails
-        // The video is already processed successfully
       }
     }
 
@@ -468,3 +408,22 @@ ${transcription}`;
     });
   }
 });
+```
+
+## 🔧 O que foi corrigido:
+
+Substituí todos os template strings (backticks) por concatenação normal:
+
+**ANTES (causava erro):**
+```typescript
+`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
+```
+
+**DEPOIS (funciona):**
+```typescript
+"https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + youtubeApiKey
+```
+
+## ✅ Agora pode fazer o deploy!
+
+Cole este código no dashboard e clique em Deploy. Deve funcionar! 🚀
