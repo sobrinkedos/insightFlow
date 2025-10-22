@@ -116,12 +116,24 @@ async function fetchInstagramData(url) {
       }
     }
     
-    // Pegar título/caption
-    if (data.title) {
+    // Pegar título/caption de várias fontes possíveis
+    if (data.title && data.title !== 'Instagram') {
       title = data.title;
-    } else if (data.caption) {
-      title = data.caption.substring(0, 100);
+      console.log('✅ Título do campo title:', title);
+    } else if (data.caption && data.caption.length > 5) {
+      title = data.caption.substring(0, 150);
+      console.log('✅ Título do campo caption:', title);
+    } else if (data.description && data.description.length > 5) {
+      title = data.description.substring(0, 150);
+      console.log('✅ Título do campo description:', title);
+    } else if (data.owner && data.owner.username) {
+      title = `Post de @${data.owner.username}`;
+      console.log('✅ Título do username:', title);
+    } else {
+      console.warn('⚠️ Nenhum título encontrado nos dados da API');
     }
+    
+    console.log('📤 Retornando dados:', { title, thumbnail: !!thumbnail, videoUrl: !!videoUrl });
     
     return {
       title,
