@@ -131,7 +131,9 @@ async function fetchInstagramData(url) {
       title = `Post de @${data.owner.username}`;
       console.log('✅ Título do username:', title);
     } else {
-      console.warn('⚠️ Nenhum título encontrado nos dados da API');
+      // API não retorna caption - título será gerado pela IA
+      title = 'Vídeo do Instagram (título será gerado pela IA)';
+      console.log('ℹ️ API não retorna caption. A IA vai gerar título e resumo após processar.');
     }
     
     console.log('📤 Retornando dados:', { title, thumbnail: !!thumbnail, videoUrl: !!videoUrl });
