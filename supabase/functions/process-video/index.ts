@@ -15,6 +15,58 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to download and upload thumbnail to Supabase Storage
+async function uploadThumbnailToStorage(
+  thumbnailUrl: string,
+  videoId: string,
+  supabaseAdmin: any
+): Promise<string | null> {
+  try {
+    console.log("📥 Downloading thumbnail from:", thumbnailUrl.substring(0, 100));
+    
+    // Download thumbnail
+    const response = await fetch(thumbnailUrl);
+    if (!response.ok) {
+      console.error("Failed to download thumbnail:", response.status);
+      return null;
+    }
+    
+    const blob = await response.blob();
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Generate filename
+    const extension = thumbnailUrl.includes('.jpg') ? 'jpg' : 'png';
+    const filename = `thumbnails/${videoId}.${extension}`;
+    
+    console.log("📤 Uploading thumbnail to Storage:", filename);
+    
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin.storage
+      .from('video-thumbnails')
+      .upload(filename, uint8Array, {
+        contentType: `image/${extension}`,
+        upsert: true,
+      });
+    
+    if (error) {
+      console.error("Error uploading thumbnail to storage:", error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from('video-thumbnails')
+      .getPublicUrl(filename);
+    
+    console.log("✅ Thumbnail uploaded successfully:", publicUrlData.publicUrl);
+    return publicUrlData.publicUrl;
+  } catch (error) {
+    console.error("Error in uploadThumbnailToStorage:", error);
+    return null;
+  }
+}
+
 // Helper functions
 function cleanInstagramUrl(url: string): string {
   try {
@@ -386,14 +438,24 @@ ${transcription}`;
       processed_at: new Date().toISOString(),
     };
     
-    // Add video and thumbnail URLs if available (from Instagram API)
+    // Add video URL if available
     if (videoUrl) {
       updateData.video_url = videoUrl;
       console.log("✅ Saving video_url:", videoUrl.substring(0, 100));
     }
+    
+    // Upload thumbnail to Storage to avoid CORS issues
     if (thumbnailUrl) {
-      updateData.thumbnail_url = thumbnailUrl;
-      console.log("✅ Saving thumbnail_url:", thumbnailUrl.substring(0, 100));
+      console.log("📸 Processing thumbnail...");
+      const storageThumbnailUrl = await uploadThumbnailToStorage(thumbnailUrl, video_id, supabaseAdmin);
+      if (storageThumbnailUrl) {
+        updateData.thumbnail_url = storageThumbnailUrl;
+        console.log("✅ Saving Storage thumbnail_url:", storageThumbnailUrl);
+      } else {
+        // Fallback to original URL if upload fails
+        updateData.thumbnail_url = thumbnailUrl;
+        console.log("⚠️ Using original thumbnail_url (upload failed):", thumbnailUrl.substring(0, 100));
+      }
     }
     
     const { error: updateError } = await supabaseAdmin
