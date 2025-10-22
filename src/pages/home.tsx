@@ -96,6 +96,34 @@ const getVideoThumbnail = (video: Video): string | null => {
   }
 };
 
+const VideoThumbnail = ({ thumbnail, title, className = "" }: { thumbnail: string | null, title: string | null, className?: string }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!thumbnail || imageError) {
+    return (
+      <div className={`flex items-center justify-center bg-muted ${className}`}>
+        <VideoIcon className="h-6 w-6 text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <img 
+        src={thumbnail} 
+        alt={title || "Thumbnail"} 
+        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${className}`}
+        onError={() => {
+          console.error("Failed to load thumbnail:", thumbnail);
+          setImageError(true);
+        }}
+        crossOrigin="anonymous"
+      />
+      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+    </>
+  );
+};
+
 const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: boolean }) => {
     const navigate = useNavigate();
     return (
@@ -140,24 +168,7 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                                 >
                                     <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
                                         <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                            {thumbnail ? (
-                                                <>
-                                                    <img 
-                                                        src={thumbnail} 
-                                                        alt={video.title || "Thumbnail"} 
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        onError={(e) => {
-                                                            console.error("Failed to load thumbnail:", thumbnail);
-                                                            e.currentTarget.style.display = 'none';
-                                                        }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                                </>
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-muted">
-                                                    <VideoIcon className="h-6 w-6 text-muted-foreground" />
-                                                </div>
-                                            )}
+                                            <VideoThumbnail thumbnail={thumbnail} title={video.title} />
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
@@ -588,28 +599,11 @@ export function HomePage() {
                         >
                           <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
                             <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                              {thumbnail ? (
-                                <>
-                                  <img 
-                                    src={thumbnail} 
-                                    alt={video.title || "Thumbnail"} 
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    onError={(e) => {
-                                      console.error("Failed to load thumbnail:", thumbnail);
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                    <Clock className="h-3 w-3 inline mr-1" />
-                                    Assistido
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-muted">
-                                  <VideoIcon className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                              )}
+                              <VideoThumbnail thumbnail={thumbnail} title={video.title} />
+                              <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded z-10">
+                                <Clock className="h-3 w-3 inline mr-1" />
+                                Assistido
+                              </div>
                             </div>
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                               <div>
@@ -656,25 +650,7 @@ export function HomePage() {
                       className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
                     >
                       <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                        {thumbnail ? (
-                          <img 
-                            src={thumbnail} 
-                            alt={video.title || "Thumbnail"} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              console.error("Failed to load thumbnail:", thumbnail);
-                              e.currentTarget.style.display = 'none';
-                              const parent = e.currentTarget.parentElement;
-                              if (parent) {
-                                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div>';
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
-                          </div>
-                        )}
+                        <VideoThumbnail thumbnail={thumbnail} title={video.title} className="w-full h-full" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-xs md:text-sm line-clamp-2 group-hover:text-primary transition-colors">
