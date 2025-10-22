@@ -257,18 +257,12 @@ serve(async (req) => {
     const { id: videoId, platform } = videoData;
 
     // 3. Get video info (title and description)
-    // First, check if video_url and thumbnail_url are already in the database (from extension)
-    let videoUrl: string | undefined = video.video_url || undefined;
-    let thumbnailUrl: string | undefined = video.thumbnail_url || undefined;
+    let videoUrl: string | undefined = undefined;
+    let thumbnailUrl: string | undefined = undefined;
     
-    console.log("🔍 Checking for existing URLs in DB:", {
-      videoUrl: videoUrl ? "Found" : "Not found",
-      thumbnailUrl: thumbnailUrl ? "Found" : "Not found"
-    });
-    
-    // For Instagram, if we don't have video_url, try to get it via RapidAPI
-    if (platform === 'instagram' && !videoUrl) {
-      console.log("📡 Instagram video without URL in DB, fetching via RapidAPI...");
+    // For Instagram, ALWAYS fetch via RapidAPI (unified flow)
+    if (platform === 'instagram') {
+      console.log("📡 Instagram detected - fetching via RapidAPI...");
       try {
         // Clean URL before sending to RapidAPI (remove query params)
         const cleanUrl = cleanInstagramUrl(video.url);
@@ -291,6 +285,14 @@ serve(async (req) => {
       } catch (error) {
         console.warn("⚠️ Failed to fetch Instagram data via RapidAPI:", error);
       }
+    } else {
+      // For other platforms, use what's in the database
+      videoUrl = video.video_url || undefined;
+      thumbnailUrl = video.thumbnail_url || undefined;
+      console.log("🔍 Using URLs from DB:", {
+        videoUrl: videoUrl ? "Found" : "Not found",
+        thumbnailUrl: thumbnailUrl ? "Found" : "Not found"
+      });
     }
     
     let videoInfo = await getVideoInfo(videoId, platform, video.url);
@@ -302,17 +304,6 @@ serve(async (req) => {
         title: `Vídeo do ${platformName}`,
         description: `Análise de vídeo do ${platformName}. ${platform === 'youtube' ? `Link: https://www.youtube.com/watch?v=${videoId}. Configure YOUTUBE_API_KEY para obter mais informações.` : `Link: ${video.url}`}`,
       };
-    } else {
-      // Extract video and thumbnail URLs if available (from Instagram API)
-      // Only override if not already in database
-      if (!videoUrl && videoInfo.videoUrl) {
-        videoUrl = videoInfo.videoUrl;
-        console.log("✅ Got videoUrl from getVideoInfo");
-      }
-      if (!thumbnailUrl && videoInfo.thumbnailUrl) {
-        thumbnailUrl = videoInfo.thumbnailUrl;
-        console.log("✅ Got thumbnailUrl from getVideoInfo");
-      }
     }
 
     // 4. Get transcription
