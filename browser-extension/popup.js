@@ -97,7 +97,8 @@ async function fetchInstagramData(url) {
     }
     
     const data = await response.json();
-    console.log('✅ Dados da API:', data);
+    console.log('✅ Dados completos da API:', JSON.stringify(data, null, 2));
+    console.log('📋 Campos disponíveis:', Object.keys(data));
     
     // Extrair informações
     let title = 'Post do Instagram';
