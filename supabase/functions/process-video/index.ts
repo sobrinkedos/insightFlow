@@ -16,6 +16,19 @@ const corsHeaders = {
 };
 
 // Helper functions
+function cleanInstagramUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    // Remove query parameters for Instagram URLs
+    if (urlObj.hostname.includes('instagram.com')) {
+      return `https://www.instagram.com${urlObj.pathname}`;
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
+
 function extractVideoId(url: string): { id: string; platform: string } | null {
   try {
     const urlObj = new URL(url);
@@ -257,7 +270,12 @@ serve(async (req) => {
     if (platform === 'instagram' && !videoUrl) {
       console.log("📡 Instagram video without URL in DB, fetching via RapidAPI...");
       try {
-        const postInfo = await instagramAPI.getPostInfo(video.url);
+        // Clean URL before sending to RapidAPI (remove query params)
+        const cleanUrl = cleanInstagramUrl(video.url);
+        console.log("🧹 Original URL:", video.url);
+        console.log("🧹 Cleaned URL:", cleanUrl);
+        
+        const postInfo = await instagramAPI.getPostInfo(cleanUrl);
         if (postInfo) {
           if (postInfo.videoUrl) {
             videoUrl = postInfo.videoUrl;
@@ -267,6 +285,8 @@ serve(async (req) => {
             thumbnailUrl = postInfo.thumbnailUrl;
             console.log("✅ Got thumbnailUrl from RapidAPI");
           }
+        } else {
+          console.warn("⚠️ RapidAPI returned null for Instagram post");
         }
       } catch (error) {
         console.warn("⚠️ Failed to fetch Instagram data via RapidAPI:", error);
