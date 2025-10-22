@@ -68,9 +68,15 @@ const ThemeCard = ({ theme }: { theme: Theme }) => (
   </Link>
 );
 
-const getYouTubeThumbnail = (url: string): string | null => {
+const getVideoThumbnail = (video: Video): string | null => {
+  // Primeiro, tenta usar a thumbnail salva no banco (Instagram, TikTok, etc)
+  if (video.thumbnail_url) {
+    return video.thumbnail_url;
+  }
+  
+  // Se não tiver, tenta extrair do YouTube
   try {
-    const videoUrl = new URL(url);
+    const videoUrl = new URL(video.url);
     let videoId: string | null = null;
     if (videoUrl.hostname.includes("youtube.com")) {
       videoId = videoUrl.searchParams.get("v");
@@ -116,7 +122,7 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                         ))
                     ) : videos.length > 0 ? (
                         videos.map((video) => {
-                            const thumbnail = getYouTubeThumbnail(video.url);
+                            const thumbnail = getVideoThumbnail(video);
                             return (
                                 <motion.div
                                     key={video.id}
@@ -554,7 +560,7 @@ export function HomePage() {
                 <CardContent>
                   <div className="space-y-4">
                     {watchedVideos.map((video) => {
-                      const thumbnail = getYouTubeThumbnail(video.url);
+                      const thumbnail = getVideoThumbnail(video);
                       return (
                         <motion.div
                           key={video.id}
@@ -615,7 +621,7 @@ export function HomePage() {
               </CardHeader>
               <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
                 {favoriteVideos.map((video) => {
-                  const thumbnail = getYouTubeThumbnail(video.url);
+                  const thumbnail = getVideoThumbnail(video);
                   return (
                     <Link 
                       key={video.id}
