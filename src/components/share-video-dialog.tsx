@@ -170,43 +170,19 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
       status: "Processando"
     };
 
-    // For Instagram, fetch data via RapidAPI first (like extension does)
+    // For Instagram, clean URL
     if (platform === 'instagram') {
       const cleanUrl = cleanInstagramUrl(data.url);
       console.log("🧹 [SHARE] Cleaned URL:", cleanUrl);
-      
-      toast.info("Buscando informações do Instagram...");
-      
-      const instagramData = await fetchInstagramData(cleanUrl);
-      
-      if (instagramData) {
-        console.log("✅ [SHARE] Instagram data fetched successfully");
-        
-        // Add Instagram data to payload (like extension does)
-        videoPayload.url = cleanUrl; // Use cleaned URL
-        if (instagramData.title) {
-          videoPayload.title = instagramData.title;
-        }
-        if (instagramData.videoUrl) {
-          videoPayload.video_url = instagramData.videoUrl;
-          console.log("✅ [SHARE] video_url added to payload");
-        }
-        if (instagramData.thumbnailUrl) {
-          videoPayload.thumbnail_url = instagramData.thumbnailUrl;
-          console.log("✅ [SHARE] thumbnail_url added to payload");
-        }
-      } else {
-        console.warn("⚠️ [SHARE] Failed to fetch Instagram data, will try via Edge Function");
-      }
+      videoPayload.url = cleanUrl;
     }
 
     console.log("📤 [SHARE] Inserting video with payload:", {
       url: videoPayload.url,
-      has_video_url: !!videoPayload.video_url,
-      has_thumbnail_url: !!videoPayload.thumbnail_url
+      platform
     });
 
-    // 1. Insert the video with data
+    // 1. Insert the video
     const { data: newVideo, error: insertError } = await supabase
       .from("videos")
       .insert(videoPayload)
@@ -221,30 +197,61 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
     }
 
     console.log("✅ [SHARE] Video inserted with ID:", newVideo.id);
-    console.log("🚀 [SHARE] Invoking Edge Function...");
-
-    // 2. Invoke the Edge Function to process the video in the background
-    const { error: functionError } = await supabase.functions.invoke('process-video', {
-      body: { video_id: newVideo.id },
-    });
-
+    
+    // Close modal immediately and show success message
     setLoading(false);
-
-    if (functionError) {
-      toast.error("O processamento da IA falhou em iniciar.");
-      console.error("❌ [SHARE] Error invoking function:", functionError);
-      // Update video status to 'Falha'
-      await supabase
-        .from("videos")
-        .update({ status: "Falha" })
-        .eq("id", newVideo.id);
-    } else {
-      console.log("✅ [SHARE] Edge Function invoked successfully!");
-      toast.success("Vídeo adicionado! Processamento iniciado com sucesso.");
-    }
-
     form.reset();
     setOpen(false);
+    toast.success("Vídeo adicionado à fila! O processamento está acontecendo em segundo plano.");
+
+    // 2. Process in background (don't await)
+    console.log("🚀 [SHARE] Starting background processing...");
+    
+    // Process in background without blocking
+    (async () => {
+      try {
+        // For Instagram, try to fetch data via RapidAPI first
+        if (platform === 'instagram') {
+          console.log("📡 [SHARE] Fetching Instagram data in background...");
+          const instagramData = await fetchInstagramData(videoPayload.url);
+          
+          if (instagramData && (instagramData.videoUrl || instagramData.thumbnailUrl)) {
+            console.log("✅ [SHARE] Instagram data fetched, updating video...");
+            
+            // Update video with Instagram data
+            const updatePayload: any = {};
+            if (instagramData.title) updatePayload.title = instagramData.title;
+            if (instagramData.videoUrl) updatePayload.video_url = instagramData.videoUrl;
+            if (instagramData.thumbnailUrl) updatePayload.thumbnail_url = instagramData.thumbnailUrl;
+            
+            await supabase
+              .from("videos")
+              .update(updatePayload)
+              .eq("id", newVideo.id);
+            
+            console.log("✅ [SHARE] Video updated with Instagram data");
+          }
+        }
+        
+        // Invoke Edge Function for processing
+        console.log("🚀 [SHARE] Invoking Edge Function...");
+        const { error: functionError } = await supabase.functions.invoke('process-video', {
+          body: { video_id: newVideo.id },
+        });
+
+        if (functionError) {
+          console.error("❌ [SHARE] Error invoking function:", functionError);
+          await supabase
+            .from("videos")
+            .update({ status: "Falha" })
+            .eq("id", newVideo.id);
+        } else {
+          console.log("✅ [SHARE] Edge Function invoked successfully!");
+        }
+      } catch (error) {
+        console.error("❌ [SHARE] Background processing error:", error);
+      }
+    })();
   };
 
   return (
