@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Extensão Instagram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #0095f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0081d6;
+        }
+        .result {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste da Extensão InsightShare - Instagram</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Captura de URL</h2>
+        <p>URL atual da página:</p>
+        <div class="result" id="currentUrl"></div>
+        <button onclick="testUrlCapture()">Testar Captura</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste de Regex de Limpeza</h2>
+        <p>Teste se a regex está extraindo corretamente a URL do Instagram:</p>
+        <input type="text" id="testUrl" placeholder="Cole uma URL do Instagram" style="width: 100%; padding: 8px; margin: 10px 0;">
+        <button onclick="testRegex()">Testar Regex</button>
+        <div class="result" id="regexResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. URLs de Teste</h2>
+        <p>Clique para testar diferentes formatos de URL:</p>
+        <button onclick="testUrl('https://www.instagram.com/reel/ABC123/')">Reel Simples</button>
+        <button onclick="testUrl('https://www.instagram.com/reel/ABC123/?utm_source=ig_web')">Reel com Params</button>
+        <button onclick="testUrl('https://www.instagram.com/p/DEF456/')">Post</button>
+        <button onclick="testUrl('https://www.instagram.com/tv/GHI789/')">IGTV</button>
+        <button onclick="testUrl('https://www.instagram.com/')">Homepage (Inválido)</button>
+        <div class="result" id="testResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Teste de Conexão com Supabase</h2>
+        <p>Verificar se consegue conectar com o Supabase:</p>
+        <button onclick="testSupabase()">Testar Conexão</button>
+        <div class="result" id="supabaseResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Instruções</h2>
+        <ol>
+            <li>Abra esta página em uma aba</li>
+            <li>Abra um reel do Instagram em outra aba</li>
+            <li>Execute os testes acima</li>
+            <li>Verifique os resultados</li>
+            <li>Se tudo estiver OK, teste a extensão no Instagram</li>
+        </ol>
+    </div>
+
+    <script>
+        const API_URL = 'https://enkpfnqsjjnanlqhjnsv.supabase.co';
+        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NjcyODAsImV4cCI6MjA3NjE0MzI4MH0.WwYOmV_jXBsrZ74GWw9xuSzRC1vf1k39DAHjY1EI1hE';
+
+        function testUrlCapture() {
+            const url = window.location.href;
+            document.getElementById('currentUrl').innerHTML = `
+                <span class="info">URL:</span> ${url}
+                <br><span class="info">Hostname:</span> ${new URL(url).hostname}
+                <br><span class="info">Pathname:</span> ${new URL(url).pathname}
+            `;
+        }
+
+        function testRegex() {
+            const url = document.getElementById('testUrl').value;
+            if (!url) {
+                document.getElementById('regexResult').innerHTML = '<span class="error">Por favor, cole uma URL</span>';
+                return;
+            }
+
+            const match = url.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[^\/\?]+)/);
+            
+            if (match) {
+                const cleanUrl = match[1] + '/';
+                document.getElementById('regexResult').innerHTML = `
+                    <span class="success">✅ URL válida!</span>
+                    <br><span class="info">URL original:</span> ${url}
+                    <br><span class="info">URL limpa:</span> ${cleanUrl}
+                `;
+            } else {
+                document.getElementById('regexResult').innerHTML = `
+                    <span class="error">❌ URL inválida ou não é um post/reel/tv do Instagram</span>
+                    <br><span class="info">URL testada:</span> ${url}
+                `;
+            }
+        }
+
+        function testUrl(url) {
+            const match = url.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[^\/\?]+)/);
+            
+            let result = `<span class="info">Testando:</span> ${url}\n`;
+            
+            if (match) {
+                const cleanUrl = match[1] + '/';
+                result += `<span class="success">✅ Válida</span>\n`;
+                result += `<span class="info">URL limpa:</span> ${cleanUrl}`;
+            } else {
+                result += `<span class="error">❌ Inválida</span>`;
+            }
+            
+            document.getElementById('testResult').innerHTML = result;
+        }
+
+        async function testSupabase() {
+            const resultEl = document.getElementById('supabaseResult');
+            resultEl.innerHTML = '<span class="info">Testando conexão...</span>';
+            
+            try {
+                const response = await fetch(`${API_URL}/rest/v1/videos?limit=1`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <span class="success">✅ Conexão OK!</span>
+                        <br><span class="info">Status:</span> ${response.status}
+                        <br><span class="info">API URL:</span> ${API_URL}
+                    `;
+                } else {
+                    resultEl.innerHTML = `
+                        <span class="error">❌ Erro na conexão</span>
+                        <br><span class="info">Status:</span> ${response.status}
+                        <br><span class="info">Mensagem:</span> ${await response.text()}
+                    `;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `
+                    <span class="error">❌ Erro:</span> ${error.message}
+                `;
+            }
+        }
+
+        // Auto-executar teste de URL ao carregar
+        window.onload = () => {
+            testUrlCapture();
+        };
+    </script>
+</body>
+</html>

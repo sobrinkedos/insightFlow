@@ -2,10 +2,6 @@
 const API_URL = 'https://enkpfnqsjjnanlqhjnsv.supabase.co';
 const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NjcyODAsImV4cCI6MjA3NjE0MzI4MH0.WwYOmV_jXBsrZ74GWw9xuSzRC1vf1k39DAHjY1EI1hE';
 
-// RapidAPI Configuration
-const RAPIDAPI_KEY = '5b4ef30d7amsh604c58627ce5d90p18121bjsnbc0f5b169f67';
-const RAPIDAPI_HOST = 'instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com';
-
 // Elementos
 const loginScreen = document.getElementById('loginScreen');
 const shareScreen = document.getElementById('shareScreen');
@@ -18,7 +14,6 @@ const userEmailEl = document.getElementById('userEmail');
 const statusEl = document.getElementById('status');
 
 let currentVideoUrl = null;
-let currentVideoData = null; // Armazena dados completos do vídeo
 let currentUser = null;
 
 // Inicializar
@@ -76,66 +71,6 @@ function showShareScreen() {
   userEmailEl.textContent = currentUser?.email || 'Usuário';
 }
 
-// Buscar informações do Instagram via RapidAPI
-async function fetchInstagramData(url) {
-  try {
-    console.log('📡 Buscando dados do Instagram:', url);
-    
-    const apiUrl = `https://${RAPIDAPI_HOST}/convert?url=${encodeURIComponent(url)}`;
-    
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-host': RAPIDAPI_HOST,
-        'x-rapidapi-key': RAPIDAPI_KEY
-      }
-    });
-    
-    if (!response.ok) {
-      console.warn('⚠️ API retornou erro:', response.status);
-      return null;
-    }
-    
-    const data = await response.json();
-    console.log('✅ Dados da API:', data);
-    
-    // Extrair informações
-    let title = 'Post do Instagram';
-    let thumbnail = null;
-    let videoUrl = null;
-    
-    if (data.media && Array.isArray(data.media) && data.media.length > 0) {
-      const firstMedia = data.media[0];
-      
-      // Pegar thumbnail
-      thumbnail = firstMedia.thumbnail || (firstMedia.type === 'image' ? firstMedia.url : null);
-      
-      // Pegar URL do vídeo
-      if (firstMedia.type === 'video' && firstMedia.url) {
-        videoUrl = firstMedia.url;
-      }
-    }
-    
-    // Pegar título/caption
-    if (data.title) {
-      title = data.title;
-    } else if (data.caption) {
-      title = data.caption.substring(0, 100);
-    }
-    
-    return {
-      title,
-      thumbnail,
-      videoUrl,
-      platform: 'Instagram',
-      rawData: data // Dados completos para enviar ao backend
-    };
-  } catch (error) {
-    console.error('❌ Erro ao buscar dados:', error);
-    return null;
-  }
-}
-
 // Obter informações do vídeo
 async function getVideoInfo() {
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -148,97 +83,36 @@ async function getVideoInfo() {
     // Instagram
     if (currentTab.url.includes('instagram.com')) {
       try {
-        // Executar script para detectar vídeo ativo na página
+        // Pegar URL real da página
         const results = await chrome.scripting.executeScript({
           target: { tabId: currentTab.id },
-          func: () => {
-            // Função para encontrar vídeo ativo
-            const findActiveVideo = () => {
-              // Tentar encontrar vídeo tocando
-              const videos = document.querySelectorAll('video');
-              for (const video of videos) {
-                if (!video.paused && video.currentTime > 0) {
-                  // Vídeo está tocando, tentar pegar URL do post
-                  let element = video;
-                  while (element && element !== document.body) {
-                    // Procurar link do post
-                    const link = element.querySelector('a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"]');
-                    if (link) {
-                      return link.href;
-                    }
-                    element = element.parentElement;
-                  }
-                }
-              }
-              
-              // Se não encontrou vídeo tocando, tentar pegar da URL
-              const currentUrl = window.location.href;
-              const match = currentUrl.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[A-Za-z0-9_-]+)/);
-              if (match) {
-                return match[1];
-              }
-              
-              // Último recurso: pegar primeiro link de post visível
-              const firstPostLink = document.querySelector('a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"]');
-              if (firstPostLink) {
-                return firstPostLink.href;
-              }
-              
-              return null;
-            };
-            
-            return findActiveVideo();
-          }
+          func: () => window.location.href
         });
         
-        const detectedUrl = results[0].result;
-        console.log('📱 URL detectada:', detectedUrl);
+        const realUrl = results[0].result;
+        console.log('📱 URL real:', realUrl);
         
-        if (detectedUrl) {
-          // Extrair URL limpa
-          const match = detectedUrl.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[A-Za-z0-9_-]+)/);
+        // Extrair URL limpa
+        const match = realUrl.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[A-Za-z0-9_-]+)/);
+        
+        if (match) {
+          currentVideoUrl = match[1] + '/';
+          console.log('✅ URL extraída:', currentVideoUrl);
           
-          if (match) {
-            currentVideoUrl = match[1] + '/';
-            console.log('✅ URL extraída:', currentVideoUrl);
-            
-            // Mostrar loading
-            displayVideoInfo({
-              url: currentVideoUrl,
-              title: '⏳ Carregando informações...',
-              platform: 'Instagram'
-            });
-            
-            // Buscar dados via RapidAPI
-            const instagramData = await fetchInstagramData(currentVideoUrl);
-            
-            if (instagramData) {
-              currentVideoData = instagramData;
-              displayVideoInfo({
-                url: currentVideoUrl,
-                title: instagramData.title,
-                thumbnail: instagramData.thumbnail,
-                platform: 'Instagram'
-              });
-            } else {
-              displayVideoInfo({
-                url: currentVideoUrl,
-                title: 'Post do Instagram',
-                platform: 'Instagram'
-              });
-            }
-            return;
-          }
+          displayVideoInfo({
+            url: currentVideoUrl,
+            title: 'Post do Instagram',
+            platform: 'Instagram'
+          });
+        } else {
+          console.warn('⚠️ URL inválida');
+          displayVideoInfo({
+            url: realUrl,
+            title: '⚠️ Abra um post específico',
+            platform: 'Instagram'
+          });
+          currentVideoUrl = null;
         }
-        
-        // Se não detectou nada
-        console.warn('⚠️ Nenhum vídeo detectado');
-        displayVideoInfo({
-          url: currentTab.url,
-          title: '⚠️ Nenhum vídeo detectado. Role até um vídeo e tente novamente.',
-          platform: 'Instagram'
-        });
-        currentVideoUrl = null;
       } catch (error) {
         console.error('❌ Erro:', error);
       }
@@ -284,16 +158,8 @@ function displayVideoInfo(info) {
   videoPlatform.textContent = info.platform || 'Plataforma desconhecida';
   
   if (info.thumbnail) {
-    // Usar proxy de imagem para evitar CORS do Instagram
-    const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(info.thumbnail)}&w=120&h=90&fit=cover`;
-    videoThumbnail.src = proxyUrl;
+    videoThumbnail.src = info.thumbnail;
     videoThumbnail.style.display = 'block';
-    
-    // Fallback se o proxy falhar
-    videoThumbnail.onerror = () => {
-      console.warn('Erro ao carregar thumbnail via proxy');
-      videoThumbnail.style.display = 'none';
-    };
   } else {
     videoThumbnail.style.display = 'none';
   }
@@ -355,7 +221,6 @@ shareBtn.addEventListener('click', async () => {
   }
   
   console.log('🎬 Compartilhando:', currentVideoUrl);
-  console.log('📦 Dados do vídeo:', currentVideoData);
   
   const session = await getSession();
   if (!session) {
@@ -368,28 +233,6 @@ shareBtn.addEventListener('click', async () => {
   shareBtn.innerHTML = '<div class="spinner"></div><span>Compartilhando...</span>';
   
   try {
-    // Preparar dados para enviar
-    const videoPayload = {
-      url: currentVideoUrl,
-      user_id: session.user.id,
-      status: 'Processando'
-    };
-    
-    // Se tiver dados do Instagram, adicionar
-    if (currentVideoData && currentVideoData.platform === 'Instagram') {
-      if (currentVideoData.title) {
-        videoPayload.title = currentVideoData.title;
-      }
-      if (currentVideoData.thumbnail) {
-        videoPayload.thumbnail_url = currentVideoData.thumbnail;
-      }
-      if (currentVideoData.videoUrl) {
-        videoPayload.video_url = currentVideoData.videoUrl;
-      }
-    }
-    
-    console.log('📤 Enviando para Supabase:', videoPayload);
-    
     // Inserir vídeo
     const response = await fetch(`${API_URL}/rest/v1/videos`, {
       method: 'POST',
@@ -399,7 +242,11 @@ shareBtn.addEventListener('click', async () => {
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify(videoPayload)
+      body: JSON.stringify({
+        url: currentVideoUrl,
+        user_id: session.user.id,
+        status: 'Processando'
+      })
     });
     
     if (!response.ok) {
@@ -409,8 +256,6 @@ shareBtn.addEventListener('click', async () => {
     
     const data = await response.json();
     const videoId = data[0]?.id;
-    
-    console.log('✅ Vídeo inserido:', videoId);
     
     if (videoId) {
       // Processar vídeo
