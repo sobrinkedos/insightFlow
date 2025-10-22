@@ -7,7 +7,8 @@ export class InstagramAPI {
   private apiHost: string;
 
   constructor() {
-    this.apiKey = Deno.env.get("RAPIDAPI_KEY") || "";
+    // Try to get from environment variable, fallback to hardcoded key
+    this.apiKey = Deno.env.get("RAPIDAPI_KEY") || "5b4ef30d7amsh604c58627ce5d90p18121bjsnbc0f5b169f67";
     this.apiHost = "instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com";
 
     console.log("🔑 RAPIDAPI_KEY configured:", !!this.apiKey);
@@ -16,6 +17,8 @@ export class InstagramAPI {
     
     if (!this.apiKey) {
       console.warn("⚠️ RAPIDAPI_KEY not configured - Instagram API will use fallback");
+    } else {
+      console.log("✅ RAPIDAPI_KEY is available");
     }
   }
 
