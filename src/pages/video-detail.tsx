@@ -259,9 +259,15 @@ export function VideoDetailPage() {
 
   const embedUrl = getVideoEmbedUrl(video.url);
   
-  const getYouTubeThumbnail = (url: string): string | null => {
+  const getVideoThumbnail = (video: Video): string | null => {
+    // Primeiro, tenta usar a thumbnail salva no banco (Instagram, TikTok, etc)
+    if (video.thumbnail_url) {
+      return video.thumbnail_url;
+    }
+    
+    // Se não tiver, tenta extrair do YouTube
     try {
-      const videoUrl = new URL(url);
+      const videoUrl = new URL(video.url);
       let videoId: string | null = null;
       if (videoUrl.hostname.includes("youtube.com")) {
         videoId = videoUrl.searchParams.get("v");
@@ -274,26 +280,41 @@ export function VideoDetailPage() {
     }
   };
 
+  const VideoThumbnail = ({ thumbnail, title }: { thumbnail: string | null, title: string | null }) => {
+    const [imageError, setImageError] = useState(false);
+    
+    if (!thumbnail || imageError) {
+      return (
+        <div className="flex w-32 h-20 flex-shrink-0 items-center justify-center rounded-md bg-muted">
+          <Film className="h-6 w-6 text-muted-foreground" />
+        </div>
+      );
+    }
+    
+    return (
+      <div className="relative w-32 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+        <img 
+          src={thumbnail} 
+          alt={title || "Thumbnail"} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={() => {
+            console.error("Failed to load thumbnail:", thumbnail);
+            setImageError(true);
+          }}
+          crossOrigin="anonymous"
+        />
+      </div>
+    );
+  };
+
   const VideoCard = ({ video: v }: { video: Video }) => {
-    const thumbnail = getYouTubeThumbnail(v.url);
+    const thumbnail = getVideoThumbnail(v);
     return (
       <Link 
         to={`/videos/${v.id}`} 
         className="flex gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
       >
-        {thumbnail ? (
-          <div className="relative w-32 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-            <img 
-              src={thumbnail} 
-              alt={v.title || "Thumbnail"} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        ) : (
-          <div className="flex w-32 h-20 flex-shrink-0 items-center justify-center rounded-md bg-muted">
-            <Film className="h-6 w-6 text-muted-foreground" />
-          </div>
-        )}
+        <VideoThumbnail thumbnail={thumbnail} title={v.title} />
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
             {v.title || "Sem título"}
