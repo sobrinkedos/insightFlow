@@ -74,6 +74,9 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
 
     setLoading(true);
 
+    console.log("🎬 [SHARE] Starting video share process...");
+    console.log("🎬 [SHARE] URL:", data.url);
+
     // 1. Insert the video with "Processando" status
     const { data: newVideo, error: insertError } = await supabase
       .from("videos")
@@ -84,9 +87,12 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
     if (insertError || !newVideo) {
       setLoading(false);
       toast.error("Falha ao adicionar o vídeo. Tente novamente.");
-      console.error("Error inserting video:", insertError);
+      console.error("❌ [SHARE] Error inserting video:", insertError);
       return;
     }
+
+    console.log("✅ [SHARE] Video inserted with ID:", newVideo.id);
+    console.log("🚀 [SHARE] Invoking Edge Function...");
 
     // 2. Invoke the Edge Function to process the video in the background
     const { error: functionError } = await supabase.functions.invoke('process-video', {
@@ -97,13 +103,14 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
 
     if (functionError) {
       toast.error("O processamento da IA falhou em iniciar.");
-      console.error("Error invoking function:", functionError);
+      console.error("❌ [SHARE] Error invoking function:", functionError);
       // Update video status to 'Falha'
       await supabase
         .from("videos")
         .update({ status: "Falha" })
         .eq("id", newVideo.id);
     } else {
+      console.log("✅ [SHARE] Edge Function invoked successfully!");
       toast.success("Vídeo adicionado! Processamento iniciado com sucesso.");
     }
 

@@ -34,7 +34,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
   const containerRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout>();
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const promptShownRef = useRef(false); // Prevenir múltiplas exibições
   
   const { user } = useAuth();

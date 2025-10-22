@@ -26,7 +26,7 @@ export function useVideoProgress({
 }: UseVideoProgressOptions): UseVideoProgressReturn {
   const [progress, setProgress] = useState<VideoProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedTimeRef = useRef<number>(0);
 
   // Carregar progresso inicial

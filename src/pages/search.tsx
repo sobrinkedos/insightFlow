@@ -142,12 +142,10 @@ export default function SearchPage() {
                         alt={video.title || "Video"}
                         className="object-cover w-full h-full"
                       />
-                      <VideoProgressIndicator videoId={video.id} />
                     </div>
                   ) : (
                     <div className="relative aspect-video w-full bg-muted flex items-center justify-center rounded-t-lg">
                       <Video className="h-12 w-12 text-muted-foreground" />
-                      <VideoProgressIndicator videoId={video.id} />
                     </div>
                   )}
                 </CardHeader>

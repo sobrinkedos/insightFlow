@@ -172,7 +172,7 @@ export function FavoritesPage() {
                     </div>
                     <div className="flex items-center gap-1 md:gap-2 shrink-0">
                       <Badge 
-                        variant={video.status === 'Processado' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
+                        variant={video.status === 'Concluído' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
                         className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse' : ''} hidden md:inline-flex`}
                       >
                         {video.status}
