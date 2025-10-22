@@ -260,30 +260,45 @@ serve(async (req) => {
     let videoUrl: string | undefined = undefined;
     let thumbnailUrl: string | undefined = undefined;
     
-    // For Instagram, ALWAYS fetch via RapidAPI (unified flow)
+    // For Instagram, check if we already have video_url from extension
     if (platform === 'instagram') {
-      console.log("📡 Instagram detected - fetching via RapidAPI...");
-      try {
-        // Clean URL before sending to RapidAPI (remove query params)
-        const cleanUrl = cleanInstagramUrl(video.url);
-        console.log("🧹 Original URL:", video.url);
-        console.log("🧹 Cleaned URL:", cleanUrl);
-        
-        const postInfo = await instagramAPI.getPostInfo(cleanUrl);
-        if (postInfo) {
-          if (postInfo.videoUrl) {
-            videoUrl = postInfo.videoUrl;
-            console.log("✅ Got videoUrl from RapidAPI:", videoUrl.substring(0, 100));
+      // First, check if extension already provided video_url and thumbnail_url
+      if (video.video_url) {
+        videoUrl = video.video_url;
+        console.log("✅ Using video_url from extension:", videoUrl.substring(0, 100));
+      }
+      if (video.thumbnail_url) {
+        thumbnailUrl = video.thumbnail_url;
+        console.log("✅ Using thumbnail_url from extension");
+      }
+      
+      // Only fetch via RapidAPI if we don't have video_url yet (shared via button)
+      if (!videoUrl) {
+        console.log("📡 Instagram detected - no video_url in DB, fetching via RapidAPI...");
+        try {
+          // Clean URL before sending to RapidAPI (remove query params)
+          const cleanUrl = cleanInstagramUrl(video.url);
+          console.log("🧹 Original URL:", video.url);
+          console.log("🧹 Cleaned URL:", cleanUrl);
+          
+          const postInfo = await instagramAPI.getPostInfo(cleanUrl);
+          if (postInfo) {
+            if (postInfo.videoUrl) {
+              videoUrl = postInfo.videoUrl;
+              console.log("✅ Got videoUrl from RapidAPI:", videoUrl.substring(0, 100));
+            }
+            if (postInfo.thumbnailUrl) {
+              thumbnailUrl = postInfo.thumbnailUrl;
+              console.log("✅ Got thumbnailUrl from RapidAPI");
+            }
+          } else {
+            console.warn("⚠️ RapidAPI returned null for Instagram post");
           }
-          if (postInfo.thumbnailUrl) {
-            thumbnailUrl = postInfo.thumbnailUrl;
-            console.log("✅ Got thumbnailUrl from RapidAPI");
-          }
-        } else {
-          console.warn("⚠️ RapidAPI returned null for Instagram post");
+        } catch (error) {
+          console.warn("⚠️ Failed to fetch Instagram data via RapidAPI:", error);
         }
-      } catch (error) {
-        console.warn("⚠️ Failed to fetch Instagram data via RapidAPI:", error);
+      } else {
+        console.log("✅ Instagram video_url already in DB (from extension), skipping RapidAPI");
       }
     } else {
       // For other platforms, use what's in the database
