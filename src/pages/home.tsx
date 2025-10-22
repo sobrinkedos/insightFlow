@@ -71,6 +71,7 @@ const ThemeCard = ({ theme }: { theme: Theme }) => (
 const getVideoThumbnail = (video: Video): string | null => {
   // Primeiro, tenta usar a thumbnail salva no banco (Instagram, TikTok, etc)
   if (video.thumbnail_url) {
+    console.log("Using thumbnail_url from DB:", video.thumbnail_url.substring(0, 100));
     return video.thumbnail_url;
   }
   
@@ -83,8 +84,14 @@ const getVideoThumbnail = (video: Video): string | null => {
     } else if (videoUrl.hostname.includes("youtu.be")) {
       videoId = videoUrl.pathname.slice(1);
     }
-    return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+    if (videoId) {
+      console.log("Extracted YouTube thumbnail for video:", videoId);
+      return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    }
+    console.log("No thumbnail found for video:", video.url);
+    return null;
   } catch {
+    console.log("Error parsing video URL:", video.url);
     return null;
   }
 };
@@ -132,16 +139,26 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                                     className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                                 >
                                     <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
-                                        {thumbnail && (
-                                            <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                                <img 
-                                                    src={thumbnail} 
-                                                    alt={video.title || "Thumbnail"} 
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                            </div>
-                                        )}
+                                        <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                            {thumbnail ? (
+                                                <>
+                                                    <img 
+                                                        src={thumbnail} 
+                                                        alt={video.title || "Thumbnail"} 
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        onError={(e) => {
+                                                            console.error("Failed to load thumbnail:", thumbnail);
+                                                            e.currentTarget.style.display = 'none';
+                                                        }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                                </>
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-muted">
+                                                    <VideoIcon className="h-6 w-6 text-muted-foreground" />
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
                                                 <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
@@ -570,20 +587,30 @@ export function HomePage() {
                           className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                         >
                           <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
-                            {thumbnail && (
-                              <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                <img 
-                                  src={thumbnail} 
-                                  alt={video.title || "Thumbnail"} 
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                  <Clock className="h-3 w-3 inline mr-1" />
-                                  Assistido
+                            <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                              {thumbnail ? (
+                                <>
+                                  <img 
+                                    src={thumbnail} 
+                                    alt={video.title || "Thumbnail"} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                      console.error("Failed to load thumbnail:", thumbnail);
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                    <Clock className="h-3 w-3 inline mr-1" />
+                                    Assistido
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-muted">
+                                  <VideoIcon className="h-6 w-6 text-muted-foreground" />
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                               <div>
                                 <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
@@ -628,19 +655,27 @@ export function HomePage() {
                       to={`/videos/${video.id}`}
                       className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
                     >
-                      {thumbnail ? (
-                        <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                      <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                        {thumbnail ? (
                           <img 
                             src={thumbnail} 
                             alt={video.title || "Thumbnail"} 
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error("Failed to load thumbnail:", thumbnail);
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div>';
+                              }
+                            }}
                           />
-                        </div>
-                      ) : (
-                        <div className="flex w-16 h-12 md:w-20 md:h-14 flex-shrink-0 items-center justify-center rounded-md bg-muted">
-                          <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-xs md:text-sm line-clamp-2 group-hover:text-primary transition-colors">
                           {video.title || "Sem título"}
