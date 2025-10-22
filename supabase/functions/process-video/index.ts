@@ -218,16 +218,22 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // 1. Fetch video details
-    const { data: video, error: videoError } = await supabaseAdmin
+    // 1. Fetch video details (including video_url and thumbnail_url if already saved)
+    const { data: video, error: videoError} = await supabaseAdmin
       .from("videos")
-      .select("id, url, user_id")
+      .select("id, url, user_id, video_url, thumbnail_url")
       .eq("id", video_id)
       .single();
 
     if (videoError || !video) {
       throw new Error(`Video not found: ${videoError?.message}`);
     }
+    
+    console.log("📦 Video data from DB:", {
+      url: video.url,
+      has_video_url: !!video.video_url,
+      has_thumbnail_url: !!video.thumbnail_url
+    });
 
     // 2. Extract video ID and platform from URL
     const videoData = extractVideoId(video.url);
@@ -238,9 +244,16 @@ serve(async (req) => {
     const { id: videoId, platform } = videoData;
 
     // 3. Get video info (title and description)
+    // First, check if video_url and thumbnail_url are already in the database (from extension)
+    let videoUrl: string | undefined = video.video_url || undefined;
+    let thumbnailUrl: string | undefined = video.thumbnail_url || undefined;
+    
+    console.log("🔍 Checking for existing URLs in DB:", {
+      videoUrl: videoUrl ? "Found" : "Not found",
+      thumbnailUrl: thumbnailUrl ? "Found" : "Not found"
+    });
+    
     let videoInfo = await getVideoInfo(videoId, platform, video.url);
-    let videoUrl: string | undefined;
-    let thumbnailUrl: string | undefined;
     
     if (!videoInfo) {
       // Fallback: usar informações básicas do vídeo
@@ -251,8 +264,15 @@ serve(async (req) => {
       };
     } else {
       // Extract video and thumbnail URLs if available (from Instagram API)
-      videoUrl = videoInfo.videoUrl;
-      thumbnailUrl = videoInfo.thumbnailUrl;
+      // Only override if not already in database
+      if (!videoUrl && videoInfo.videoUrl) {
+        videoUrl = videoInfo.videoUrl;
+        console.log("✅ Got videoUrl from API");
+      }
+      if (!thumbnailUrl && videoInfo.thumbnailUrl) {
+        thumbnailUrl = videoInfo.thumbnailUrl;
+        console.log("✅ Got thumbnailUrl from API");
+      }
     }
 
     // 4. Get transcription
