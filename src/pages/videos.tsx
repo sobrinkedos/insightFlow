@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FileDown,
@@ -90,23 +90,72 @@ export function VideosPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [themes, setThemes] = useState<Array<{ id: string; title: string; video_count: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState<string>("all");
+  const [isTabsFixed, setIsTabsFixed] = useState(false);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const tabsOffsetRef = useRef<number>(0);
   
   const { progressMap } = useVideosProgress({
     videoIds: videos.map(v => v.id),
     userId: user?.id || null,
   });
 
+  // Detectar scroll para fixar as abas
+  useEffect(() => {
+    const handleScroll = () => {
+      if (tabsRef.current) {
+        const rect = tabsRef.current.getBoundingClientRect();
+        // Fixar quando as abas chegarem abaixo do header (96px no desktop, 56px no mobile)
+        const headerHeight = window.innerWidth >= 768 ? 96 : 56;
+        setIsTabsFixed(window.scrollY > tabsOffsetRef.current - headerHeight);
+      }
+    };
+
+    // Calcular offset inicial das abas
+    if (tabsRef.current) {
+      const rect = tabsRef.current.getBoundingClientRect();
+      tabsOffsetRef.current = window.scrollY + rect.top;
+    }
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading]);
+
   const fetchVideos = async () => {
     if (!user) return;
     setLoading(true);
-    const { data } = await supabase
+    
+    // Buscar vídeos
+    const { data: videosData } = await supabase
       .from('videos')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
-    setVideos(data || []);
+    // Buscar temas com contagem de vídeos
+    const { data: themesData } = await supabase
+      .from('themes')
+      .select(`
+        id,
+        title,
+        theme_videos(video_id)
+      `)
+      .eq('user_id', user.id)
+      .order('title', { ascending: true });
+    
+    // Processar temas com contagem
+    const processedThemes = (themesData || [])
+      .map((theme: any) => ({
+        id: theme.id,
+        title: theme.title,
+        video_count: theme.theme_videos?.length || 0,
+      }))
+      .filter((theme) => theme.video_count > 0);
+    
+    setVideos(videosData || []);
+    setThemes(processedThemes);
     setLoading(false);
   };
 
@@ -162,6 +211,20 @@ export function VideosPage() {
             fetchVideos();
           }
         )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'themes', filter: `user_id=eq.${user.id}` },
+          () => {
+            fetchVideos();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'theme_videos' },
+          () => {
+            fetchVideos();
+          }
+        )
         .subscribe();
 
       return () => {
@@ -169,6 +232,30 @@ export function VideosPage() {
       };
     }
   }, [user]);
+
+  // Estado para vídeos filtrados
+  const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
+
+  // Filtrar vídeos por tema selecionado
+  useEffect(() => {
+    const filterVideos = async () => {
+      if (selectedTheme === "all") {
+        setFilteredVideos(videos);
+        return;
+      }
+
+      // Buscar vídeos do tema selecionado
+      const { data: themeVideos } = await supabase
+        .from('theme_videos')
+        .select('video_id')
+        .eq('theme_id', selectedTheme);
+
+      const videoIds = new Set(themeVideos?.map(tv => tv.video_id) || []);
+      setFilteredVideos(videos.filter(v => videoIds.has(v.id)));
+    };
+
+    filterVideos();
+  }, [selectedTheme, videos]);
 
   return (
     <>
@@ -212,18 +299,44 @@ export function VideosPage() {
         </PageHeader>
         </div>
       
-      <Tabs defaultValue="all" className="mt-6 md:mt-8">
-        <div className="px-4 md:max-w-7xl md:mx-auto">
-          <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
-            <TabsTrigger value="all" className="text-xs md:text-sm">Todos</TabsTrigger>
-            <TabsTrigger value="processing" className="text-xs md:text-sm">Processando</TabsTrigger>
-            <TabsTrigger value="processed" className="text-xs md:text-sm">Processados</TabsTrigger>
-            <TabsTrigger value="failed" className="hidden md:flex text-xs md:text-sm">
-              Falha
-            </TabsTrigger>
-          </TabsList>
+      {/* Abas de Temas com Scroll Horizontal e Fixação */}
+      <div 
+        ref={tabsRef}
+        className={`${isTabsFixed ? 'fixed top-[56px] md:top-[96px] left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-lg' : 'mt-6 md:mt-8'} transition-all duration-300`}
+      >
+        <div className="px-4 md:max-w-7xl md:mx-auto py-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <button
+              onClick={() => setSelectedTheme("all")}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                selectedTheme === "all"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted hover:bg-muted/80"
+              }`}
+            >
+              Todos ({videos.length})
+            </button>
+            {themes.map((theme) => (
+              <button
+                key={theme.id}
+                onClick={() => setSelectedTheme(theme.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedTheme === theme.id
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
+              >
+                {theme.title} ({theme.video_count})
+              </button>
+            ))}
+          </div>
         </div>
-        <TabsContent value="all" className="mt-4 md:mt-6 md:max-w-7xl md:mx-auto">
+      </div>
+
+      {/* Espaçador quando as abas estão fixas */}
+      {isTabsFixed && <div className="h-[60px]" />}
+
+      <div className="mt-4 md:mt-6 md:max-w-7xl md:mx-auto px-4">
           {loading ? (
             <div className="space-y-0 md:space-y-3">
               {Array.from({ length: 10 }).map((_, i) => (
@@ -241,10 +354,10 @@ export function VideosPage() {
                 </Card>
               ))}
             </div>
-          ) : videos.length > 0 ? (
+          ) : filteredVideos.length > 0 ? (
             <>
               <div className="space-y-4 md:space-y-3">
-                {videos.map((video) => (
+                {filteredVideos.map((video) => (
                   <Card 
                     key={video.id} 
                     className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-lg overflow-hidden"
@@ -382,19 +495,21 @@ export function VideosPage() {
                   </Card>
                 ))}
               </div>
-              <div className="px-4 md:max-w-7xl md:mx-auto">
-                <Card className="mt-4">
-                  <CardFooter className="justify-between pt-6">
+              <Card className="mt-4">
+                <CardFooter className="justify-between pt-6">
                   <div className="text-xs text-muted-foreground">
-                    Mostrando <strong>1-{videos.length}</strong> de <strong>{videos.length}</strong> vídeos
+                    Mostrando <strong>1-{filteredVideos.length}</strong> de <strong>{filteredVideos.length}</strong> vídeos
+                    {selectedTheme !== "all" && (
+                      <span className="ml-2">
+                        • Filtrado por tema
+                      </span>
+                    )}
                   </div>
                 </CardFooter>
-                </Card>
-              </div>
+              </Card>
             </>
           ) : (
-            <div className="px-4 md:max-w-7xl md:mx-auto">
-              <Card>
+            <Card>
               <CardContent className="py-24">
                 <EmptyState
                   icon={VideoIcon}
@@ -409,10 +524,8 @@ export function VideosPage() {
                 />
               </CardContent>
               </Card>
-            </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
       </div>
     </>
   )
