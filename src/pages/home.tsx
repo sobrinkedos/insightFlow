@@ -270,8 +270,9 @@ export function HomePage() {
 
         const watchedPromise = supabase
           .from('video_progress')
-          .select('video_id, last_watched_at, videos(*)')
+          .select('video_id, last_watched_at, watched_time, videos(*)')
           .eq('user_id', user.id)
+          .not('last_watched_at', 'is', null)
           .order('last_watched_at', { ascending: false })
           .limit(5);
 
@@ -333,6 +334,11 @@ export function HomePage() {
           .map((wp: any) => wp.videos)
           .filter(Boolean);
 
+        console.log('📺 Vídeos assistidos carregados:', {
+          total: watchedVideosList.length,
+          videos: watchedVideosList.map((v: any) => ({ id: v.id, title: v.title }))
+        });
+
         setFeaturedThemes(themesWithCount);
         setRecentVideos(videosData || []);
         setFavoriteVideos(favoritesData || []);
@@ -342,11 +348,27 @@ export function HomePage() {
       };
       fetchData();
 
+      // Subscription para mudanças em videos e themes
       const channel = supabase.channel('home-page-changes')
-        .on<Video | Theme>(
+        .on<Video>(
           'postgres_changes',
-          { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` },
+          { event: '*', schema: 'public', table: 'videos', filter: `user_id=eq.${user.id}` },
           () => {
+            fetchData();
+          }
+        )
+        .on<Theme>(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'themes', filter: `user_id=eq.${user.id}` },
+          () => {
+            fetchData();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'video_progress', filter: `user_id=eq.${user.id}` },
+          () => {
+            console.log('📺 Progresso de vídeo atualizado, recarregando dados...');
             fetchData();
           }
         )
