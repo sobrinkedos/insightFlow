@@ -248,42 +248,106 @@ export function VideosPage() {
                     className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x border-t-0 first:border-t md:border-t"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 md:gap-3">
+                    <CardContent className="p-0 md:p-4">
+                      {/* Layout Mobile: Thumbnail em cima, info embaixo */}
+                      <div className="md:hidden">
                         <img 
                           src={getVideoThumbnail(video.url, video.thumbnail_url)} 
                           alt={video.title || 'Thumbnail'}
-                          className="w-16 h-12 md:w-20 md:h-14 object-cover rounded border border-border shrink-0"
+                          className="w-full aspect-video object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/640x360/666666/ffffff?text=Video';
+                          }}
+                        />
+                        <div className="p-3">
+                          <div className="flex gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm line-clamp-2 mb-1">{video.title || new URL(video.url).hostname}</div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
+                                <span>•</span>
+                                <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                              </div>
+                              <VideoProgressIndicator 
+                                progress={progressMap.get(video.id) || null}
+                              />
+                            </div>
+                            <div className="flex items-start gap-1 shrink-0">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
+                              >
+                                <Heart 
+                                  className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
+                                />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Ações</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/videos/${video.id}`)}}>
+                                    Ver Detalhes
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-destructive" onClick={(e) => deleteVideo(video.id, e)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Layout Desktop: Horizontal */}
+                      <div className="hidden md:flex items-center gap-3">
+                        <img 
+                          src={getVideoThumbnail(video.url, video.thumbnail_url)} 
+                          alt={video.title || 'Thumbnail'}
+                          className="w-20 h-14 object-cover rounded border border-border shrink-0"
                           onError={(e) => {
                             e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
                           }}
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm md:text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                          <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground mb-1">
+                          <div className="font-medium text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                             <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                            <span className="hidden md:inline">•</span>
-                            <span className="hidden md:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                            <span>•</span>
+                            <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
                           </div>
                           <VideoProgressIndicator 
                             progress={progressMap.get(video.id) || null}
                           />
                         </div>
-                        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Badge 
                             variant={video.status === 'Concluído' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
-                            className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse-glow' : ''} hidden md:inline-flex`}
+                            className={`text-xs ${video.status === 'Processando' ? 'animate-pulse-glow' : ''}`}
                           >
                             {video.status}
                           </Badge>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 md:h-9 md:w-9"
+                            className="h-9 w-9"
                             onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
                           >
                             <Heart 
-                              className={`h-3 w-3 md:h-4 md:w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
+                              className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
                             />
                           </Button>
                           <DropdownMenu>
@@ -291,10 +355,10 @@ export function VideosPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 md:h-9 md:w-9"
+                                className="h-9 w-9"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <MoreHorizontal className="h-3 w-3 md:h-4 md:w-4" />
+                                <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Ações</span>
                               </Button>
                             </DropdownMenuTrigger>
