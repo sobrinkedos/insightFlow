@@ -470,70 +470,6 @@ export function HomePage() {
         <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mb-8 md:mb-12">
-        <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-            <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
-            <div className="p-2 rounded-lg bg-primary/10">
-              <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-            <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Vídeos na sua biblioteca
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-            <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
-            <div className="p-2 rounded-lg bg-secondary/10">
-              <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-            <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Organizados automaticamente
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-            <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
-            <div className="p-2 rounded-lg bg-accent/10">
-              <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-            <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Vídeos adicionados hoje
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-            <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
-            <div className="p-2 rounded-lg bg-red-500/10">
-              <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-            <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Vídeos marcados como favoritos
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Extensions Banner */}
       {showExtensionBanner && (
         <motion.div
@@ -589,23 +525,6 @@ export function HomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8 md:space-y-16">
-          {featuredThemes.length > 0 && (
-            <section>
-              <div className="flex justify-between items-center mb-4 md:mb-6">
-                  <h2 className="text-xl md:text-2xl font-semibold tracking-tight">Temas em Destaque</h2>
-                  <Button variant="ghost" size="sm" asChild className="text-xs md:text-sm">
-                      <Link to="/themes">Ver todos <ArrowRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" /></Link>
-                  </Button>
-              </div>
-              
-              <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-                  {featuredThemes.map((theme) => (
-                      <ThemeCard theme={theme} key={theme.id} />
-                  ))}
-              </div>
-            </section>
-          )}
-
           <section>
             {recentVideos.length > 0 ? (
                 <RecentVideosTable videos={recentVideos} loading={loading} />
@@ -758,6 +677,70 @@ export function HomePage() {
             </Card>
           )}
         </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12">
+        <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+            <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
+            <div className="p-2 rounded-lg bg-primary/10">
+              <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
+              Vídeos na sua biblioteca
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+            <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
+            <div className="p-2 rounded-lg bg-secondary/10">
+              <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
+              Organizados automaticamente
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+            <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
+            <div className="p-2 rounded-lg bg-accent/10">
+              <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
+              Vídeos adicionados hoje
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+            <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
+            <div className="p-2 rounded-lg bg-red-500/10">
+              <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+            <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
+              Vídeos marcados como favoritos
+            </p>
+          </CardContent>
+        </Card>
       </div>
       </motion.div>
     </>
