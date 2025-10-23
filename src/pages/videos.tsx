@@ -172,7 +172,7 @@ export function VideosPage() {
     <>
       <div className="fixed inset-0 -z-10 bg-animated-gradient" />
       <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
-      <div className="w-full max-w-7xl mx-auto py-6 md:py-8 !px-0 md:!px-4 relative">
+      <div className="w-full md:max-w-7xl md:mx-auto py-6 md:py-8 px-0 md:px-4 relative">
         <div className="px-4 md:px-0">
           <PageHeader
             title="Vídeos Recentes"
