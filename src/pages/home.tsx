@@ -24,6 +24,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
 import { EmptyState } from "@/components/empty-state";
+import { DebugVideoProgress } from "@/components/debug-video-progress";
 import { Layers, Video as VideoIcon, ArrowRight, Download, Sparkles, X, TrendingUp, Clock, Heart, Zap } from "lucide-react";
 
 const pageVariants = {
@@ -270,9 +271,23 @@ export function HomePage() {
 
         const watchedPromise = supabase
           .from('video_progress')
-          .select('video_id, last_watched_at, watched_time, videos(*)')
+          .select(`
+            video_id,
+            last_watched_at,
+            watched_time,
+            videos (
+              id,
+              title,
+              channel,
+              url,
+              thumbnail_url,
+              video_url,
+              created_at,
+              status,
+              category
+            )
+          `)
           .eq('user_id', user.id)
-          .not('last_watched_at', 'is', null)
           .order('last_watched_at', { ascending: false })
           .limit(5);
 
@@ -298,9 +313,16 @@ export function HomePage() {
           { data: videosData }, 
           { data: favoritesData },
           { data: topThemesData },
-          { data: watchedData },
+          { data: watchedData, error: watchedError },
           statsResults
         ] = await Promise.all([themesPromise, videosPromise, favoritesPromise, topThemesPromise, watchedPromise, statsPromise]);
+
+        // Debug: verificar dados de vídeos assistidos
+        console.log('📺 Query de vídeos assistidos:', {
+          data: watchedData,
+          error: watchedError,
+          count: watchedData?.length || 0
+        });
 
         // Process stats
         const newStats = {
@@ -330,13 +352,24 @@ export function HomePage() {
           .slice(0, 5);
         
         // Process watched videos
+        console.log('📺 Raw watchedData:', watchedData);
+        
         const watchedVideosList = (watchedData || [])
-          .map((wp: any) => wp.videos)
-          .filter(Boolean);
+          .map((wp: any) => {
+            console.log('Processing watched item:', wp);
+            return wp.videos;
+          })
+          .filter((video) => {
+            if (!video) {
+              console.warn('⚠️ Vídeo null encontrado no progresso');
+              return false;
+            }
+            return true;
+          });
 
         console.log('📺 Vídeos assistidos carregados:', {
           total: watchedVideosList.length,
-          videos: watchedVideosList.map((v: any) => ({ id: v.id, title: v.title }))
+          videos: watchedVideosList.map((v: any) => ({ id: v?.id, title: v?.title }))
         });
 
         setFeaturedThemes(themesWithCount);
@@ -501,6 +534,9 @@ export function HomePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Debug Component - Remover após testar */}
+      <DebugVideoProgress />
 
       {/* Extensions Banner */}
       {showExtensionBanner && (

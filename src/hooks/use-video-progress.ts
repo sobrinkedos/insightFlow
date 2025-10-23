@@ -99,6 +99,13 @@ export function useVideoProgress({
 
           if (error) throw error;
 
+          console.log('✅ Progresso salvo:', {
+            video_id: videoId,
+            watched_time: currentTime,
+            last_watched_at: progressData.last_watched_at,
+            completed: isCompleted
+          });
+
           setProgress(data);
           lastSavedTimeRef.current = currentTime;
         } catch (error) {
