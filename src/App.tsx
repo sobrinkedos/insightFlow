@@ -25,7 +25,7 @@ function App() {
   return (
     <div className="relative flex min-h-screen w-full max-w-full flex-col bg-transparent font-sans overflow-x-hidden">
       <Header />
-      <main className="flex-1 w-full max-w-full overflow-x-hidden pb-16 md:pb-0">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden pb-16 md:pb-0 pt-[56px] md:pt-[96px]">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<HomePage />} />

@@ -24,7 +24,6 @@ import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
 import { EmptyState } from "@/components/empty-state";
-import { DebugVideoProgress } from "@/components/debug-video-progress";
 import { Layers, Video as VideoIcon, ArrowRight, Download, Sparkles, X, TrendingUp, Clock, Heart, Zap } from "lucide-react";
 
 const pageVariants = {
@@ -535,9 +534,6 @@ export function HomePage() {
         </Card>
       </div>
 
-      {/* Debug Component - Remover após testar */}
-      <DebugVideoProgress />
-
       {/* Extensions Banner */}
       {showExtensionBanner && (
         <motion.div
@@ -545,7 +541,7 @@ export function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ delay: 0.2 }}
-          className="mb-8 md:mb-12"
+          className="mb-8 md:mb-12 hidden md:block"
         >
           <Card className="glass border-primary/30 overflow-hidden relative group hover:border-primary/50 transition-all">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity" />
