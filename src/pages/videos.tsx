@@ -7,6 +7,7 @@ import {
   Video as VideoIcon,
   Heart,
   Trash2,
+  Filter,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
 import { VideoProgressIndicator } from "@/components/video-progress-indicator"
@@ -19,6 +20,14 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -94,6 +103,7 @@ export function VideosPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
   const [isTabsFixed, setIsTabsFixed] = useState(false);
+  const [isThemesModalOpen, setIsThemesModalOpen] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
   const tabsOffsetRef = useRef<number>(0);
   
@@ -305,30 +315,91 @@ export function VideosPage() {
         className={`${isTabsFixed ? 'fixed top-[56px] md:top-[96px] left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-lg' : 'mt-6 md:mt-8'} transition-all duration-300`}
       >
         <div className="px-4 md:max-w-7xl md:mx-auto py-3">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            <button
-              onClick={() => setSelectedTheme("all")}
-              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
-                selectedTheme === "all"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted hover:bg-muted/80"
-              }`}
-            >
-              Todos ({videos.length})
-            </button>
-            {themes.map((theme) => (
+          <div className="flex items-center gap-2">
+            {/* Botão para abrir modal de temas */}
+            <Dialog open={isThemesModalOpen} onOpenChange={setIsThemesModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 rounded-full"
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Filtrar por Tema</DialogTitle>
+                  <DialogDescription>
+                    Selecione um tema para filtrar seus vídeos
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-2 py-4 max-h-[60vh] overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      setSelectedTheme("all");
+                      setIsThemesModalOpen(false);
+                    }}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium text-left transition-all ${
+                      selectedTheme === "all"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Todos</span>
+                      <Badge variant="secondary">{videos.length}</Badge>
+                    </div>
+                  </button>
+                  {themes.map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => {
+                        setSelectedTheme(theme.id);
+                        setIsThemesModalOpen(false);
+                      }}
+                      className={`px-4 py-3 rounded-lg text-sm font-medium text-left transition-all ${
+                        selectedTheme === theme.id
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-muted hover:bg-muted/80"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="line-clamp-1">{theme.title}</span>
+                        <Badge variant="secondary">{theme.video_count}</Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Abas com scroll horizontal */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 flex-1">
               <button
-                key={theme.id}
-                onClick={() => setSelectedTheme(theme.id)}
+                onClick={() => setSelectedTheme("all")}
                 className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
-                  selectedTheme === theme.id
+                  selectedTheme === "all"
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-muted hover:bg-muted/80"
                 }`}
               >
-                {theme.title} ({theme.video_count})
+                Todos ({videos.length})
               </button>
-            ))}
+              {themes.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => setSelectedTheme(theme.id)}
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
+                    selectedTheme === theme.id
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted hover:bg-muted/80"
+                  }`}
+                >
+                  {theme.title} ({theme.video_count})
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
