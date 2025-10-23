@@ -241,11 +241,11 @@ export function VideosPage() {
             </div>
           ) : videos.length > 0 ? (
             <>
-              <div className="space-y-0 md:space-y-3">
+              <div className="space-y-4 md:space-y-3">
                 {videos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x border-t-0 first:border-t md:border-t overflow-hidden"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-lg overflow-hidden"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
                     <CardContent className="!p-0 md:!p-4">
