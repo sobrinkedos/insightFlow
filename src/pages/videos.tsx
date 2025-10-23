@@ -172,8 +172,8 @@ export function VideosPage() {
     <>
       <div className="fixed inset-0 -z-10 bg-animated-gradient" />
       <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
-      <div className="w-full md:max-w-7xl md:mx-auto py-6 md:py-8 px-0 md:px-4 relative">
-        <div className="px-4 md:px-0">
+      <div className="w-full py-6 md:py-8 relative">
+        <div className="px-4 md:max-w-7xl md:mx-auto">
           <PageHeader
             title="Vídeos Recentes"
             description="Gerencie todos os seus vídeos compartilhados."
@@ -211,7 +211,7 @@ export function VideosPage() {
         </div>
       
       <Tabs defaultValue="all" className="mt-6 md:mt-8">
-        <div className="px-4 md:px-0">
+        <div className="px-4 md:max-w-7xl md:mx-auto">
           <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
             <TabsTrigger value="all" className="text-xs md:text-sm">Todos</TabsTrigger>
             <TabsTrigger value="processing" className="text-xs md:text-sm">Processando</TabsTrigger>
@@ -221,9 +221,9 @@ export function VideosPage() {
             </TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="all" className="mt-4 md:mt-6">
+        <TabsContent value="all" className="mt-4 md:mt-6 md:max-w-7xl md:mx-auto">
           {loading ? (
-            <div className="space-y-3">
+            <div className="space-y-0 md:space-y-3">
               {Array.from({ length: 10 }).map((_, i) => (
                 <Card key={i} className="rounded-none md:rounded-lg border-x-0 md:border-x">
                   <CardContent className="p-4">
@@ -241,11 +241,11 @@ export function VideosPage() {
             </div>
           ) : videos.length > 0 ? (
             <>
-              <div className="space-y-3">
+              <div className="space-y-0 md:space-y-3">
                 {videos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x border-t-0 first:border-t md:border-t"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
                     <CardContent className="p-4">
@@ -316,7 +316,7 @@ export function VideosPage() {
                   </Card>
                 ))}
               </div>
-              <div className="px-4 md:px-0">
+              <div className="px-4 md:max-w-7xl md:mx-auto">
                 <Card className="mt-4">
                   <CardFooter className="justify-between pt-6">
                   <div className="text-xs text-muted-foreground">
@@ -327,7 +327,7 @@ export function VideosPage() {
               </div>
             </>
           ) : (
-            <div className="px-4 md:px-0">
+            <div className="px-4 md:max-w-7xl md:mx-auto">
               <Card>
               <CardContent className="py-24">
                 <EmptyState
