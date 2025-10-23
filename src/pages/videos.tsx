@@ -245,10 +245,10 @@ export function VideosPage() {
                 {videos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x border-t-0 first:border-t md:border-t"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x border-t-0 first:border-t md:border-t overflow-hidden"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
-                    <CardContent className="p-0 md:p-4">
+                    <CardContent className="!p-0 md:!p-4">
                       {/* Layout Mobile: Thumbnail em cima, info embaixo */}
                       <div className="md:hidden">
                         <img 
