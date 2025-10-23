@@ -308,7 +308,7 @@ export function VideosPage() {
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
             <button
               onClick={() => setSelectedTheme("all")}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
                 selectedTheme === "all"
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-muted hover:bg-muted/80"
@@ -320,7 +320,7 @@ export function VideosPage() {
               <button
                 key={theme.id}
                 onClick={() => setSelectedTheme(theme.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
                   selectedTheme === theme.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "bg-muted hover:bg-muted/80"
