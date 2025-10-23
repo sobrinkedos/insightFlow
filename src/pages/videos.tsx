@@ -172,11 +172,12 @@ export function VideosPage() {
     <>
       <div className="fixed inset-0 -z-10 bg-animated-gradient" />
       <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
-      <div className="container py-6 md:py-8 px-4 relative">
-        <PageHeader
-          title="Vídeos Recentes"
-          description="Gerencie todos os seus vídeos compartilhados."
-        >
+      <div className="container py-6 md:py-8 px-0 md:px-4 relative">
+        <div className="px-4 md:px-0">
+          <PageHeader
+            title="Vídeos Recentes"
+            description="Gerencie todos os seus vídeos compartilhados."
+          >
         <div className="flex items-center gap-2 flex-wrap">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -206,22 +207,25 @@ export function VideosPage() {
               </span>
             </Button>
           </div>
-      </PageHeader>
+        </PageHeader>
+        </div>
       
       <Tabs defaultValue="all" className="mt-6 md:mt-8">
-        <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
+        <div className="px-4 md:px-0">
+          <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
             <TabsTrigger value="all" className="text-xs md:text-sm">Todos</TabsTrigger>
             <TabsTrigger value="processing" className="text-xs md:text-sm">Processando</TabsTrigger>
             <TabsTrigger value="processed" className="text-xs md:text-sm">Processados</TabsTrigger>
             <TabsTrigger value="failed" className="hidden md:flex text-xs md:text-sm">
               Falha
             </TabsTrigger>
-        </TabsList>
+          </TabsList>
+        </div>
         <TabsContent value="all" className="mt-4 md:mt-6">
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 10 }).map((_, i) => (
-                <Card key={i}>
+                <Card key={i} className="rounded-none md:rounded-lg border-x-0 md:border-x">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <Skeleton className="w-20 h-14 rounded shrink-0" />
@@ -241,10 +245,10 @@ export function VideosPage() {
                 {videos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-none md:rounded-lg border-x-0 md:border-x"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
-                    <CardContent className="p-3 md:p-4">
+                    <CardContent className="p-4">
                       <div className="flex items-center gap-2 md:gap-3">
                         <img 
                           src={getVideoThumbnail(video.url, video.thumbnail_url)} 
@@ -312,16 +316,19 @@ export function VideosPage() {
                   </Card>
                 ))}
               </div>
-              <Card className="mt-4">
-                <CardFooter className="justify-between pt-6">
+              <div className="px-4 md:px-0">
+                <Card className="mt-4">
+                  <CardFooter className="justify-between pt-6">
                   <div className="text-xs text-muted-foreground">
                     Mostrando <strong>1-{videos.length}</strong> de <strong>{videos.length}</strong> vídeos
                   </div>
                 </CardFooter>
-              </Card>
+                </Card>
+              </div>
             </>
           ) : (
-            <Card>
+            <div className="px-4 md:px-0">
+              <Card>
               <CardContent className="py-24">
                 <EmptyState
                   icon={VideoIcon}
@@ -335,7 +342,8 @@ export function VideosPage() {
                   }}
                 />
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           )}
         </TabsContent>
       </Tabs>
