@@ -46,19 +46,21 @@ function getVideoThumbnail(url: string, thumbnailUrl?: string | null): string {
   // Se tiver thumbnail_url do banco, usar proxy para evitar CORS
   if (thumbnailUrl) {
     // Usar proxy de imagem para evitar erro de CORS do Instagram
-    return `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=120&h=90&fit=cover`;
+    // Aumentar resolução para 640x360 (HD)
+    return `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=640&h=360&fit=cover&q=85`;
   }
   
   try {
     const urlObj = new URL(url);
     
-    // YouTube
+    // YouTube - usar maxresdefault para melhor qualidade
     if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
       const videoId = urlObj.hostname.includes('youtu.be') 
         ? urlObj.pathname.slice(1)
         : urlObj.searchParams.get('v');
       if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        // Tentar maxresdefault primeiro (melhor qualidade), fallback para hqdefault
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       }
     }
     
