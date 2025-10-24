@@ -51,7 +51,36 @@ export function LoginPage() {
       toast.error('Falha no login. Verifique suas credenciais.');
     } else {
       toast.success('Login realizado com sucesso!');
-      navigate('/');
+      
+      // Verificar se há um share pendente
+      const pendingShareStr = sessionStorage.getItem('pendingShare');
+      if (pendingShareStr) {
+        try {
+          const pendingShare = JSON.parse(pendingShareStr);
+          console.log('📱 Recovering pending share:', pendingShare);
+          
+          // Salvar no localStorage para a página de vídeos
+          if (pendingShare.url) {
+            localStorage.setItem('sharedVideoUrl', pendingShare.url);
+            if (pendingShare.title) {
+              localStorage.setItem('sharedVideoTitle', pendingShare.title);
+            }
+          }
+          
+          // Limpar dados temporários
+          sessionStorage.removeItem('pendingShare');
+          
+          // Redirecionar para vídeos
+          toast.info('Processando vídeo compartilhado...');
+          navigate('/videos', { replace: true });
+          return;
+        } catch (e) {
+          console.error('Error recovering pending share:', e);
+        }
+      }
+      
+      // Se não houver share pendente, ir para home
+      navigate('/', { replace: true });
     }
   };
 

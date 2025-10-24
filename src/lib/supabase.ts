@@ -7,4 +7,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Supabase URL and Anon Key are required in your .env file.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Usar localStorage para persistir sessão entre aberturas do PWA
+    storage: window.localStorage,
+    // Detectar automaticamente mudanças de sessão
+    autoRefreshToken: true,
+    // Persistir sessão mesmo após fechar o app
+    persistSession: true,
+    // Detectar quando o app volta ao foco
+    detectSessionInUrl: true,
+  },
+});
