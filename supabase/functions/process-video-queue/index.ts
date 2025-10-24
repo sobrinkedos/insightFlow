@@ -20,48 +20,80 @@ serve(async (req) => {
 
     console.log("🔄 Starting queue processor...");
 
-    // 1. Check if there's already a video being processed
+    // 1. Check how many videos are being processed per platform
     const { data: processingVideos, error: checkError } = await supabaseAdmin
       .from("video_queue")
-      .select("id, video_id")
-      .eq("status", "processing")
-      .limit(1);
+      .select("id, video_id, platform")
+      .eq("status", "processing");
 
     if (checkError) {
       console.error("Error checking processing videos:", checkError);
       throw checkError;
     }
 
-    if (processingVideos && processingVideos.length > 0) {
-      console.log("⏸️ A video is already being processed, skipping...");
+    const processingByPlatform = {
+      youtube: processingVideos?.filter(v => v.platform === 'youtube').length || 0,
+      instagram: processingVideos?.filter(v => v.platform === 'instagram').length || 0,
+      other: processingVideos?.filter(v => v.platform === 'other').length || 0,
+    };
+
+    console.log("📊 Currently processing:", processingByPlatform);
+
+    // 2. Allow parallel processing: 2 YouTube + 1 Instagram at the same time
+    const MAX_YOUTUBE = 2;
+    const MAX_INSTAGRAM = 1;
+    const MAX_OTHER = 1;
+
+    let targetPlatform: string | null = null;
+
+    // Prioritize YouTube (faster processing)
+    if (processingByPlatform.youtube < MAX_YOUTUBE) {
+      targetPlatform = 'youtube';
+    } else if (processingByPlatform.instagram < MAX_INSTAGRAM) {
+      targetPlatform = 'instagram';
+    } else if (processingByPlatform.other < MAX_OTHER) {
+      targetPlatform = 'other';
+    }
+
+    if (!targetPlatform) {
+      console.log("⏸️ All processing slots are full, skipping...");
       return new Response(
         JSON.stringify({ 
-          message: "A video is already being processed",
-          processing_video_id: processingVideos[0].video_id
+          message: "All processing slots are full",
+          processing: processingByPlatform
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
 
-    // 2. Get the next video from the queue (highest priority, oldest first)
+    console.log(`🎯 Looking for ${targetPlatform} video to process...`);
+
+    // 3. Get the next video from the queue for the target platform
     const { data: nextInQueue, error: queueError } = await supabaseAdmin
-      .from("video_queue")
-      .select("id, video_id, user_id, attempts, max_attempts")
-      .eq("status", "pending")
-      .order("priority", { ascending: false })
-      .order("created_at", { ascending: true })
-      .limit(1)
+      .rpc('get_next_from_queue', { p_platform: targetPlatform })
       .single();
 
     if (queueError || !nextInQueue) {
-      console.log("📭 Queue is empty");
-      return new Response(
-        JSON.stringify({ message: "Queue is empty" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      console.log(`📭 No ${targetPlatform} videos in queue`);
+      
+      // Try any platform if target platform queue is empty
+      const { data: anyVideo, error: anyError } = await supabaseAdmin
+        .rpc('get_next_from_queue', { p_platform: null })
+        .single();
+      
+      if (anyError || !anyVideo) {
+        console.log("📭 Queue is completely empty");
+        return new Response(
+          JSON.stringify({ message: "Queue is empty" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+      
+      // Use the video from any platform
+      Object.assign(nextInQueue || {}, anyVideo);
     }
 
-    console.log(`🎬 Processing video from queue: ${nextInQueue.video_id}`);
+    console.log(`🎬 Processing ${nextInQueue.platform} video from queue: ${nextInQueue.video_id}`);
 
     // 3. Mark as processing
     const { error: updateError } = await supabaseAdmin

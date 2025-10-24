@@ -71,10 +71,17 @@ export function VideoQueueIndicator() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">
                         {item.status === 'processing' ? 'Processando agora...' : 
-                         item.status === 'pending' ? `Posição ${item.position || index + 1} na fila` :
+                         item.status === 'pending' ? `Posição ${item.position || index + 1} na fila ${item.platform === 'youtube' ? '(YouTube)' : item.platform === 'instagram' ? '(Instagram)' : ''}` :
                          item.status === 'completed' ? 'Concluído' :
                          'Falha no processamento'}
                       </span>
+                      {item.platform && (
+                        <Badge variant="secondary" className="text-xs">
+                          {item.platform === 'youtube' ? '▶️ YouTube' : 
+                           item.platform === 'instagram' ? '📸 Instagram' : 
+                           '🎥 Outro'}
+                        </Badge>
+                      )}
                       {item.attempts > 1 && (
                         <Badge variant="outline" className="text-xs">
                           Tentativa {item.attempts}/{item.max_attempts}

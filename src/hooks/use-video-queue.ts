@@ -7,6 +7,7 @@ export interface QueueItem {
   video_id: string;
   user_id: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  platform: 'youtube' | 'instagram' | 'other' | 'unknown';
   priority: number;
   attempts: number;
   max_attempts: number;

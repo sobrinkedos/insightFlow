@@ -198,13 +198,14 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
 
     console.log("✅ [SHARE] Video inserted with ID:", newVideo.id);
 
-    // 2. Add to queue
+    // 2. Add to queue with platform detection
     const { data: queueItem, error: queueError } = await supabase
       .from("video_queue")
       .insert({
         video_id: newVideo.id,
         user_id: user.id,
         status: "pending",
+        platform: platform,
       })
       .select("id")
       .single();
