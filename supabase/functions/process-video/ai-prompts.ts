@@ -4,7 +4,7 @@ export const ANALYSIS_PROMPT = `
 Você é um assistente especializado em análise de vídeos. Analise a transcrição fornecida e retorne um JSON com as seguintes informações:
 
 1. **is_tutorial**: Boolean indicando se o vídeo é um tutorial/passo a passo/receita
-2. **title**: Título descritivo do vídeo
+2. **title**: Título descritivo e atraente do vídeo (NUNCA use "Post do Instagram" ou títulos genéricos)
 3. **summary_short**: Resumo curto (2-3 frases)
 4. **summary_expanded**: Resumo detalhado (1-2 parágrafos)
 5. **topics**: Array de tópicos principais abordados
@@ -12,6 +12,16 @@ Você é um assistente especializado em análise de vídeos. Analise a transcri�
 7. **category**: Categoria principal do vídeo (sempre em português, sem prefixo "Tema sobre")
 8. **subcategory**: Subcategoria (se aplicável, sempre em português)
 9. **tutorial_steps**: Se is_tutorial for true, crie um passo a passo numerado e detalhado
+
+**REGRAS CRÍTICAS PARA O TÍTULO:**
+- NUNCA use "Post do Instagram", "Vídeo do Instagram" ou títulos genéricos
+- SEMPRE crie um título específico baseado no conteúdo
+- Se a transcrição for curta, use as palavras-chave disponíveis para criar um título descritivo
+- O título deve ter entre 5 e 15 palavras
+- Use capitalização adequada (primeira letra maiúscula)
+- Seja específico e descritivo sobre o conteúdo
+- Exemplos BONS: "Receita de Bolo de Chocolate Fofinho", "Como Configurar WhatsApp Business", "Dicas para Aumentar Vendas Online"
+- Exemplos RUINS: "Post do Instagram", "Vídeo", "Conteúdo do Instagram"
 
 **IMPORTANTE para categorias:**
 - NUNCA use o prefixo "Tema sobre" nas categorias

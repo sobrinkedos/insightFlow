@@ -392,14 +392,22 @@ serve(async (req) => {
     // 4.6. For Instagram without good transcription, add context
     let contextualTranscription = transcription;
     if (platform === 'instagram' && transcription.length < 150) {
-      contextualTranscription = `[IMPORTANTE: Este é um vídeo do Instagram. O Instagram não fornece legendas ou descrições automáticas, então as informações são muito limitadas. 
+      contextualTranscription = `[IMPORTANTE: Este é um vídeo do Instagram com informações limitadas.
 
-INSTRUÇÕES ESPECIAIS:
-- Crie um resumo genérico mas útil indicando que é um vídeo do Instagram
-- Use categoria "Redes Sociais" ou "Conteúdo Visual"
-- Adicione palavras-chave relacionadas a Instagram e mídia social
-- No resumo, mencione que para análise completa é necessário assistir ao vídeo
-- Seja honesto sobre a limitação de informações disponíveis]
+INSTRUÇÕES ESPECIAIS PARA O TÍTULO:
+- NUNCA use "Post do Instagram" ou títulos genéricos
+- Analise as palavras disponíveis e crie um título específico
+- Se houver palavras-chave identificáveis, use-as no título
+- Seja criativo mas honesto sobre o conteúdo
+- Exemplo: se menciona "receita" ou "comida", use "Receita de [ingrediente]"
+- Exemplo: se menciona "dica" ou "tutorial", use "Como [ação]"
+
+INSTRUÇÕES PARA ANÁLISE:
+- Extraia o máximo de informação possível das palavras disponíveis
+- Identifique categoria baseada no contexto
+- Adicione palavras-chave relevantes encontradas
+- No resumo, seja honesto sobre limitações mas forneça valor
+- Se não houver informações suficientes, indique que é necessário assistir ao vídeo]
 
 Informações disponíveis:
 ${transcription}`;
@@ -409,8 +417,28 @@ ${transcription}`;
     const analysis = await analyzeWithGPT(contextualTranscription, videoInfo.title);
 
     // 6. Prepare the data
+    // Generate a better title if GPT returned a generic one
+    let finalTitle = analysis.title || videoInfo.title;
+    
+    // Check if title is generic and try to improve it
+    const genericTitles = ['Post do Instagram', 'Vídeo do Instagram', 'Conteúdo do Instagram', 'Instagram', 'Vídeo'];
+    const isGenericTitle = genericTitles.some(generic => 
+      finalTitle.toLowerCase().includes(generic.toLowerCase())
+    );
+    
+    if (isGenericTitle && analysis.keywords && analysis.keywords.length > 0) {
+      // Create title from keywords and category
+      const mainKeywords = analysis.keywords.slice(0, 3).join(', ');
+      if (analysis.category) {
+        finalTitle = `${analysis.category}: ${mainKeywords}`;
+      } else {
+        finalTitle = mainKeywords;
+      }
+      console.log(`📝 Improved generic title to: ${finalTitle}`);
+    }
+    
     const processedData = {
-      title: analysis.title || videoInfo.title,
+      title: finalTitle,
       transcription: transcription,
       summary_short: analysis.summary_short,
       summary_expanded: analysis.summary_expanded,
