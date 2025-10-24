@@ -12,6 +12,7 @@ import {
 import { formatDistanceToNow } from "@/lib/date-utils"
 import { VideoProgressIndicator } from "@/components/video-progress-indicator"
 import { useVideosProgress } from "@/hooks/use-videos-progress"
+import { VideoQueueIndicator } from "@/components/video-queue-indicator"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -307,6 +308,9 @@ export function VideosPage() {
             </Button>
           </div>
         </PageHeader>
+
+        {/* Queue Indicator */}
+        <VideoQueueIndicator />
         </div>
       
       {/* Abas de Temas com Scroll Horizontal e Fixação */}
@@ -521,8 +525,13 @@ export function VideosPage() {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Badge 
-                            variant={video.status === 'Concluído' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
-                            className={`text-xs ${video.status === 'Processando' ? 'animate-pulse-glow' : ''}`}
+                            variant={
+                              video.status === 'Concluído' ? 'default' : 
+                              video.status === 'Processando' ? 'secondary' : 
+                              video.status === 'Na fila' ? 'outline' :
+                              'destructive'
+                            } 
+                            className={`text-xs ${video.status === 'Processando' || video.status === 'Na fila' ? 'animate-pulse-glow' : ''}`}
                           >
                             {video.status}
                           </Badge>

@@ -167,7 +167,7 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
     let videoPayload: any = {
       url: data.url,
       user_id: user.id,
-      status: "Processando"
+      status: "Na fila"
     };
 
     // For Instagram, clean URL
@@ -197,14 +197,49 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
     }
 
     console.log("✅ [SHARE] Video inserted with ID:", newVideo.id);
+
+    // 2. Add to queue
+    const { data: queueItem, error: queueError } = await supabase
+      .from("video_queue")
+      .insert({
+        video_id: newVideo.id,
+        user_id: user.id,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (queueError || !queueItem) {
+      setLoading(false);
+      toast.error("Falha ao adicionar à fila. Tente novamente.");
+      console.error("❌ [SHARE] Error adding to queue:", queueError);
+      
+      // Clean up the video
+      await supabase.from("videos").delete().eq("id", newVideo.id);
+      return;
+    }
+
+    console.log("✅ [SHARE] Added to queue with ID:", queueItem.id);
+
+    // 3. Get queue position
+    const { data: positionData } = await supabase.rpc('get_queue_position', {
+      p_video_id: newVideo.id
+    });
+
+    const position = positionData || 1;
     
     // Close modal immediately and show success message
     setLoading(false);
     form.reset();
     setOpen(false);
-    toast.success("Vídeo adicionado à fila! O processamento está acontecendo em segundo plano.");
+    
+    if (position === 1) {
+      toast.success("Vídeo adicionado! Processamento iniciando agora...");
+    } else {
+      toast.success(`Vídeo adicionado à fila! Posição: ${position}`);
+    }
 
-    // 2. Process in background (don't await)
+    // 4. Process in background (don't await)
     console.log("🚀 [SHARE] Starting background processing...");
     
     // Process in background without blocking
@@ -233,20 +268,16 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
           }
         }
         
-        // Invoke Edge Function for processing
-        console.log("🚀 [SHARE] Invoking Edge Function...");
-        const { error: functionError } = await supabase.functions.invoke('process-video', {
-          body: { video_id: newVideo.id },
+        // Trigger queue processor
+        console.log("🚀 [SHARE] Triggering queue processor...");
+        const { error: queueError } = await supabase.functions.invoke('process-video-queue', {
+          body: {},
         });
 
-        if (functionError) {
-          console.error("❌ [SHARE] Error invoking function:", functionError);
-          await supabase
-            .from("videos")
-            .update({ status: "Falha" })
-            .eq("id", newVideo.id);
+        if (queueError) {
+          console.error("❌ [SHARE] Error triggering queue processor:", queueError);
         } else {
-          console.log("✅ [SHARE] Edge Function invoked successfully!");
+          console.log("✅ [SHARE] Queue processor triggered successfully!");
         }
       } catch (error) {
         console.error("❌ [SHARE] Background processing error:", error);
