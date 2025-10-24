@@ -23,42 +23,42 @@ async function uploadThumbnailToStorage(
 ): Promise<string | null> {
   try {
     console.log("📥 Downloading thumbnail from:", thumbnailUrl.substring(0, 100));
-    
+
     // Download thumbnail
     const response = await fetch(thumbnailUrl);
     if (!response.ok) {
       console.error("Failed to download thumbnail:", response.status);
       return null;
     }
-    
+
     const blob = await response.blob();
     const arrayBuffer = await blob.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
-    
+
     // Generate filename
     const extension = thumbnailUrl.includes('.jpg') ? 'jpg' : 'png';
     const filename = `thumbnails/${videoId}.${extension}`;
-    
+
     console.log("📤 Uploading thumbnail to Storage:", filename);
-    
+
     // Upload to Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from('video-thumbnails')
       .upload(filename, uint8Array, {
         contentType: `image/${extension}`,
         upsert: true,
       });
-    
+
     if (error) {
       console.error("Error uploading thumbnail to storage:", error);
       return null;
     }
-    
+
     // Get public URL
     const { data: publicUrlData } = supabaseAdmin.storage
       .from('video-thumbnails')
       .getPublicUrl(filename);
-    
+
     console.log("✅ Thumbnail uploaded successfully:", publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (error) {
@@ -170,26 +170,27 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
 
   try {
     console.log("🎤 Starting Whisper transcription for video:", videoUrl.substring(0, 100));
-    
+
     // 1. Download video
     console.log("📥 Downloading video...");
     const videoResponse = await fetch(videoUrl);
-    
+
     if (!videoResponse.ok) {
       console.error("Failed to download video:", videoResponse.status);
       return null;
     }
-    
+
     const videoBlob = await videoResponse.blob();
     const videoSize = videoBlob.size / (1024 * 1024); // MB
     console.log(`✅ Video downloaded: ${videoSize.toFixed(2)} MB`);
-    
-    // Whisper API tem limite de 25MB
-    if (videoSize > 25) {
-      console.warn("⚠️ Video too large for Whisper API (>25MB), skipping transcription");
+
+    // ⚡ Reduced from 25MB to 10MB for faster Instagram processing
+    // Whisper takes 2-3 minutes for large videos, skip for better UX
+    if (videoSize > 10) {
+      console.warn("⚠️ Video too large for Whisper API (>10MB), skipping transcription for faster processing");
       return null;
     }
-    
+
     // 2. Send to Whisper API
     console.log("🎤 Sending to Whisper API...");
     const formData = new FormData();
@@ -197,7 +198,7 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
     formData.append('model', 'whisper-1');
     formData.append('language', 'pt'); // Português
     formData.append('response_format', 'text');
-    
+
     const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -205,17 +206,17 @@ async function transcribeVideoWithWhisper(videoUrl: string): Promise<string | nu
       },
       body: formData,
     });
-    
+
     if (!whisperResponse.ok) {
       const errorText = await whisperResponse.text();
       console.error("Whisper API error:", whisperResponse.status, errorText);
       return null;
     }
-    
+
     const transcription = await whisperResponse.text();
     console.log(`✅ Transcription completed: ${transcription.length} characters`);
     console.log("Preview:", transcription.substring(0, 200));
-    
+
     return transcription;
   } catch (error) {
     console.error("❌ Error in Whisper transcription:", error);
@@ -284,7 +285,7 @@ serve(async (req) => {
     );
 
     // 1. Fetch video details (including video_url and thumbnail_url if already saved)
-    const { data: video, error: videoError} = await supabaseAdmin
+    const { data: video, error: videoError } = await supabaseAdmin
       .from("videos")
       .select("id, url, user_id, video_url, thumbnail_url")
       .eq("id", video_id)
@@ -293,7 +294,7 @@ serve(async (req) => {
     if (videoError || !video) {
       throw new Error(`Video not found: ${videoError?.message}`);
     }
-    
+
     console.log("📦 Video data from DB:", {
       url: video.url,
       has_video_url: !!video.video_url,
@@ -311,7 +312,7 @@ serve(async (req) => {
     // 3. Get video info (title and description)
     let videoUrl: string | undefined = undefined;
     let thumbnailUrl: string | undefined = undefined;
-    
+
     // For Instagram, check if we already have video_url from extension
     if (platform === 'instagram') {
       // First, check if extension already provided video_url and thumbnail_url
@@ -323,7 +324,7 @@ serve(async (req) => {
         thumbnailUrl = video.thumbnail_url;
         console.log("✅ Using thumbnail_url from extension");
       }
-      
+
       // Only fetch via RapidAPI if we don't have video_url yet (shared via button)
       if (!videoUrl) {
         console.log("📡 Instagram detected - no video_url in DB, fetching via RapidAPI...");
@@ -332,7 +333,7 @@ serve(async (req) => {
           const cleanUrl = cleanInstagramUrl(video.url);
           console.log("🧹 Original URL:", video.url);
           console.log("🧹 Cleaned URL:", cleanUrl);
-          
+
           const postInfo = await instagramAPI.getPostInfo(cleanUrl);
           if (postInfo) {
             if (postInfo.videoUrl) {
@@ -361,9 +362,9 @@ serve(async (req) => {
         thumbnailUrl: thumbnailUrl ? "Found" : "Not found"
       });
     }
-    
+
     let videoInfo = await getVideoInfo(videoId, platform, video.url);
-    
+
     if (!videoInfo) {
       // Fallback: usar informações básicas do vídeo
       const platformName = platform === 'youtube' ? 'YouTube' : 'Instagram';
@@ -375,12 +376,12 @@ serve(async (req) => {
 
     // 4. Get transcription
     let transcription = videoInfo.description || "Sem descrição disponível";
-    
+
     // 4.5. For Instagram with video URL, try Whisper transcription
     if (platform === 'instagram' && videoUrl) {
       console.log("🎤 Instagram video detected, attempting Whisper transcription...");
       const whisperTranscription = await transcribeVideoWithWhisper(videoUrl);
-      
+
       if (whisperTranscription && whisperTranscription.length > 50) {
         console.log("✅ Using Whisper transcription");
         transcription = whisperTranscription;
@@ -419,13 +420,13 @@ ${transcription}`;
     // 6. Prepare the data
     // Generate a better title if GPT returned a generic one
     let finalTitle = analysis.title || videoInfo.title;
-    
+
     // Check if title is generic and try to improve it
     const genericTitles = ['Post do Instagram', 'Vídeo do Instagram', 'Conteúdo do Instagram', 'Instagram', 'Vídeo'];
-    const isGenericTitle = genericTitles.some(generic => 
+    const isGenericTitle = genericTitles.some(generic =>
       finalTitle.toLowerCase().includes(generic.toLowerCase())
     );
-    
+
     if (isGenericTitle && analysis.keywords && analysis.keywords.length > 0) {
       // Create title from keywords and category
       const mainKeywords = analysis.keywords.slice(0, 3).join(', ');
@@ -436,7 +437,7 @@ ${transcription}`;
       }
       console.log(`📝 Improved generic title to: ${finalTitle}`);
     }
-    
+
     const processedData = {
       title: finalTitle,
       transcription: transcription,
@@ -465,13 +466,13 @@ ${transcription}`;
       tutorial_steps: processedData.tutorial_steps,
       processed_at: new Date().toISOString(),
     };
-    
+
     // Add video URL if available
     if (videoUrl) {
       updateData.video_url = videoUrl;
       console.log("✅ Saving video_url:", videoUrl.substring(0, 100));
     }
-    
+
     // Upload thumbnail to Storage to avoid CORS issues
     if (thumbnailUrl) {
       console.log("📸 Processing thumbnail...");
@@ -485,7 +486,7 @@ ${transcription}`;
         console.log("⚠️ Using original thumbnail_url (upload failed):", thumbnailUrl.substring(0, 100));
       }
     }
-    
+
     const { error: updateError } = await supabaseAdmin
       .from("videos")
       .update(updateData)

@@ -39,9 +39,9 @@ serve(async (req) => {
 
     console.log("📊 Currently processing:", processingByPlatform);
 
-    // 2. Allow parallel processing: 2 YouTube + 1 Instagram at the same time
+    // 2. Allow parallel processing: 2 YouTube + 2 Instagram at the same time
     const MAX_YOUTUBE = 2;
-    const MAX_INSTAGRAM = 1;
+    const MAX_INSTAGRAM = 2; // ⚡ Increased from 1 to 2 for faster processing
     const MAX_OTHER = 1;
 
     let targetPlatform: string | null = null;
