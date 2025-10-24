@@ -43,17 +43,25 @@ export function SharePage() {
     // Se estiver logado e tiver URL, processar o share
     if (url) {
       console.log('✅ User logged in, processing share...');
+      console.log('📱 Saving to localStorage:', { url, title });
+      
       // Armazena a URL no localStorage para ser usada na página de vídeos
       localStorage.setItem('sharedVideoUrl', url);
       if (title) {
         localStorage.setItem('sharedVideoTitle', title);
       }
       
+      // Verificar se foi salvo
+      const savedUrl = localStorage.getItem('sharedVideoUrl');
+      console.log('✅ Verified localStorage:', savedUrl);
+      
       // Limpar dados temporários
       sessionStorage.removeItem('pendingShare');
       
+      console.log('🔄 Navigating to /videos...');
       navigate('/videos', { replace: true });
     } else {
+      console.log('⚠️ No URL in share params, going to videos anyway');
       // Se não tiver URL, vai direto para vídeos
       navigate('/videos', { replace: true });
     }

@@ -55,16 +55,36 @@ export function ShareVideoDialog({ open: controlledOpen, onOpenChange }: ShareVi
 
   // Verifica se há uma URL compartilhada no localStorage
   useEffect(() => {
-    const sharedUrl = localStorage.getItem('sharedVideoUrl');
-    if (sharedUrl) {
-      form.setValue('url', sharedUrl);
-      setOpen(true);
-      localStorage.removeItem('sharedVideoUrl');
-      localStorage.removeItem('sharedVideoTitle');
+    // Pequeno delay para garantir que o componente está montado
+    const timer = setTimeout(() => {
+      const sharedUrl = localStorage.getItem('sharedVideoUrl');
+      console.log('📱 Checking for shared video URL:', sharedUrl);
       
-      toast.info('URL do vídeo compartilhado carregada!');
-    }
-  }, [form]);
+      if (sharedUrl) {
+        console.log('✅ Found shared URL, opening modal...');
+        
+        // Definir a URL no formulário
+        form.setValue('url', sharedUrl);
+        
+        // Abrir o modal
+        setOpen(true);
+        
+        // Limpar o localStorage
+        localStorage.removeItem('sharedVideoUrl');
+        localStorage.removeItem('sharedVideoTitle');
+        
+        // Mostrar notificação
+        toast.info('URL do vídeo compartilhado carregada!', {
+          description: 'Clique em "Adicionar à Fila" para processar o vídeo.',
+          duration: 5000,
+        });
+      } else {
+        console.log('ℹ️ No shared URL found in localStorage');
+      }
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
+  }, [form, setOpen]);
 
   // Helper function to detect platform
   const detectPlatform = (url: string): 'youtube' | 'instagram' | 'other' => {
