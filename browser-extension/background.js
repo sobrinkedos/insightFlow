@@ -6,10 +6,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'openPopup') {
     try {
       chrome.action.openPopup();
+      sendResponse({ success: true });
     } catch (error) {
       console.error('[InsightShare] Error opening popup:', error);
+      sendResponse({ success: false, error: error.message });
     }
   }
+  return true; // Mantém o canal aberto para resposta assíncrona
 });
 
 // Set up context menu

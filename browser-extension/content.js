@@ -82,6 +82,173 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
+// Configuração da API
+const API_URL = 'https://enkpfnqsjjnanlqhjnsv.supabase.co';
+const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVua3BmbnFzampuYW5scWhqbnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NjcyODAsImV4cCI6MjA3NjE0MzI4MH0.WwYOmV_jXBsrZ74GWw9xuSzRC1vf1k39DAHjY1EI1hE';
+
+// RapidAPI Configuration
+const RAPIDAPI_KEY = '5b4ef30d7amsh604c58627ce5d90p18121bjsnbc0f5b169f67';
+const RAPIDAPI_HOST = 'instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com';
+
+// Buscar informações do Instagram via RapidAPI
+async function fetchInstagramData(url) {
+  try {
+    console.log('📡 [Floating] Buscando dados do Instagram:', url);
+    
+    const apiUrl = `https://${RAPIDAPI_HOST}/convert?url=${encodeURIComponent(url)}`;
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': RAPIDAPI_HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn('⚠️ [Floating] API retornou erro:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log('✅ [Floating] Dados da API recebidos');
+    
+    // Extrair informações
+    let title = 'Post do Instagram';
+    let thumbnail = null;
+    let videoUrl = null;
+    
+    if (data.media && Array.isArray(data.media) && data.media.length > 0) {
+      const firstMedia = data.media[0];
+      thumbnail = firstMedia.thumbnail || (firstMedia.type === 'image' ? firstMedia.url : null);
+      if (firstMedia.type === 'video' && firstMedia.url) {
+        videoUrl = firstMedia.url;
+      }
+    }
+    
+    // Pegar título/caption
+    if (data.title && data.title !== 'Instagram') {
+      title = data.title;
+    } else if (data.caption && data.caption.length > 5) {
+      title = data.caption.substring(0, 150);
+    } else if (data.description && data.description.length > 5) {
+      title = data.description.substring(0, 150);
+    } else if (data.owner && data.owner.username) {
+      title = `Post de @${data.owner.username}`;
+    } else {
+      title = 'Vídeo do Instagram (título será gerado pela IA)';
+    }
+    
+    return { title, thumbnail, videoUrl, platform: 'Instagram' };
+  } catch (error) {
+    console.error('❌ [Floating] Erro ao buscar dados:', error);
+    return null;
+  }
+}
+
+// Obter sessão do usuário
+async function getSession() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['session'], (result) => {
+      resolve(result.session || null);
+    });
+  });
+}
+
+// Compartilhar vídeo diretamente
+async function shareVideo(videoUrl, videoData) {
+  try {
+    const session = await getSession();
+    
+    if (!session || !session.access_token) {
+      console.log('❌ [Floating] Usuário não está logado');
+      showFloatingNotification('❌ Faça login na extensão primeiro', 'error');
+      // Abrir popup da extensão
+      chrome.runtime.sendMessage({ action: 'openPopup' });
+      return;
+    }
+    
+    console.log('🎬 [Floating] Compartilhando vídeo:', videoUrl);
+    
+    // Preparar dados para enviar
+    const videoPayload = {
+      url: videoUrl,
+      user_id: session.user.id,
+      status: 'Processando'
+    };
+    
+    // Se tiver dados do Instagram, adicionar
+    if (videoData) {
+      if (videoData.title) videoPayload.title = videoData.title;
+      if (videoData.thumbnail) videoPayload.thumbnail_url = videoData.thumbnail;
+      if (videoData.videoUrl) videoPayload.video_url = videoData.videoUrl;
+    }
+    
+    console.log('📤 [Floating] Enviando para Supabase');
+    
+    // Inserir vídeo
+    const response = await fetch(`${API_URL}/rest/v1/videos`, {
+      method: 'POST',
+      headers: {
+        'apikey': API_KEY,
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(videoPayload)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao compartilhar');
+    }
+    
+    const data = await response.json();
+    const videoId = data[0]?.id;
+    
+    console.log('✅ [Floating] Vídeo inserido:', videoId);
+    
+    if (videoId) {
+      // Processar vídeo em background
+      fetch(`${API_URL}/functions/v1/process-video`, {
+        method: 'POST',
+        headers: {
+          'apikey': API_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ video_id: videoId })
+      }).catch(err => console.error('[Floating] Erro no processamento:', err));
+    }
+    
+    showFloatingNotification('✅ Vídeo compartilhado com sucesso!', 'success');
+    
+  } catch (error) {
+    console.error('❌ [Floating] Erro:', error);
+    showFloatingNotification('❌ Erro ao compartilhar: ' + error.message, 'error');
+  }
+}
+
+// Mostrar notificação flutuante
+function showFloatingNotification(message, type) {
+  // Remover notificação anterior se existir
+  const existing = document.getElementById('insightshare-notification');
+  if (existing) existing.remove();
+  
+  const notification = document.createElement('div');
+  notification.id = 'insightshare-notification';
+  notification.className = `insightshare-notification ${type}`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Remover após 4 segundos
+  setTimeout(() => {
+    notification.classList.add('fade-out');
+    setTimeout(() => notification.remove(), 300);
+  }, 4000);
+}
+
 // Add floating button to share video
 function addShareButton() {
   // Check if button already exists
@@ -94,16 +261,76 @@ function addShareButton() {
   button.title = 'Compartilhar com InsightShare';
   
   button.addEventListener('click', async () => {
-    const videoInfo = getVideoInfo();
+    // Desabilitar botão temporariamente
+    button.disabled = true;
+    button.innerHTML = '⏳';
     
-    // Get base URL from config or use default
-    const baseUrl = typeof INSIGHTSHARE_URL !== 'undefined' ? INSIGHTSHARE_URL : 'http://localhost:5174';
-    
-    // Open InsightShare website with video URL
-    const insightShareUrl = `${baseUrl}/share?url=${encodeURIComponent(videoInfo.url)}&title=${encodeURIComponent(videoInfo.title)}`;
-    
-    // Try to open in the same window or new tab
-    window.open(insightShareUrl, '_blank');
+    try {
+      const videoInfo = getVideoInfo();
+      const url = window.location.href;
+      
+      console.log('🎯 [Floating] Clique no botão flutuante');
+      console.log('📍 [Floating] URL:', url);
+      console.log('📋 [Floating] Info:', videoInfo);
+      
+      let videoData = null;
+      let videoUrl = videoInfo.url;
+      
+      // Se for Instagram, buscar dados via API
+      if (url.includes('instagram.com')) {
+        // Detectar vídeo ativo
+        const findActiveVideo = () => {
+          const videos = document.querySelectorAll('video');
+          for (const video of videos) {
+            if (!video.paused && video.currentTime > 0) {
+              let element = video;
+              while (element && element !== document.body) {
+                const link = element.querySelector('a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"]');
+                if (link) return link.href;
+                element = element.parentElement;
+              }
+            }
+          }
+          
+          const currentUrl = window.location.href;
+          const match = currentUrl.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[A-Za-z0-9_-]+)/);
+          if (match) return match[1];
+          
+          const firstPostLink = document.querySelector('a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"]');
+          if (firstPostLink) return firstPostLink.href;
+          
+          return null;
+        };
+        
+        const detectedUrl = findActiveVideo();
+        
+        if (detectedUrl) {
+          const match = detectedUrl.match(/(https:\/\/www\.instagram\.com\/(?:p|reel|tv)\/[A-Za-z0-9_-]+)/);
+          if (match) {
+            videoUrl = match[1] + '/';
+            console.log('✅ [Floating] URL Instagram detectada:', videoUrl);
+            
+            // Buscar dados via RapidAPI
+            videoData = await fetchInstagramData(videoUrl);
+          }
+        } else {
+          showFloatingNotification('⚠️ Nenhum vídeo detectado. Role até um vídeo e tente novamente.', 'warning');
+          button.disabled = false;
+          button.innerHTML = '🎬';
+          return;
+        }
+      }
+      
+      // Compartilhar vídeo
+      await shareVideo(videoUrl, videoData);
+      
+    } catch (error) {
+      console.error('❌ [Floating] Erro:', error);
+      showFloatingNotification('❌ Erro ao processar vídeo', 'error');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = '🎬';
+    }
   });
 
   document.body.appendChild(button);
