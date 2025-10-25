@@ -128,75 +128,84 @@ export function FavoritesPage() {
       
       <div className="mt-6 md:mt-8">
         {loading ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="w-20 h-14 rounded shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <Skeleton className="h-5 w-full max-w-md" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                    <Skeleton className="h-6 w-24 rounded-full" />
+                <CardContent className="!p-0">
+                  <Skeleton className="w-full aspect-video rounded-t-lg" />
+                  <div className="p-3 space-y-2">
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-1/2" />
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : videos.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {videos.map((video) => (
               <Card 
                 key={video.id} 
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-lg overflow-hidden flex flex-col"
                 onClick={() => navigate(`/videos/${video.id}`)}
               >
-                <CardContent className="p-3 md:p-4">
-                  <div className="flex items-center gap-2 md:gap-3">
+                <CardContent className="!p-0 flex flex-col flex-1">
+                  {/* Thumbnail */}
+                  <div className="relative w-full aspect-video">
                     <img 
                       src={getVideoThumbnail(video.url, video.thumbnail_url)} 
                       alt={video.title || 'Thumbnail'}
-                      className="w-16 h-12 md:w-20 md:h-14 object-cover rounded border border-border shrink-0"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
+                        e.currentTarget.src = 'https://via.placeholder.com/640x360/666666/ffffff?text=Video';
                       }}
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm md:text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                      <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground">
-                        <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                        <span className="hidden md:inline">•</span>
-                        <span className="hidden md:inline">{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                    <div className="absolute top-2 right-2">
                       <Badge 
                         variant={video.status === 'Concluído' ? 'default' : video.status === 'Processando' ? 'secondary' : 'destructive'} 
-                        className={`text-[10px] md:text-xs ${video.status === 'Processando' ? 'animate-pulse' : ''} hidden md:inline-flex`}
+                        className={`text-xs ${video.status === 'Processando' ? 'animate-pulse-glow' : ''}`}
                       >
                         {video.status}
                       </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Info */}
+                  <div className="p-3 flex flex-col flex-1">
+                    <div className="flex gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm line-clamp-2 mb-1">{video.title || new URL(video.url).hostname}</div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-1 mt-auto pt-2 border-t border-border/50">
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 md:h-9 md:w-9"
+                        className="h-8 w-8"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(video.id, video.is_favorite);
                         }}
                       >
-                        <Heart className="h-3 w-3 md:h-4 md:w-4 fill-red-500 text-red-500" />
+                        <Heart className="h-4 w-4 fill-red-500 text-red-500" />
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 md:h-9 md:w-9"
+                            className="h-8 w-8"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <MoreHorizontal className="h-3 w-3 md:h-4 md:w-4" />
+                            <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Ações</span>
                           </Button>
                         </DropdownMenuTrigger>
