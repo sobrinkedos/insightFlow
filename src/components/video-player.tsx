@@ -306,11 +306,31 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
 
   const handleResumeVideo = () => {
     console.log('=== handleResumeVideo ===');
+    console.log('platform:', platform);
     console.log('playerReady:', playerReady);
     console.log('playerRef.current:', playerRef.current);
     console.log('resumeTime:', resumeTime);
-    console.log('showResumePrompt antes:', showResumePrompt);
     
+    // Para Instagram (HTML5 video)
+    if (platform === 'instagram' && videoUrl) {
+      const videoElement = containerRef.current?.querySelector('video');
+      if (videoElement) {
+        try {
+          videoElement.currentTime = resumeTime;
+          videoElement.play();
+          toast.success(`Retomando em ${formatTime(resumeTime)}`);
+          setShowResumePrompt(false);
+        } catch (error) {
+          console.error('❌ Error resuming Instagram video:', error);
+          toast.error("Erro ao retomar vídeo. Tente novamente.");
+        }
+      } else {
+        toast.error("Player não encontrado.");
+      }
+      return;
+    }
+    
+    // Para YouTube
     if (!playerReady) {
       console.log('❌ Player não está pronto');
       toast.info("Aguardando player carregar...");
@@ -340,6 +360,25 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
   };
 
   const handleStartFromBeginning = () => {
+    // Para Instagram (HTML5 video)
+    if (platform === 'instagram' && videoUrl) {
+      const videoElement = containerRef.current?.querySelector('video');
+      if (videoElement) {
+        try {
+          videoElement.currentTime = 0;
+          videoElement.play();
+          setShowResumePrompt(false);
+        } catch (error) {
+          console.error('Error starting Instagram video from beginning:', error);
+          toast.error("Erro ao iniciar vídeo.");
+        }
+      } else {
+        toast.error("Player não encontrado.");
+      }
+      return;
+    }
+    
+    // Para YouTube
     if (!playerReady) {
       toast.info("Aguardando player carregar...");
       return;
@@ -368,8 +407,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
 
   const handleCaptureCurrentTime = () => {
     console.log('=== Capturando tempo ===');
-    console.log('playerRef.current:', playerRef.current);
-    console.log('playerReady:', playerReady);
+    console.log('platform:', platform);
     console.log('user:', user);
 
     if (!user) {
@@ -377,6 +415,34 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
       return;
     }
 
+    // Para Instagram (HTML5 video)
+    if (platform === 'instagram' && videoUrl) {
+      const videoElement = containerRef.current?.querySelector('video');
+      if (videoElement) {
+        try {
+          const currentTime = videoElement.currentTime;
+          const duration = videoElement.duration;
+          
+          if (currentTime !== undefined && currentTime >= 0 && duration && duration > 0) {
+            const formattedTime = formatTime(currentTime);
+            setManualTime(formattedTime);
+            toast.success(`Tempo capturado: ${formattedTime}`);
+            console.log('✅ Sucesso! Tempo:', formattedTime);
+          } else {
+            console.log('❌ Valores inválidos:', { currentTime, duration });
+            toast.error("Não foi possível capturar o tempo. Tente pausar o vídeo primeiro.");
+          }
+        } catch (error) {
+          console.error('❌ Erro ao capturar:', error);
+          toast.error("Erro ao capturar tempo. Digite manualmente.");
+        }
+      } else {
+        toast.error("Player não encontrado.");
+      }
+      return;
+    }
+
+    // Para YouTube
     if (!playerRef.current) {
       toast.error("Player não encontrado. Aguarde o carregamento.");
       return;
@@ -473,6 +539,39 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
               poster={getThumbnailWithProxy(thumbnailUrl)}
               src={videoUrl}
               title={title}
+              onPlay={(e) => {
+                const video = e.currentTarget;
+                // Iniciar tracking quando o vídeo começar
+                if (progressIntervalRef.current) {
+                  clearInterval(progressIntervalRef.current);
+                }
+                progressIntervalRef.current = setInterval(() => {
+                  if (user && video.currentTime && video.duration) {
+                    updateProgress(video.currentTime, video.duration);
+                  }
+                }, 5000);
+              }}
+              onPause={() => {
+                // Parar tracking quando pausar
+                if (progressIntervalRef.current) {
+                  clearInterval(progressIntervalRef.current);
+                }
+              }}
+              onEnded={() => {
+                // Parar tracking quando terminar
+                if (progressIntervalRef.current) {
+                  clearInterval(progressIntervalRef.current);
+                }
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                // Verificar se há progresso salvo e oferecer retomar
+                if (progress && progress.watched_time > 10 && !progress.completed && !promptShownRef.current) {
+                  setResumeTime(progress.watched_time);
+                  setShowResumePrompt(true);
+                  promptShownRef.current = true;
+                }
+              }}
             >
               Seu navegador não suporta o elemento de vídeo.
             </video>
@@ -566,19 +665,19 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
                   variant="outline"
                   className="flex-1"
                   onClick={handleStartFromBeginning}
-                  disabled={!playerReady}
+                  disabled={platform === 'youtube' && !playerReady}
                 >
                   Começar do início
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={handleResumeVideo}
-                  disabled={!playerReady}
+                  disabled={platform === 'youtube' && !playerReady}
                 >
-                  {playerReady ? 'Continuar' : 'Carregando...'}
+                  {(platform === 'youtube' && !playerReady) ? 'Carregando...' : 'Continuar'}
                 </Button>
               </div>
-              {!playerReady && (
+              {platform === 'youtube' && !playerReady && (
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   ⏳ Aguardando player carregar...
                 </p>
@@ -629,7 +728,7 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
               size="icon"
               variant="outline"
               onClick={handleCaptureCurrentTime}
-              disabled={!playerReady}
+              disabled={platform === 'youtube' && !playerReady}
               title="Capturar tempo atual do vídeo automaticamente"
               className="shrink-0 h-8 w-8 md:h-9 md:w-auto md:px-3"
             >
@@ -646,10 +745,10 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
             </Button>
           </div>
           <p className="text-xs text-muted-foreground px-3">
-            {playerReady ? (
-              <>💡 Dica: Pause o vídeo e clique em "Capturar" para pegar o tempo automaticamente</>
-            ) : (
+            {(platform === 'youtube' && !playerReady) ? (
               <>⏳ Aguardando player carregar...</>
+            ) : (
+              <>💡 Dica: Pause o vídeo e clique em "Capturar" para pegar o tempo automaticamente</>
             )}
           </p>
         </div>
