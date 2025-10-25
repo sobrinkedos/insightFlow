@@ -520,290 +520,290 @@ export function HomePage() {
       <div className="fixed inset-0 -z-10 bg-pattern-dots" />
       <div className="w-full py-6 md:py-12 relative">
         <motion.div
-          className="px-4 md:max-w-7xl md:mx-auto"
+          className="md:max-w-7xl md:mx-auto"
           initial="initial"
           animate="in"
           exit="out"
           variants={pageVariants}
           transition={pageTransition}
         >
-          <div className="mb-8 md:mb-12">
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
-          <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
-        </div>
+          <div className="mb-8 md:mb-12 px-4">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
+            <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
+          </div>
 
-        {/* Extensions Banner */}
-        {showExtensionBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8 md:mb-12 hidden md:block"
-          >
-            <Card className="glass border-primary/30 overflow-hidden relative group hover:border-primary/50 transition-all">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity" />
-              <div className="absolute inset-0 bg-gradient-primary opacity-5" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-8 w-8"
-                onClick={handleCloseBanner}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                      <Badge variant="secondary" className="text-xs">Novo</Badge>
+          {/* Extensions Banner */}
+          {showExtensionBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: 0.2 }}
+              className="mb-8 md:mb-12 hidden md:block px-4"
+            >
+              <Card className="glass border-primary/30 overflow-hidden relative group hover:border-primary/50 transition-all">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-primary opacity-5" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8"
+                  onClick={handleCloseBanner}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                        <Badge variant="secondary" className="text-xs">Novo</Badge>
+                      </div>
+                      <h3 className="text-lg md:text-xl font-bold mb-2">
+                        Extensões de Navegador Disponíveis!
+                      </h3>
+                      <p className="text-sm md:text-base text-muted-foreground mb-4">
+                        Compartilhe vídeos do YouTube, Instagram, TikTok e mais diretamente do seu navegador.
+                        Disponível para Chrome, Edge e Firefox.
+                      </p>
+                      <Button asChild size="sm" className="md:h-9">
+                        <Link to="/extensions">
+                          <Download className="mr-2 h-4 w-4" />
+                          Baixar Extensões
+                        </Link>
+                      </Button>
                     </div>
-                    <h3 className="text-lg md:text-xl font-bold mb-2">
-                      Extensões de Navegador Disponíveis!
-                    </h3>
-                    <p className="text-sm md:text-base text-muted-foreground mb-4">
-                      Compartilhe vídeos do YouTube, Instagram, TikTok e mais diretamente do seu navegador.
-                      Disponível para Chrome, Edge e Firefox.
-                    </p>
-                    <Button asChild size="sm" className="md:h-9">
-                      <Link to="/extensions">
-                        <Download className="mr-2 h-4 w-4" />
-                        Baixar Extensões
-                      </Link>
-                    </Button>
-                  </div>
-                  <div className="hidden md:flex items-center gap-2">
-                    <div className="p-3 rounded-lg bg-background/50 backdrop-blur">
-                      <Download className="h-8 w-8 text-primary" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8 md:space-y-16">
-            <section>
-              {recentVideos.length > 0 ? (
-                <RecentVideosTable videos={recentVideos} loading={loading} />
-              ) : (
-                <EmptyState
-                  icon={VideoIcon}
-                  title="Nenhum vídeo adicionado"
-                  description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
-                  action={{
-                    label: "Compartilhar meu primeiro vídeo",
-                    onClick: () => {
-                      document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                    }
-                  }}
-                />
-              )}
-            </section>
-
-            {/* Últimos Vídeos Assistidos */}
-            {watchedVideos.length > 0 && (
-              <section>
-                <Card className="bg-card/50 backdrop-blur-sm border-white/10">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Clock className="h-5 w-5 text-primary" />
-                          Últimos Vídeos Assistidos
-                        </CardTitle>
-                        <CardDescription>Continue de onde você parou</CardDescription>
+                    <div className="hidden md:flex items-center gap-2">
+                      <div className="p-3 rounded-lg bg-background/50 backdrop-blur">
+                        <Download className="h-8 w-8 text-primary" />
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 px-4">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8 md:space-y-16">
+              <section>
+                {recentVideos.length > 0 ? (
+                  <RecentVideosTable videos={recentVideos} loading={loading} />
+                ) : (
+                  <EmptyState
+                    icon={VideoIcon}
+                    title="Nenhum vídeo adicionado"
+                    description="Comece compartilhando um vídeo para que a mágica da IA aconteça."
+                    action={{
+                      label: "Compartilhar meu primeiro vídeo",
+                      onClick: () => {
+                        document.querySelector('#share-video-trigger')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                      }
+                    }}
+                  />
+                )}
+              </section>
+
+              {/* Últimos Vídeos Assistidos */}
+              {watchedVideos.length > 0 && (
+                <section>
+                  <Card className="bg-card/50 backdrop-blur-sm border-white/10">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            <Clock className="h-5 w-5 text-primary" />
+                            Últimos Vídeos Assistidos
+                          </CardTitle>
+                          <CardDescription>Continue de onde você parou</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {watchedVideos.map((video) => {
+                          const thumbnail = getVideoThumbnail(video);
+                          return (
+                            <motion.div
+                              key={video.id}
+                              whileHover={{ scale: 1.01 }}
+                              transition={{ type: "spring", stiffness: 300 }}
+                              onClick={() => navigate(`/videos/${video.id}`)}
+                              className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
+                            >
+                              <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
+                                <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                  <VideoThumbnail thumbnail={thumbnail} title={video.title} />
+                                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded z-10">
+                                    <Clock className="h-3 w-3 inline mr-1" />
+                                    Assistido
+                                  </div>
+                                </div>
+                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                  <div>
+                                    <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
+                                      {video.title || "Sem título"}
+                                    </h3>
+                                    {video.channel && (
+                                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                        {video.channel}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </section>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Favoritos */}
+              {favoriteVideos.length > 0 && (
+                <Card>
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <Heart className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
+                      Vídeos Favoritos
+                    </CardTitle>
+                    <CardDescription className="text-xs md:text-sm">Seus vídeos marcados como favoritos</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {watchedVideos.map((video) => {
-                        const thumbnail = getVideoThumbnail(video);
-                        return (
-                          <motion.div
-                            key={video.id}
-                            whileHover={{ scale: 1.01 }}
-                            transition={{ type: "spring", stiffness: 300 }}
-                            onClick={() => navigate(`/videos/${video.id}`)}
-                            className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
-                          >
-                            <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
-                              <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                <VideoThumbnail thumbnail={thumbnail} title={video.title} />
-                                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded z-10">
-                                  <Clock className="h-3 w-3 inline mr-1" />
-                                  Assistido
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0 flex flex-col justify-between">
-                                <div>
-                                  <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
-                                    {video.title || "Sem título"}
-                                  </h3>
-                                  {video.channel && (
-                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                      {video.channel}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
+                  <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
+                    {favoriteVideos.map((video) => {
+                      const thumbnail = getVideoThumbnail(video);
+                      return (
+                        <Link
+                          key={video.id}
+                          to={`/videos/${video.id}`}
+                          className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
+                        >
+                          <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                            <VideoThumbnail thumbnail={thumbnail} title={video.title} className="w-full h-full" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs md:text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                              {video.title || "Sem título"}
+                            </p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">
+                              {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </CardContent>
                 </Card>
-              </section>
-            )}
-          </div>
+              )}
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Favoritos */}
-            {favoriteVideos.length > 0 && (
-              <Card>
-                <CardHeader className="p-4 md:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                    <Heart className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
-                    Vídeos Favoritos
-                  </CardTitle>
-                  <CardDescription className="text-xs md:text-sm">Seus vídeos marcados como favoritos</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
-                  {favoriteVideos.map((video) => {
-                    const thumbnail = getVideoThumbnail(video);
-                    return (
+              {/* Top Temas */}
+              {topThemes.length > 0 && (
+                <Card>
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                      Principais Temas
+                    </CardTitle>
+                    <CardDescription className="text-xs md:text-sm">Temas com mais vídeos</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
+                    {topThemes.map((theme) => (
                       <Link
-                        key={video.id}
-                        to={`/videos/${video.id}`}
-                        className="flex gap-2 md:gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors group"
+                        key={theme.id}
+                        to={`/themes/${theme.id}`}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-primary/5 transition-colors group"
                       >
-                        <div className="relative w-16 h-12 md:w-20 md:h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                          <VideoThumbnail thumbnail={thumbnail} title={video.title} className="w-full h-full" />
+                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                          <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                            <Layers className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs md:text-sm group-hover:text-primary transition-colors line-clamp-1">
+                              {theme.title}
+                            </p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">
+                              {theme.video_count} vídeo{theme.video_count !== 1 ? 's' : ''}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-xs md:text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                            {video.title || "Sem título"}
-                          </p>
-                          <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">
-                            {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
-                          </p>
-                        </div>
+                        <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                       </Link>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Top Temas */}
-            {topThemes.length > 0 && (
-              <Card>
-                <CardHeader className="p-4 md:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                    <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                    Principais Temas
-                  </CardTitle>
-                  <CardDescription className="text-xs md:text-sm">Temas com mais vídeos</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
-                  {topThemes.map((theme) => (
-                    <Link
-                      key={theme.id}
-                      to={`/themes/${theme.id}`}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-primary/5 transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                        <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
-                          <Layers className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-xs md:text-sm group-hover:text-primary transition-colors line-clamp-1">
-                            {theme.title}
-                          </p>
-                          <p className="text-[10px] md:text-xs text-muted-foreground">
-                            {theme.video_count} vídeo{theme.video_count !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-                    </Link>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12">
-          <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-              <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
-              <div className="p-2 rounded-lg bg-primary/10">
-                <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-              <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Vídeos na sua biblioteca
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-              <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
-              <div className="p-2 rounded-lg bg-secondary/10">
-                <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-              <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Organizados automaticamente
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-              <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-              <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Vídeos adicionados hoje
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
-              <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-              <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Vídeos marcados como favoritos
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Stats Cards */}
+          <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12 px-4">
+            <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  Vídeos na sua biblioteca
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
+                <div className="p-2 rounded-lg bg-secondary/10">
+                  <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  Organizados automaticamente
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
+                <div className="p-2 rounded-lg bg-accent/10">
+                  <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  Vídeos adicionados hoje
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
+                <div className="p-2 rounded-lg bg-red-500/10">
+                  <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  Vídeos marcados como favoritos
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </div>
     </>
