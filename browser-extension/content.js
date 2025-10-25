@@ -1,5 +1,16 @@
 // Content script to detect and extract video information
 
+// Detecta se a extensão foi recarregada
+let extensionValid = true;
+
+// Monitora se o contexto da extensão ainda é válido
+if (chrome.runtime?.id) {
+  chrome.runtime.connect({ name: 'content-script' }).onDisconnect.addListener(() => {
+    extensionValid = false;
+    console.log('⚠️ [Extension] Contexto invalidado - recarregue a página');
+  });
+}
+
 function getVideoInfo() {
   const url = window.location.href;
   let videoInfo = {
@@ -148,23 +159,48 @@ async function fetchInstagramData(url) {
 
 // Obter sessão do usuário
 async function getSession() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['session'], (result) => {
-      resolve(result.session || null);
-    });
+  return new Promise((resolve, reject) => {
+    try {
+      // Verifica se o contexto da extensão ainda é válido
+      if (!extensionValid || !chrome.runtime?.id) {
+        reject(new Error('Extension context invalidated. Please reload the page.'));
+        return;
+      }
+      
+      chrome.storage.local.get(['session'], (result) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        resolve(result.session || null);
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
 // Compartilhar vídeo diretamente
 async function shareVideo(videoUrl, videoData) {
   try {
+    // Verifica se o contexto da extensão ainda é válido
+    if (!extensionValid || !chrome.runtime?.id) {
+      console.log('❌ [Floating] Contexto da extensão invalidado');
+      showFloatingNotification('⚠️ Recarregue a página para usar a extensão', 'error');
+      return;
+    }
+    
     const session = await getSession();
     
     if (!session || !session.access_token) {
       console.log('❌ [Floating] Usuário não está logado');
       showFloatingNotification('❌ Faça login na extensão primeiro', 'error');
       // Abrir popup da extensão
-      chrome.runtime.sendMessage({ action: 'openPopup' });
+      try {
+        chrome.runtime.sendMessage({ action: 'openPopup' });
+      } catch (e) {
+        console.log('Não foi possível abrir popup:', e);
+      }
       return;
     }
     
