@@ -25,3 +25,8 @@ IMPLEMENTACAO-*.md
 INSTRUCOES-*.md
 README-INSTAGRAM.md
 RESUMO-*.md
+
+# Arquivos de mídia temporários
+browser-extension/*.mp4
+browser-extension/*.webm
+browser-extension/*.mov
