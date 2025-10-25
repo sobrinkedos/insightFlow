@@ -1,0 +1,207 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    console.log("🔄 Starting queue processor...");
+
+    // 1. Check how many videos are being processed per platform
+    const { data: processingVideos, error: checkError } = await supabaseAdmin
+      .from("video_queue")
+      .select("id, video_id, platform")
+      .eq("status", "processing");
+
+    if (checkError) {
+      console.error("Error checking processing videos:", checkError);
+      throw checkError;
+    }
+
+    const processingByPlatform = {
+      youtube: (processingVideos || []).filter((v: any) => v.platform === 'youtube').length,
+      instagram: (processingVideos || []).filter((v: any) => v.platform === 'instagram').length,
+      other: (processingVideos || []).filter((v: any) => v.platform === 'other').length,
+    };
+
+    console.log("📊 Currently processing:", processingByPlatform);
+
+    // 2. Allow parallel processing: 2 YouTube + 1 Instagram at the same time
+    const MAX_YOUTUBE = 2;
+    const MAX_INSTAGRAM = 1;
+    const MAX_OTHER = 1;
+
+    let targetPlatform = "";
+
+    // Prioritize YouTube (faster processing)
+    if (processingByPlatform.youtube < MAX_YOUTUBE) {
+      targetPlatform = 'youtube';
+    } else if (processingByPlatform.instagram < MAX_INSTAGRAM) {
+      targetPlatform = 'instagram';
+    } else if (processingByPlatform.other < MAX_OTHER) {
+      targetPlatform = 'other';
+    }
+
+    if (!targetPlatform) {
+      console.log("⏸️ All processing slots are full, skipping...");
+      return new Response(
+        JSON.stringify({ 
+          message: "All processing slots are full",
+          processing: processingByPlatform
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
+    console.log("🎯 Looking for " + targetPlatform + " video to process...");
+
+    // 3. Get the next video from the queue for the target platform
+    const { data: nextInQueue, error: queueError } = await supabaseAdmin
+      .rpc('get_next_from_queue', { p_platform: targetPlatform })
+      .single();
+
+    if (queueError || !nextInQueue) {
+      console.log("📭 No " + targetPlatform + " videos in queue");
+      
+      // Try any platform if target platform queue is empty
+      const { data: anyVideo, error: anyError } = await supabaseAdmin
+        .rpc('get_next_from_queue', { p_platform: null })
+        .single();
+      
+      if (anyError || !anyVideo) {
+        console.log("📭 Queue is completely empty");
+        return new Response(
+          JSON.stringify({ message: "Queue is empty" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+      
+      // Use the video from any platform
+      Object.assign(nextInQueue || {}, anyVideo);
+    }
+
+    console.log("🎬 Processing " + nextInQueue.platform + " video from queue: " + nextInQueue.video_id);
+
+    // 4. Mark as processing
+    const { error: updateError } = await supabaseAdmin
+      .from("video_queue")
+      .update({
+        status: "processing",
+        started_at: new Date().toISOString(),
+        attempts: nextInQueue.attempts + 1,
+      })
+      .eq("id", nextInQueue.id);
+
+    if (updateError) {
+      console.error("Error updating queue status:", updateError);
+      throw updateError;
+    }
+
+    // 5. Invoke the process-video function
+    try {
+      console.log("📡 Invoking process-video for video_id: " + nextInQueue.video_id);
+      
+      const { error: functionError } = await supabaseAdmin.functions.invoke('process-video', {
+        body: { video_id: nextInQueue.video_id },
+      });
+
+      if (functionError) {
+        console.error("❌ Error processing video:", functionError);
+        
+        // Check if we should retry
+        if (nextInQueue.attempts + 1 < nextInQueue.max_attempts) {
+          // Reset to pending for retry
+          await supabaseAdmin
+            .from("video_queue")
+            .update({
+              status: "pending",
+              error_message: functionError.message,
+            })
+            .eq("id", nextInQueue.id);
+          
+          console.log("🔄 Video will be retried (attempt " + (nextInQueue.attempts + 1) + "/" + nextInQueue.max_attempts + ")");
+        } else {
+          // Mark as failed
+          await supabaseAdmin
+            .from("video_queue")
+            .update({
+              status: "failed",
+              completed_at: new Date().toISOString(),
+              error_message: functionError.message,
+            })
+            .eq("id", nextInQueue.id);
+          
+          // Also mark video as failed
+          await supabaseAdmin
+            .from("videos")
+            .update({ status: "Falha" })
+            .eq("id", nextInQueue.video_id);
+          
+          console.log("❌ Video processing failed after " + nextInQueue.max_attempts + " attempts");
+        }
+        
+        throw functionError;
+      }
+
+      // 6. Mark as completed
+      await supabaseAdmin
+        .from("video_queue")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", nextInQueue.id);
+
+      console.log("✅ Video processed successfully: " + nextInQueue.video_id);
+
+      // 7. Check if there are more videos in the queue and trigger next processing
+      const { data: remainingQueue } = await supabaseAdmin
+        .from("video_queue")
+        .select("id")
+        .eq("status", "pending")
+        .limit(1);
+
+      if (remainingQueue && remainingQueue.length > 0) {
+        console.log("📬 More videos in queue, triggering next processing...");
+        
+        // Trigger next processing asynchronously (don't await)
+        supabaseAdmin.functions.invoke('process-video-queue', {
+          body: {},
+        }).catch((err: any) => console.error("Error triggering next queue processing:", err));
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          message: "Video processed successfully",
+          video_id: nextInQueue.video_id,
+          has_more: remainingQueue && remainingQueue.length > 0
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+
+    } catch (error) {
+      console.error("Error in video processing:", error);
+      throw error;
+    }
+
+  } catch (error: any) {
+    console.error("Error in queue processor:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+    );
+  }
+});

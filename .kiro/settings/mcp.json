@@ -20,7 +20,13 @@
         "apply_migration",
         "list_migrations",
         "get_logs",
-        "get_anon_key"
+        "get_anon_key",
+        "deploy_edge_function",
+        "list_edge_functions",
+        "list_edge_functions",
+        "get_project_url",
+        "list_extensions",
+        "get_edge_function"
       ]
     }
   }

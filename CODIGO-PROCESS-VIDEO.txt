@@ -1,0 +1,44 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { ANALYSIS_PROMPT } from "./ai-prompts.ts";
+import { instagramAPI } from "./instagram-api.ts";
+
+// IMPORTANT: Set these secrets in your Supabase project dashboard:
+// `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`
+// Docs: https://supabase.com/docs/guides/functions/secrets
+
+const openAIKey = Deno.env.get("OPENAI_API_KEY");
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Helper function to download and upload thumbnail to Supabase Storage
+async function uploadThumbnailToStorage(
+  thumbnailUrl: string,
+  videoId: string,
+  supabaseAdmin: any
+): Promise<string | null> {
+  try {
+    console.log("📥 Downloading thumbnail from:", thumbnailUrl.substring(0, 100));
+
+    // Download thumbnail
+    const response = await fetch(thumbnailUrl);
+    if (!response.ok) {
+      console.error("Failed to download thumbnail:", response.status);
+      return null;
+    }
+
+    const blob = await response.blob();
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Generate filename
+    const extension = thumbnailUrl.includes('.jpg') ? 'jpg' : 'png';
+    const filename = `thumbnails/${videoId}.${extension}`;
+
+    console.log("📤 Uploading thumbnail to Storage:", filename);
+
+    // Upload to

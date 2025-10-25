@@ -2,7 +2,9 @@
 
 ## 🎯 O Que Vamos Fazer
 
-Implementar **Cron Job** para que a fila de vídeos seja verificada **automaticamente a cada 30 segundos**, garantindo que nenhum Instagram fique parado.
+Implementar **Cron Job** para que a fila de vídeos seja verificada
+**automaticamente a cada 30 segundos**, garantindo que nenhum Instagram fique
+parado.
 
 ---
 
@@ -11,11 +13,13 @@ Implementar **Cron Job** para que a fila de vídeos seja verificada **automatica
 ### 1️⃣ Deploy da Função queue-cron (2 min)
 
 Execute:
+
 ```bash
 deploy-cron-job.bat
 ```
 
 **OU** faça manualmente via Dashboard:
+
 1. https://supabase.com/dashboard/project/enkpfnqsjjnanlqhjnsv/functions
 2. New function → Nome: `queue-cron`
 3. Cole código de: `supabase/functions/queue-cron/index.ts`
@@ -25,7 +29,8 @@ deploy-cron-job.bat
 
 ### 2️⃣ Configurar Cron Job (3 min)
 
-1. **Acesse**: https://supabase.com/dashboard/project/enkpfnqsjjnanlqhjnsv/database/cron-jobs
+1. **Acesse**:
+   https://supabase.com/dashboard/project/enkpfnqsjjnanlqhjnsv/database/cron-jobs
 
 2. **Clique**: "Create a new cron job"
 
@@ -37,6 +42,7 @@ Schedule: */30 * * * *
 ```
 
 4. **Command** (copie e cole):
+
 ```sql
 SELECT
   net.http_post(
@@ -55,6 +61,7 @@ SELECT
 Compartilhe um Instagram e aguarde 30 segundos. Deve processar automaticamente!
 
 Verifique:
+
 ```sql
 SELECT platform, status, created_at
 FROM video_queue
@@ -66,7 +73,8 @@ ORDER BY created_at DESC;
 
 ## ✅ Pronto!
 
-Agora a fila verifica automaticamente a cada 30 segundos. Nenhum vídeo ficará parado!
+Agora a fila verifica automaticamente a cada 30 segundos. Nenhum vídeo ficará
+parado!
 
 ---
 
@@ -78,5 +86,5 @@ Agora a fila verifica automaticamente a cada 30 segundos. Nenhum vídeo ficará 
 
 ---
 
-**Tempo total**: 5 minutos  
+**Tempo total**: 5 minutos\
 **Resultado**: Fila 100% automática! ⏰
