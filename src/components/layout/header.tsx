@@ -151,6 +151,15 @@ export function Header() {
         {user && (
           <nav className="hidden md:flex items-center justify-end gap-6 text-sm h-10 border-t border-border/40">
             <NavLink
+              to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className={({ isActive }) =>
+                `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
               to="/themes"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className={({ isActive }) =>
@@ -166,7 +175,7 @@ export function Header() {
                 `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
               }
             >
-              Vídeos Recentes
+              Vídeos
             </NavLink>
             <NavLink
               to="/favorites"
