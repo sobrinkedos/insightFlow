@@ -47,6 +47,7 @@ export function MobileNav() {
 
   const handleNavClick = () => {
     setOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

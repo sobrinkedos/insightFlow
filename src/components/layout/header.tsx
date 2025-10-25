@@ -64,7 +64,7 @@ export function Header() {
         <div className="flex h-14 md:h-14 items-center">
           <MobileNav />
           
-          <Link to="/" className="flex items-center space-x-2 mr-4 group">
+          <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center space-x-2 mr-4 group">
             <div className="relative">
               <BrainCircuit className="h-6 w-6 text-primary transition-transform group-hover:scale-110" />
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -152,6 +152,7 @@ export function Header() {
           <nav className="hidden md:flex items-center justify-end gap-6 text-sm h-10 border-t border-border/40">
             <NavLink
               to="/themes"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className={({ isActive }) =>
                 `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
               }
@@ -160,6 +161,7 @@ export function Header() {
             </NavLink>
             <NavLink
               to="/videos"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className={({ isActive }) =>
                 `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
               }
@@ -168,6 +170,7 @@ export function Header() {
             </NavLink>
             <NavLink
               to="/favorites"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className={({ isActive }) =>
                 `transition-colors hover:text-foreground/80 ${isActive ? "text-foreground" : "text-foreground/60"}`
               }
@@ -176,6 +179,7 @@ export function Header() {
             </NavLink>
             <NavLink
               to="/extensions"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className={({ isActive }) =>
                 `transition-colors hover:text-foreground/80 flex items-center gap-1 ${isActive ? "text-foreground" : "text-foreground/60"}`
               }

@@ -8,6 +8,10 @@ export function BottomNav() {
   const { user } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
 
+  const handleNavClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (!user) return null;
 
   return (
@@ -17,6 +21,7 @@ export function BottomNav() {
           <NavLink
             to="/"
             end
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${
                 isActive
@@ -31,6 +36,7 @@ export function BottomNav() {
 
           <NavLink
             to="/themes"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${
                 isActive
@@ -54,6 +60,7 @@ export function BottomNav() {
 
           <NavLink
             to="/videos"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${
                 isActive
@@ -68,6 +75,7 @@ export function BottomNav() {
 
           <NavLink
             to="/favorites"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${
                 isActive
