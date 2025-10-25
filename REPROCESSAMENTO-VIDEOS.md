@@ -7,6 +7,7 @@ Sistema implementado para detectar quando o processamento de um vídeo falhou e 
 ## 🎯 Problema Resolvido
 
 Às vezes o processamento de dados do vídeo não é realizado corretamente pela IA devido a:
+- **Vídeos sem áudio** (causa mais comum) - A IA depende da transcrição do áudio
 - Falhas na captação do vídeo
 - Problemas na transcrição
 - Timeouts ou erros na API
@@ -19,17 +20,20 @@ Isso resulta em resumos genéricos que não refletem o conteúdo real do vídeo.
 ### 1. Detecção Automática de Resumos Genéricos
 
 O sistema analisa automaticamente:
+- **🔇 Vídeos sem áudio**: Detecta padrões que indicam ausência de áudio (PRIORIDADE)
+- **Qualidade da transcrição**: Transcrição ausente ou muito curta (principal indicador)
 - **Padrões de texto genérico**: Frases típicas de falha de processamento
 - **Tamanho do resumo**: Resumos muito curtos (< 150 caracteres)
 - **Densidade de palavras genéricas**: Alta concentração de termos vagos
-- **Qualidade da transcrição**: Transcrição ausente ou muito curta
 - **Similaridade entre resumos**: Resumo curto e expandido muito similares
 
 ### 2. Alerta Visual ao Usuário
 
 Quando um resumo genérico é detectado:
 - ⚠️ **Alerta destacado** na aba "Resumo IA"
-- **Explicação clara** do problema
+- **Mensagem específica** para vídeos sem áudio (azul) ou falhas gerais (laranja)
+- **Explicação clara** do problema e possíveis causas
+- **Dicas práticas** para vídeos sem áudio
 - **Lista de motivos** que levaram à detecção
 - **Botão de ação** para reprocessamento
 
@@ -101,7 +105,26 @@ Componente de alerta para:
 
 ## 🎨 Interface do Usuário
 
-### Alerta de Resumo Genérico
+### Alerta para Vídeo Sem Áudio (Azul)
+
+```
+┌─────────────────────────────────────────────┐
+│ ⚠️ Vídeo Sem Áudio                          │
+│                                             │
+│ Este vídeo não possui áudio ou narração,    │
+│ por isso a IA não conseguiu extrair         │
+│ informações detalhadas do conteúdo.         │
+│                                             │
+│ 💡 Dica:                                    │
+│ Para vídeos sem áudio, considere adicionar  │
+│ manualmente as informações importantes nos  │
+│ metadados ou criar um tema personalizado.   │
+│                                             │
+│ [🔄 Tentar Reprocessar]                     │
+└─────────────────────────────────────────────┘
+```
+
+### Alerta de Resumo Genérico (Laranja)
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -110,10 +133,15 @@ Componente de alerta para:
 │ As informações deste vídeo não foram        │
 │ analisadas corretamente pela IA.            │
 │                                             │
-│ Motivos:                                    │
-│ • Contém frases genéricas típicas           │
-│ • Resumo muito curto                        │
+│ Possíveis causas:                           │
+│ • Vídeo sem áudio ou com áudio muito baixo  │
+│ • Falhas temporárias na captação            │
+│ • Problemas de conexão                      │
+│ • Conteúdo do vídeo inacessível             │
+│                                             │
+│ Motivos detectados:                         │
 │ • Transcrição ausente ou muito curta        │
+│ • Contém frases genéricas típicas           │
 │                                             │
 │ [🔄 Reprocessar Vídeo]                      │
 └─────────────────────────────────────────────┘
@@ -143,16 +171,25 @@ const isGeneric = confidence > 0.6; // Padrão: 60%
 
 ## 📊 Métricas de Detecção
 
+### Detecção de Vídeo Sem Áudio (Prioridade Máxima)
+- **Score**: 1.0 (100%) - Detecção imediata
+- **Padrões**: "sem áudio", "não áudio", "vídeo mudo", etc.
+- **Resultado**: Alerta azul específico para vídeos sem áudio
+
+### Detecção de Resumo Genérico
+
 | Critério | Peso | Descrição |
 |----------|------|-----------|
+| Transcrição | 0.5 | Ausente ou < 100 caracteres (MAIS IMPORTANTE) |
 | Padrões genéricos | 0.3 | Frases típicas de falha |
 | Tamanho do resumo | 0.2 | Menos de 150 caracteres |
-| Densidade de palavras | 0.3 | > 15% de palavras genéricas |
-| Transcrição | 0.4 | Ausente ou < 100 caracteres |
+| Densidade de palavras | 0.2 | > 15% de palavras genéricas |
 | Similaridade | 0.2 | Resumos muito similares |
 
 **Score máximo**: 1.0  
 **Threshold**: 0.6 (60%)
+
+**Nota**: A ausência de transcrição agora tem peso maior (0.5) pois é o principal indicador de vídeos sem áudio.
 
 ## 🚀 Próximos Passos
 

@@ -400,29 +400,63 @@ export function VideoDetailPage() {
                   <CardTitle>Resumo Gerado por IA</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Alerta de resumo genérico */}
+                  {/* Alerta de resumo genérico ou vídeo sem áudio */}
                   {genericDetection?.isGeneric && (
-                    <Alert variant="destructive" className="border-orange-500/50 bg-orange-500/10">
+                    <Alert variant="destructive" className={genericDetection.isNoAudio ? "border-blue-500/50 bg-blue-500/10" : "border-orange-500/50 bg-orange-500/10"}>
                       <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>Resumo Genérico Detectado</AlertTitle>
+                      <AlertTitle>
+                        {genericDetection.isNoAudio ? "Vídeo Sem Áudio" : "Resumo Genérico Detectado"}
+                      </AlertTitle>
                       <AlertDescription className="space-y-3">
-                        <p>
-                          As informações deste vídeo não foram analisadas corretamente pela IA. 
-                          Isso pode ter ocorrido devido a falhas na captação do conteúdo do vídeo.
-                        </p>
-                        {genericDetection.reasons.length > 0 && (
-                          <ul className="list-disc list-inside text-sm space-y-1 ml-2">
-                            {genericDetection.reasons.map((reason, i) => (
-                              <li key={i}>{reason}</li>
-                            ))}
-                          </ul>
+                        {genericDetection.isNoAudio ? (
+                          <>
+                            <p>
+                              Este vídeo não possui áudio ou narração, por isso a IA não conseguiu extrair 
+                              informações detalhadas do conteúdo. O resumo gerado é baseado apenas em 
+                              informações visuais limitadas.
+                            </p>
+                            <div className="p-3 bg-background/50 rounded-md border border-border/50">
+                              <p className="text-sm font-medium mb-2">💡 Dica:</p>
+                              <p className="text-sm">
+                                Para vídeos sem áudio, considere adicionar manualmente as informações 
+                                importantes nos metadados ou criar um tema personalizado com suas próprias anotações.
+                              </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Você pode tentar reprocessar o vídeo, mas o resultado provavelmente será similar 
+                              se o vídeo realmente não tiver áudio.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              As informações deste vídeo não foram analisadas corretamente pela IA. 
+                              Isso pode ter ocorrido devido a:
+                            </p>
+                            <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                              <li>Vídeo sem áudio ou com áudio muito baixo</li>
+                              <li>Falhas temporárias na captação do conteúdo</li>
+                              <li>Problemas de conexão durante o processamento</li>
+                              <li>Conteúdo do vídeo inacessível</li>
+                            </ul>
+                            {genericDetection.reasons.length > 0 && (
+                              <div className="pt-2 border-t border-border/50">
+                                <p className="text-sm font-medium mb-1">Motivos detectados:</p>
+                                <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                                  {genericDetection.reasons.map((reason, i) => (
+                                    <li key={i}>{reason}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </>
                         )}
                         <Button
                           onClick={() => reprocessVideo(video.id)}
                           disabled={isReprocessing}
                           variant="outline"
                           size="sm"
-                          className="mt-2 border-orange-500 hover:bg-orange-500/20"
+                          className={`mt-2 ${genericDetection.isNoAudio ? "border-blue-500 hover:bg-blue-500/20" : "border-orange-500 hover:bg-orange-500/20"}`}
                         >
                           {isReprocessing ? (
                             <>
@@ -432,7 +466,7 @@ export function VideoDetailPage() {
                           ) : (
                             <>
                               <RefreshCw className="mr-2 h-4 w-4" />
-                              Reprocessar Vídeo
+                              {genericDetection.isNoAudio ? "Tentar Reprocessar" : "Reprocessar Vídeo"}
                             </>
                           )}
                         </Button>

@@ -33,6 +33,17 @@ const GENERIC_PATTERNS = [
   /assista.*v[ií]deo.*completo/i,
 ];
 
+// Padrões que indicam vídeo sem áudio
+const NO_AUDIO_PATTERNS = [
+  /sem [áa]udio/i,
+  /n[ãa]o.*[áa]udio/i,
+  /[áa]udio.*indispon[ií]vel/i,
+  /sem narra[çc][ãa]o/i,
+  /v[ií]deo mudo/i,
+  /apenas.*visual/i,
+  /somente.*imagens/i,
+];
+
 // Palavras-chave que indicam conteúdo genérico
 const GENERIC_KEYWORDS = [
   'dicas',
@@ -49,6 +60,7 @@ export interface GenericSummaryDetectionResult {
   isGeneric: boolean;
   confidence: number; // 0-1
   reasons: string[];
+  isNoAudio: boolean; // Indica se o vídeo não tem áudio
 }
 
 /**
@@ -61,15 +73,42 @@ export function detectGenericSummary(
 ): GenericSummaryDetectionResult {
   const reasons: string[] = [];
   let score = 0;
+  let isNoAudio = false;
   
   // Se não há resumo, não é genérico (é ausente)
   if (!summaryShort && !summaryExpanded) {
-    return { isGeneric: false, confidence: 0, reasons: [] };
+    return { isGeneric: false, confidence: 0, reasons: [], isNoAudio: false };
   }
   
-  const combinedText = `${summaryShort || ''} ${summaryExpanded || ''}`.toLowerCase();
+  const combinedText = `${summaryShort || ''} ${summaryExpanded || ''} ${transcription || ''}`.toLowerCase();
   
-  // 1. Verifica padrões genéricos
+  // 0. PRIORIDADE: Verifica se o vídeo não tem áudio
+  for (const pattern of NO_AUDIO_PATTERNS) {
+    if (pattern.test(combinedText)) {
+      isNoAudio = true;
+      score = 1.0; // Score máximo para vídeos sem áudio
+      reasons.push('Vídeo sem áudio detectado');
+      break;
+    }
+  }
+  
+  // Se detectou vídeo sem áudio, retorna imediatamente
+  if (isNoAudio) {
+    return {
+      isGeneric: true,
+      confidence: 1.0,
+      reasons,
+      isNoAudio: true,
+    };
+  }
+  
+  // 1. Verifica se a transcrição está vazia ou muito curta (MAIS IMPORTANTE)
+  if (!transcription || transcription.length < 100) {
+    score += 0.5;
+    reasons.push('Transcrição ausente ou muito curta - possível vídeo sem áudio');
+  }
+  
+  // 2. Verifica padrões genéricos
   for (const pattern of GENERIC_PATTERNS) {
     if (pattern.test(combinedText)) {
       score += 0.3;
@@ -78,13 +117,13 @@ export function detectGenericSummary(
     }
   }
   
-  // 2. Verifica se o resumo é muito curto
+  // 3. Verifica se o resumo é muito curto
   if (combinedText.length < 150) {
     score += 0.2;
     reasons.push('Resumo muito curto (menos de 150 caracteres)');
   }
   
-  // 3. Verifica densidade de palavras-chave genéricas
+  // 4. Verifica densidade de palavras-chave genéricas
   const words = combinedText.split(/\s+/);
   const genericWordCount = words.filter(word => 
     GENERIC_KEYWORDS.some(kw => word.includes(kw))
@@ -92,14 +131,8 @@ export function detectGenericSummary(
   
   const genericWordDensity = genericWordCount / words.length;
   if (genericWordDensity > 0.15) {
-    score += 0.3;
+    score += 0.2;
     reasons.push('Alta densidade de palavras genéricas');
-  }
-  
-  // 4. Verifica se a transcrição está vazia ou muito curta
-  if (!transcription || transcription.length < 100) {
-    score += 0.4;
-    reasons.push('Transcrição ausente ou muito curta');
   }
   
   // 5. Verifica se o resumo expandido é igual ou muito similar ao curto
@@ -118,6 +151,7 @@ export function detectGenericSummary(
     isGeneric,
     confidence,
     reasons: isGeneric ? reasons : [],
+    isNoAudio: false,
   };
 }
 
