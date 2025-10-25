@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Bot, FileText, Info, Film, Clock, Heart, Trash2 } from "lucide-react";
+import { ArrowLeft, Bot, FileText, Info, Film, Clock, Heart, Trash2, RefreshCw, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date-utils";
 import { toast } from "sonner";
 
@@ -15,6 +15,9 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/video-player";
 import { useOrientationLock } from "@/hooks/use-orientation-lock";
+import { detectGenericSummary } from "@/lib/generic-summary-detector";
+import { useVideoReprocess } from "@/hooks/use-video-reprocess";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Componente para renderizar tutorial steps (pode ser JSON ou Markdown)
 function TutorialSteps({ steps }: { steps: string }) {
@@ -126,9 +129,17 @@ export function VideoDetailPage() {
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [recentVideos, setRecentVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const { reprocessVideo, isReprocessing } = useVideoReprocess();
 
   // Permitir orientação livre na página de vídeo
   useOrientationLock(true);
+  
+  // Detecta se o resumo é genérico
+  const genericDetection = video ? detectGenericSummary(
+    video.summary_short,
+    video.summary_expanded,
+    video.transcription
+  ) : null;
 
   // Scroll to top when video changes
   useEffect(() => {
@@ -389,6 +400,46 @@ export function VideoDetailPage() {
                   <CardTitle>Resumo Gerado por IA</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Alerta de resumo genérico */}
+                  {genericDetection?.isGeneric && (
+                    <Alert variant="destructive" className="border-orange-500/50 bg-orange-500/10">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Resumo Genérico Detectado</AlertTitle>
+                      <AlertDescription className="space-y-3">
+                        <p>
+                          As informações deste vídeo não foram analisadas corretamente pela IA. 
+                          Isso pode ter ocorrido devido a falhas na captação do conteúdo do vídeo.
+                        </p>
+                        {genericDetection.reasons.length > 0 && (
+                          <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                            {genericDetection.reasons.map((reason, i) => (
+                              <li key={i}>{reason}</li>
+                            ))}
+                          </ul>
+                        )}
+                        <Button
+                          onClick={() => reprocessVideo(video.id)}
+                          disabled={isReprocessing}
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 border-orange-500 hover:bg-orange-500/20"
+                        >
+                          {isReprocessing ? (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              Reprocessando...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Reprocessar Vídeo
+                            </>
+                          )}
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
                   {video.summary_short || video.summary_expanded || video.tutorial_steps ? (
                     <>
                       {video.summary_short && (
