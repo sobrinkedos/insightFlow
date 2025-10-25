@@ -547,7 +547,7 @@ export function HomePage() {
           variants={pageVariants}
           transition={pageTransition}
         >
-          <div className="mb-8 md:mb-12 px-4">
+          <div className="mb-8 md:mb-12 px-2 md:px-4">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
             <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
           </div>
@@ -559,7 +559,7 @@ export function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.2 }}
-              className="mb-8 md:mb-12 hidden md:block px-4"
+              className="mb-8 md:mb-12 hidden md:block px-2 md:px-4"
             >
               <Card className="glass border-primary/30 overflow-hidden relative group hover:border-primary/50 transition-all">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity" />
@@ -604,7 +604,7 @@ export function HomePage() {
             </motion.div>
           )}
 
-          <div className="px-4">
+          <div className="px-2 md:px-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
               {/* Main Content */}
               <div className="lg:col-span-2 space-y-8 md:space-y-16">
@@ -777,7 +777,7 @@ export function HomePage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="px-4">
+          <div className="px-2 md:px-4">
             <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12">
               <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />

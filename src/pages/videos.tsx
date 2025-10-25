@@ -273,7 +273,7 @@ export function VideosPage() {
       <div className="fixed inset-0 -z-10 bg-animated-gradient" />
       <div className="fixed inset-0 -z-10 bg-pattern-grid opacity-30" />
       <div className="w-full py-6 md:py-8 relative">
-        <div className="px-4 md:max-w-7xl md:mx-auto">
+        <div className="px-2 md:px-4 md:max-w-7xl md:mx-auto">
           <PageHeader
             title="Vídeos Recentes"
             description="Gerencie todos os seus vídeos compartilhados."
@@ -318,7 +318,7 @@ export function VideosPage() {
         ref={tabsRef}
         className={`${isTabsFixed ? 'fixed top-[56px] md:top-[96px] left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-lg' : 'mt-6 md:mt-8'} transition-all duration-300`}
       >
-        <div className="px-4 md:max-w-7xl md:mx-auto py-3">
+        <div className="px-2 md:px-4 md:max-w-7xl md:mx-auto py-3">
           <div className="flex items-center gap-2">
             {/* Botão para abrir modal de temas */}
             <Dialog open={isThemesModalOpen} onOpenChange={setIsThemesModalOpen}>
@@ -411,7 +411,7 @@ export function VideosPage() {
       {/* Espaçador quando as abas estão fixas */}
       {isTabsFixed && <div className="h-[60px]" />}
 
-      <div className="mt-4 md:mt-6 md:max-w-7xl md:mx-auto px-4">
+      <div className="mt-4 md:mt-6 md:max-w-7xl md:mx-auto px-2 md:px-4">
           {loading ? (
             <div className="space-y-0 md:space-y-3">
               {Array.from({ length: 10 }).map((_, i) => (

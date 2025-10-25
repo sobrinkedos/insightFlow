@@ -235,7 +235,7 @@ export function VideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="container py-8 px-4">
+      <div className="container py-8 px-2 md:px-4">
         <div className="flex items-center gap-4 mb-8">
           <Skeleton className="h-9 w-24" />
         </div>

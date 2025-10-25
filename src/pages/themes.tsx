@@ -176,7 +176,7 @@ export function ThemesPage() {
     <>
       <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-60" />
       <div className="fixed inset-0 -z-10 bg-pattern-dots" />
-      <div className="container py-6 md:py-8 px-4 relative">
+      <div className="container py-6 md:py-8 px-2 md:px-4 relative">
         <PageHeader
           title="Meus Temas"
           description="Seus vídeos organizados automaticamente por temas pela IA."
