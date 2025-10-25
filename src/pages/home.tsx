@@ -202,11 +202,11 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 md:p-6">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-3 p-4 rounded-lg border border-white/10">
+              <div key={i} className="flex flex-col gap-3 p-3 md:p-4 rounded-lg border border-white/10">
                 <Skeleton className="h-40 w-full rounded-md" />
                 <div className="space-y-2">
                   <Skeleton className="h-5 w-3/4" />
@@ -226,7 +226,7 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   onClick={() => navigate(`/videos/${video.id}`)}
-                  className="flex flex-col gap-3 p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
+                  className="flex flex-col gap-3 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                 >
                   <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted">
                     <VideoThumbnail thumbnail={thumbnail} title={video.title} />
@@ -649,7 +649,7 @@ export function HomePage() {
                           </Button>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 md:p-6">
                         <div className="space-y-4">
                           {watchedVideos.map((video: any) => {
                             const thumbnail = getVideoThumbnail(video);
@@ -709,7 +709,7 @@ export function HomePage() {
                       </CardTitle>
                       <CardDescription className="text-xs md:text-sm">Seus vídeos marcados como favoritos</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
+                    <CardContent className="space-y-2 md:space-y-3 p-3 pt-0 md:p-6 md:pt-0">
                       {favoriteVideos.map((video) => {
                         const thumbnail = getVideoThumbnail(video);
                         return (
@@ -746,7 +746,7 @@ export function HomePage() {
                       </CardTitle>
                       <CardDescription className="text-xs md:text-sm">Temas com mais vídeos</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-2 md:space-y-3 p-4 pt-0 md:p-6 md:pt-0">
+                    <CardContent className="space-y-2 md:space-y-3 p-3 pt-0 md:p-6 md:pt-0">
                       {topThemes.map((theme) => (
                         <Link
                           key={theme.id}
@@ -781,13 +781,13 @@ export function HomePage() {
             <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12">
               <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 relative">
                   <CardTitle className="text-xs md:text-sm font-medium">Total de Vídeos</CardTitle>
                   <div className="p-2 rounded-lg bg-primary/10">
                     <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-primary" />
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0 relative">
                   <div className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.totalVideos}</div>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
                     Vídeos na sua biblioteca
@@ -796,13 +796,13 @@ export function HomePage() {
               </Card>
               <Card className="glass border-border/50 hover:border-secondary/30 transition-all hover-lift group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 relative">
                   <CardTitle className="text-xs md:text-sm font-medium">Temas Criados</CardTitle>
                   <div className="p-2 rounded-lg bg-secondary/10">
                     <Layers className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0 relative">
                   <div className="text-xl md:text-2xl font-bold text-secondary">{stats.totalThemes}</div>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
                     Organizados automaticamente
@@ -811,13 +811,13 @@ export function HomePage() {
               </Card>
               <Card className="glass border-border/50 hover:border-accent/30 transition-all hover-lift group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 relative">
                   <CardTitle className="text-xs md:text-sm font-medium">Processados Hoje</CardTitle>
                   <div className="p-2 rounded-lg bg-accent/10">
                     <Zap className="h-3 w-3 md:h-4 md:w-4 text-accent" />
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0 relative">
                   <div className="text-xl md:text-2xl font-bold text-accent">{stats.processedToday}</div>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
                     Vídeos adicionados hoje
@@ -826,13 +826,13 @@ export function HomePage() {
               </Card>
               <Card className="glass border-border/50 hover:border-red-500/30 transition-all hover-lift group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6 relative">
                   <CardTitle className="text-xs md:text-sm font-medium">Favoritos</CardTitle>
                   <div className="p-2 rounded-lg bg-red-500/10">
                     <Heart className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0 relative">
                   <div className="text-xl md:text-2xl font-bold text-red-500">{stats.favorites}</div>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
                     Vídeos marcados como favoritos
