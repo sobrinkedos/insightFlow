@@ -48,11 +48,20 @@ function Create-ExtensionZip {
     }
     New-Item -ItemType Directory -Path $tempDir | Out-Null
     
+    # Cria pasta icons
+    $iconsDir = Join-Path $tempDir "icons"
+    New-Item -ItemType Directory -Path $iconsDir | Out-Null
+    
     # Copia arquivos comuns
     foreach ($file in $commonFiles) {
         $sourcePath = Join-Path "browser-extension" $file
         if (Test-Path $sourcePath) {
-            Copy-Item $sourcePath -Destination $tempDir
+            # Se for icone, copia para pasta icons/
+            if ($file -like "icon*.png") {
+                Copy-Item $sourcePath -Destination $iconsDir
+            } else {
+                Copy-Item $sourcePath -Destination $tempDir
+            }
         } else {
             Write-Host "  Aviso: Arquivo nao encontrado: $file" -ForegroundColor Yellow
         }
