@@ -143,77 +143,75 @@ const RecentVideosTable = ({ videos, loading }: { videos: Video[], loading: bool
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    {loading ? (
-                        Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="flex gap-4 p-4 rounded-lg border border-white/10">
-                                <Skeleton className="h-20 w-36 rounded-md flex-shrink-0" />
-                                <div className="flex-1 space-y-2">
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                            <div key={i} className="flex flex-col gap-3 p-4 rounded-lg border border-white/10">
+                                <Skeleton className="h-40 w-full rounded-md" />
+                                <div className="space-y-2">
                                     <Skeleton className="h-5 w-3/4" />
                                     <Skeleton className="h-4 w-1/2" />
                                     <Skeleton className="h-4 w-1/3" />
                                 </div>
                             </div>
-                        ))
-                    ) : videos.length > 0 ? (
-                        videos.map((video) => {
+                        ))}
+                    </div>
+                ) : videos.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {videos.map((video) => {
                             const thumbnail = getVideoThumbnail(video);
                             return (
                                 <motion.div
                                     key={video.id}
-                                    whileHover={{ scale: 1.01 }}
+                                    whileHover={{ scale: 1.02 }}
                                     transition={{ type: "spring", stiffness: 300 }}
                                     onClick={() => navigate(`/videos/${video.id}`)}
-                                    className="flex flex-col md:flex-row gap-3 md:gap-4 p-3 md:p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
+                                    className="flex flex-col gap-3 p-4 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group"
                                 >
-                                    <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
-                                        <div className="relative h-16 w-24 md:h-20 md:w-36 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                                            <VideoThumbnail thumbnail={thumbnail} title={video.title} />
-                                        </div>
-                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                                            <div>
-                                                <h3 className="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-primary transition-colors">
-                                                    {video.title || "Sem título"}
-                                                </h3>
-                                                {video.channel && (
-                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                                        {video.channel}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2 mt-2 text-[10px] md:text-xs text-muted-foreground">
-                                                <span className="truncate">
-                                                    {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
-                                                </span>
-                                                {video.category && (
-                                                    <>
-                                                        <span>•</span>
-                                                        <span className="truncate">{video.category}</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted">
+                                        <VideoThumbnail thumbnail={thumbnail} title={video.title} />
                                     </div>
-                                    <div className="flex md:items-center justify-end md:justify-center">
-                                        <span className={`px-2 md:px-3 py-1 text-[10px] md:text-xs rounded-full font-medium transition-colors whitespace-nowrap ${
-                                            video.status === 'Concluído' 
-                                                ? 'bg-green-500/20 text-green-400' 
-                                                : video.status === 'Processando' 
-                                                ? 'bg-amber-500/20 text-amber-400 animate-pulse' 
-                                                : 'bg-red-500/20 text-red-400'
-                                        }`}>
-                                            {video.status}
-                                        </span>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors flex-1">
+                                                {video.title || "Sem título"}
+                                            </h3>
+                                            <span className={`px-2 py-1 text-[10px] rounded-full font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                                                video.status === 'Concluído' 
+                                                    ? 'bg-green-500/20 text-green-400' 
+                                                    : video.status === 'Processando' 
+                                                    ? 'bg-amber-500/20 text-amber-400 animate-pulse' 
+                                                    : 'bg-red-500/20 text-red-400'
+                                            }`}>
+                                                {video.status}
+                                            </span>
+                                        </div>
+                                        {video.channel && (
+                                            <p className="text-xs text-muted-foreground line-clamp-1">
+                                                {video.channel}
+                                            </p>
+                                        )}
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <span className="truncate">
+                                                {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+                                            </span>
+                                            {video.category && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span className="truncate">{video.category}</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </motion.div>
                             );
-                        })
-                    ) : (
-                        <div className="text-center py-12 text-muted-foreground">
-                            Nenhum vídeo adicionado ainda.
-                        </div>
-                    )}
-                </div>
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Nenhum vídeo adicionado ainda.
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
@@ -258,7 +256,7 @@ export function HomePage() {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(10);
 
         const favoritesPromise = supabase
           .from('videos')
@@ -266,7 +264,7 @@ export function HomePage() {
           .eq('user_id', user.id)
           .eq('is_favorite', true)
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(10);
 
         const watchedPromise = supabase
           .from('video_progress')
