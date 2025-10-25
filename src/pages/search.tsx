@@ -16,6 +16,7 @@ interface SearchResult {
   keywords: string[];
   topics: string[];
   tags: string[];
+  thumbnail_url: string | null;
   created_at: string;
 }
 
@@ -30,6 +31,21 @@ const getYouTubeVideoId = (url: string): string | null => {
 const getYouTubeThumbnail = (url: string): string => {
   const videoId = getYouTubeVideoId(url);
   return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : "";
+};
+
+// Função para obter thumbnail do vídeo (YouTube ou Instagram)
+const getVideoThumbnail = (video: SearchResult): string | null => {
+  // Se tiver thumbnail_url salva (Instagram, TikTok, etc), usar ela
+  if (video.thumbnail_url) {
+    return video.thumbnail_url;
+  }
+  
+  // Caso contrário, tentar extrair do YouTube
+  if (video.url.includes('youtube.com') || video.url.includes('youtu.be')) {
+    return getYouTubeThumbnail(video.url);
+  }
+  
+  return null;
 };
 
 export default function SearchPage() {
@@ -52,7 +68,7 @@ export default function SearchPage() {
         // Busca todos os vídeos do usuário
         const { data, error } = await supabase
           .from("videos")
-          .select("id, url, title, summary_short, summary_expanded, keywords, topics, tags, created_at")
+          .select("id, url, title, summary_short, summary_expanded, keywords, topics, tags, thumbnail_url, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -135,24 +151,34 @@ export default function SearchPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {results.map((video) => (
-            <Link key={video.id} to={`/video/${video.id}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader className="p-0">
-                  {getYouTubeThumbnail(video.url) ? (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
-                      <img
-                        src={getYouTubeThumbnail(video.url)}
-                        alt={video.title || "Video"}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  ) : (
-                    <div className="relative aspect-video w-full bg-muted flex items-center justify-center rounded-t-lg">
-                      <Video className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                </CardHeader>
+          {results.map((video) => {
+            const thumbnail = getVideoThumbnail(video);
+            return (
+              <Link key={video.id} to={`/video/${video.id}`}>
+                <Card className="h-full hover:shadow-lg transition-shadow">
+                  <CardHeader className="p-0">
+                    {thumbnail ? (
+                      <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
+                        <img
+                          src={thumbnail}
+                          alt={video.title || "Video"}
+                          className="object-cover w-full h-full"
+                          onError={(e) => {
+                            // Se a imagem falhar ao carregar, mostrar placeholder
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center"><svg class="h-12 w-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>';
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative aspect-video w-full bg-muted flex items-center justify-center rounded-t-lg">
+                        <Video className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </CardHeader>
                 <CardContent className="p-4">
                   <CardTitle className="text-lg mb-2 line-clamp-2">{video.title}</CardTitle>
                   <CardDescription className="line-clamp-3 mb-3">
@@ -205,7 +231,8 @@ export default function SearchPage() {
                 </CardContent>
               </Card>
             </Link>
-          ))}
+          );
+          })}
         </div>
       )}
       </div>
