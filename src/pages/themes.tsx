@@ -31,6 +31,54 @@ import { Theme } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 
+// Função para gerar gradiente único baseado no título do tema
+function getThemeGradient(title: string): string {
+  const gradients = [
+    'from-blue-500/20 via-purple-500/20 to-pink-500/20',
+    'from-green-500/20 via-teal-500/20 to-blue-500/20',
+    'from-orange-500/20 via-red-500/20 to-pink-500/20',
+    'from-purple-500/20 via-indigo-500/20 to-blue-500/20',
+    'from-yellow-500/20 via-orange-500/20 to-red-500/20',
+    'from-pink-500/20 via-rose-500/20 to-red-500/20',
+    'from-cyan-500/20 via-blue-500/20 to-indigo-500/20',
+    'from-emerald-500/20 via-green-500/20 to-teal-500/20',
+    'from-violet-500/20 via-purple-500/20 to-fuchsia-500/20',
+    'from-amber-500/20 via-yellow-500/20 to-orange-500/20',
+  ];
+  
+  // Gerar hash simples do título para escolher gradiente consistente
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % gradients.length;
+  return gradients[index];
+}
+
+// Função para gerar padrão SVG de fundo
+function getThemePattern(title: string): string {
+  const patterns = [
+    // Círculos
+    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="20" fill="currentColor" opacity="0.1"/></svg>`,
+    // Quadrados
+    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="40" height="40" fill="currentColor" opacity="0.1"/></svg>`,
+    // Linhas diagonais
+    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="60" y2="60" stroke="currentColor" stroke-width="2" opacity="0.1"/></svg>`,
+    // Pontos
+    `<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.15"/></svg>`,
+    // Grade
+    `<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><path d="M0 20h40M20 0v40" stroke="currentColor" stroke-width="1" opacity="0.1"/></svg>`,
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % patterns.length;
+  const pattern = patterns[index];
+  return `data:image/svg+xml;base64,${btoa(pattern)}`;
+}
+
 export function ThemesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -126,7 +174,16 @@ export function ThemesPage() {
                     className="group cursor-pointer overflow-hidden glass border-border/50 hover:border-primary/50 transition-all hover:shadow-glow hover-lift relative"
                     onClick={() => navigate(`/themes/${theme.id}`)}
                   >
+                    {/* Fundo com gradiente e padrão */}
+                    <div 
+                      className={`absolute inset-0 bg-gradient-to-br ${getThemeGradient(theme.title)} transition-opacity`}
+                      style={{
+                        backgroundImage: `url("${getThemePattern(theme.title)}")`,
+                        backgroundSize: '60px 60px',
+                      }}
+                    />
                     <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+                    
                     <CardHeader className="pb-3 p-4 md:p-6 relative">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
@@ -175,7 +232,7 @@ export function ThemesPage() {
                         </CardDescription>
                       )}
                     </CardHeader>
-                    <CardContent className="pb-4 p-4 pt-0 md:p-6 md:pt-0">
+                    <CardContent className="pb-4 p-4 pt-0 md:p-6 md:pt-0 relative">
                       <div className="flex items-center justify-between text-xs md:text-sm flex-wrap gap-2">
                         <div className="flex items-center gap-2 md:gap-4">
                           <Badge variant="secondary" className="font-normal text-[10px] md:text-xs">
