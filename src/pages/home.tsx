@@ -64,7 +64,7 @@ function getThemeGradient(title: string): string {
 // Função para gerar ilustração SVG baseada no tema
 function getThemeIllustration(title: string): string {
   const titleLower = title.toLowerCase();
-  
+
   const illustrations: { [key: string]: string } = {
     'tecnologia': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="40" width="120" height="80" rx="8" fill="currentColor" opacity="0.15"/><rect x="50" y="50" width="100" height="50" fill="currentColor" opacity="0.1"/><circle cx="60" cy="140" r="8" fill="currentColor" opacity="0.2"/><circle cx="100" cy="140" r="8" fill="currentColor" opacity="0.2"/><circle cx="140" cy="140" r="8" fill="currentColor" opacity="0.2"/></svg>`,
     'programação': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M60 80 L80 100 L60 120" stroke="currentColor" stroke-width="4" fill="none" opacity="0.2"/><path d="M140 80 L120 100 L140 120" stroke="currentColor" stroke-width="4" fill="none" opacity="0.2"/><line x1="90" y1="70" x2="110" y2="130" stroke="currentColor" stroke-width="4" opacity="0.15"/></svg>`,
@@ -77,13 +77,13 @@ function getThemeIllustration(title: string): string {
     'marketing': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M60 100 L90 70 L90 90 L140 90 L140 110 L90 110 L90 130 Z" fill="currentColor" opacity="0.15"/><circle cx="150" cy="100" r="8" fill="currentColor" opacity="0.2"/></svg>`,
     'default': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="40" fill="currentColor" opacity="0.1"/><circle cx="70" cy="70" r="20" fill="currentColor" opacity="0.15"/><circle cx="130" cy="130" r="25" fill="currentColor" opacity="0.12"/><circle cx="130" cy="70" r="15" fill="currentColor" opacity="0.18"/></svg>`,
   };
-  
+
   for (const [keyword, svg] of Object.entries(illustrations)) {
     if (titleLower.includes(keyword)) {
       return `data:image/svg+xml;base64,${btoa(svg)}`;
     }
   }
-  
+
   return `data:image/svg+xml;base64,${btoa(illustrations.default)}`;
 }
 
@@ -476,37 +476,41 @@ export function HomePage() {
 
   if (loading && user) {
     return (
-      <div className="container py-12 px-4">
-        <Skeleton className="h-12 w-80 mb-12" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
+      <div className="w-full py-12">
+        <div className="px-4 md:max-w-7xl md:mx-auto">
+          <Skeleton className="h-12 w-80 mb-12" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
+          </div>
+          <Skeleton className="h-96 w-full rounded-lg" />
         </div>
-        <Skeleton className="h-96 w-full rounded-lg" />
       </div>
     )
   }
 
   if (!user) {
     return (
-      <motion.div
-        className="container text-center py-20 px-4"
-        initial="initial"
-        animate="in"
-        exit="out"
-        variants={pageVariants}
-        transition={pageTransition}
-      >
-        <div className="absolute top-0 left-0 w-full h-full bg-background -z-10 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
-        <h1 className="text-4xl font-bold tracking-tight lg:text-6xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
-          Transforme Vídeos em Conhecimento
-        </h1>
-        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-          O InsightShare organiza, transcreve e resume seus vídeos compartilhados, criando uma base de conhecimento pesquisável e inteligente.
-        </p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Button size="lg" onClick={() => navigate('/signup')}>Comece Gratuitamente <ArrowRight className="ml-2 h-4 w-4" /></Button>
-        </div>
-      </motion.div>
+      <div className="w-full py-20">
+        <motion.div
+          className="px-4 md:max-w-7xl md:mx-auto text-center"
+          initial="initial"
+          animate="in"
+          exit="out"
+          variants={pageVariants}
+          transition={pageTransition}
+        >
+          <div className="absolute top-0 left-0 w-full h-full bg-background -z-10 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
+          <h1 className="text-4xl font-bold tracking-tight lg:text-6xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
+            Transforme Vídeos em Conhecimento
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+            O InsightShare organiza, transcreve e resume seus vídeos compartilhados, criando uma base de conhecimento pesquisável e inteligente.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Button size="lg" onClick={() => navigate('/signup')}>Comece Gratuitamente <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          </div>
+        </motion.div>
+      </div>
     )
   }
 
@@ -514,15 +518,16 @@ export function HomePage() {
     <>
       <div className="fixed inset-0 -z-10 bg-mesh-gradient opacity-50" />
       <div className="fixed inset-0 -z-10 bg-pattern-dots" />
-      <motion.div
-        className="container py-6 md:py-12 px-4 relative"
-        initial="initial"
-        animate="in"
-        exit="out"
-        variants={pageVariants}
-        transition={pageTransition}
-      >
-        <div className="mb-8 md:mb-12">
+      <div className="w-full py-6 md:py-12 relative">
+        <motion.div
+          className="px-4 md:max-w-7xl md:mx-auto"
+          initial="initial"
+          animate="in"
+          exit="out"
+          variants={pageVariants}
+          transition={pageTransition}
+        >
+          <div className="mb-8 md:mb-12">
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Olá, {userName}! 👋</h1>
           <p className="text-base md:text-lg text-muted-foreground mt-1">Bem-vindo de volta ao seu centro de conhecimento.</p>
         </div>
@@ -799,7 +804,8 @@ export function HomePage() {
             </CardContent>
           </Card>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </>
   );
 }
