@@ -52,7 +52,7 @@ function getThemeGradient(title: string): string {
     'from-violet-500/20 via-purple-500/20 to-fuchsia-500/20',
     'from-amber-500/20 via-yellow-500/20 to-orange-500/20',
   ];
-  
+
   let hash = 0;
   for (let i = 0; i < title.length; i++) {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
@@ -61,23 +61,30 @@ function getThemeGradient(title: string): string {
   return gradients[index];
 }
 
-// Função para gerar padrão SVG de fundo
-function getThemePattern(title: string): string {
-  const patterns = [
-    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="20" fill="currentColor" opacity="0.1"/></svg>`,
-    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="40" height="40" fill="currentColor" opacity="0.1"/></svg>`,
-    `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="60" y2="60" stroke="currentColor" stroke-width="2" opacity="0.1"/></svg>`,
-    `<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.15"/></svg>`,
-    `<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><path d="M0 20h40M20 0v40" stroke="currentColor" stroke-width="1" opacity="0.1"/></svg>`,
-  ];
+// Função para gerar ilustração SVG baseada no tema
+function getThemeIllustration(title: string): string {
+  const titleLower = title.toLowerCase();
   
-  let hash = 0;
-  for (let i = 0; i < title.length; i++) {
-    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  const illustrations: { [key: string]: string } = {
+    'tecnologia': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="40" width="120" height="80" rx="8" fill="currentColor" opacity="0.15"/><rect x="50" y="50" width="100" height="50" fill="currentColor" opacity="0.1"/><circle cx="60" cy="140" r="8" fill="currentColor" opacity="0.2"/><circle cx="100" cy="140" r="8" fill="currentColor" opacity="0.2"/><circle cx="140" cy="140" r="8" fill="currentColor" opacity="0.2"/></svg>`,
+    'programação': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M60 80 L80 100 L60 120" stroke="currentColor" stroke-width="4" fill="none" opacity="0.2"/><path d="M140 80 L120 100 L140 120" stroke="currentColor" stroke-width="4" fill="none" opacity="0.2"/><line x1="90" y1="70" x2="110" y2="130" stroke="currentColor" stroke-width="4" opacity="0.15"/></svg>`,
+    'software': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="50" width="100" height="100" rx="10" fill="currentColor" opacity="0.12"/><rect x="70" y="70" width="25" height="25" rx="4" fill="currentColor" opacity="0.18"/><rect x="105" y="70" width="25" height="25" rx="4" fill="currentColor" opacity="0.18"/><rect x="70" y="105" width="25" height="25" rx="4" fill="currentColor" opacity="0.18"/><rect x="105" y="105" width="25" height="25" rx="4" fill="currentColor" opacity="0.18"/></svg>`,
+    'finanças': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="50" stroke="currentColor" stroke-width="6" fill="none" opacity="0.15"/><path d="M100 70 L100 130 M85 85 L100 70 L115 85" stroke="currentColor" stroke-width="5" fill="none" opacity="0.2"/></svg>`,
+    'negócio': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="80" width="80" height="80" fill="currentColor" opacity="0.12"/><rect x="70" y="50" width="60" height="30" fill="currentColor" opacity="0.18"/><rect x="85" y="90" width="10" height="20" fill="currentColor" opacity="0.15"/><rect x="105" y="90" width="10" height="20" fill="currentColor" opacity="0.15"/></svg>`,
+    'educação': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 60 L160 90 L100 120 L40 90 Z" fill="currentColor" opacity="0.15"/><rect x="90" y="120" width="20" height="40" fill="currentColor" opacity="0.12"/></svg>`,
+    'saúde': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 60 L110 90 L140 90 L115 110 L125 140 L100 120 L75 140 L85 110 L60 90 L90 90 Z" fill="currentColor" opacity="0.15"/><circle cx="100" cy="100" r="60" stroke="currentColor" stroke-width="4" fill="none" opacity="0.1"/></svg>`,
+    'design': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="80" cy="80" r="30" fill="currentColor" opacity="0.15"/><circle cx="120" cy="120" r="30" fill="currentColor" opacity="0.12"/><rect x="90" y="90" width="20" height="20" fill="currentColor" opacity="0.18"/></svg>`,
+    'marketing': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M60 100 L90 70 L90 90 L140 90 L140 110 L90 110 L90 130 Z" fill="currentColor" opacity="0.15"/><circle cx="150" cy="100" r="8" fill="currentColor" opacity="0.2"/></svg>`,
+    'default': `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="40" fill="currentColor" opacity="0.1"/><circle cx="70" cy="70" r="20" fill="currentColor" opacity="0.15"/><circle cx="130" cy="130" r="25" fill="currentColor" opacity="0.12"/><circle cx="130" cy="70" r="15" fill="currentColor" opacity="0.18"/></svg>`,
+  };
+  
+  for (const [keyword, svg] of Object.entries(illustrations)) {
+    if (titleLower.includes(keyword)) {
+      return `data:image/svg+xml;base64,${btoa(svg)}`;
+    }
   }
-  const index = Math.abs(hash) % patterns.length;
-  const pattern = patterns[index];
-  return `data:image/svg+xml;base64,${btoa(pattern)}`;
+  
+  return `data:image/svg+xml;base64,${btoa(illustrations.default)}`;
 }
 
 const ThemeCard = ({ theme }: { theme: Theme }) => (
@@ -88,16 +95,18 @@ const ThemeCard = ({ theme }: { theme: Theme }) => (
       className="h-full"
     >
       <Card className="flex flex-col h-full glass border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-glow group relative overflow-hidden">
-        {/* Fundo com gradiente e padrão */}
-        <div 
+        {/* Fundo com gradiente e ilustração */}
+        <div
           className={`absolute inset-0 bg-gradient-to-br ${getThemeGradient(theme.title)} transition-opacity`}
           style={{
-            backgroundImage: `url("${getThemePattern(theme.title)}")`,
-            backgroundSize: '60px 60px',
+            backgroundImage: `url("${getThemeIllustration(theme.title)}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           }}
         />
         <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
-        
+
         <CardHeader className="p-4 md:p-6 relative">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-lg bg-gradient-primary flex-shrink-0 shadow-sm">
