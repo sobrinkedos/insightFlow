@@ -548,7 +548,16 @@ export function VideoDetailPage() {
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold">Tópicos</span>
                         <div className="flex flex-wrap gap-2 mt-1">
-                          {video.topics.map((topic, i) => <Badge key={i} variant="secondary">{topic}</Badge>)}
+                          {video.topics.map((topic, i) => (
+                            <Badge 
+                              key={i} 
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                              onClick={() => navigate(`/search?q=${encodeURIComponent(topic)}`)}
+                            >
+                              {topic}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -556,7 +565,16 @@ export function VideoDetailPage() {
                         <span className="text-sm font-semibold">Palavras-chave</span>
                         <div className="flex flex-wrap gap-2 mt-1">
                             {video.keywords && video.keywords.length > 0 ? (
-                                video.keywords.map((kw, i) => <Badge key={i} variant="outline">{kw}</Badge>)
+                                video.keywords.map((kw, i) => (
+                                  <Badge 
+                                    key={i} 
+                                    variant="outline"
+                                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                                    onClick={() => navigate(`/search?q=${encodeURIComponent(kw)}`)}
+                                  >
+                                    {kw}
+                                  </Badge>
+                                ))
                             ) : (
                                 <p className="text-sm text-muted-foreground">Nenhuma palavra-chave gerada.</p>
                             )}

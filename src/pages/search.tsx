@@ -14,6 +14,7 @@ interface SearchResult {
   summary_short: string;
   summary_expanded: string;
   keywords: string[];
+  topics: string[];
   tags: string[];
   created_at: string;
 }
@@ -51,7 +52,7 @@ export default function SearchPage() {
         // Busca todos os vídeos do usuário
         const { data, error } = await supabase
           .from("videos")
-          .select("id, url, title, summary_short, summary_expanded, keywords, tags, created_at")
+          .select("id, url, title, summary_short, summary_expanded, keywords, topics, tags, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -62,7 +63,7 @@ export default function SearchPage() {
           console.error("Erro ao buscar vídeos:", error);
           setResults([]);
         } else {
-          // Filtra localmente por título, resumo ou keywords
+          // Filtra localmente por título, resumo, keywords ou topics
           const searchLower = query.toLowerCase();
           const filtered = (data || []).filter((video) => {
             const titleMatch = video.title?.toLowerCase().includes(searchLower);
@@ -71,8 +72,11 @@ export default function SearchPage() {
             const keywordsMatch = video.keywords?.some((keyword: string) =>
               keyword.toLowerCase().includes(searchLower)
             );
+            const topicsMatch = video.topics?.some((topic: string) =>
+              topic.toLowerCase().includes(searchLower)
+            );
             
-            return titleMatch || summaryShortMatch || summaryExpandedMatch || keywordsMatch;
+            return titleMatch || summaryShortMatch || summaryExpandedMatch || keywordsMatch || topicsMatch;
           });
           
           console.log("Resultados filtrados:", filtered.length);
@@ -154,20 +158,50 @@ export default function SearchPage() {
                   <CardDescription className="line-clamp-3 mb-3">
                     {video.summary_short || video.summary_expanded}
                   </CardDescription>
-                  {video.keywords && video.keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {video.keywords.slice(0, 3).map((keyword, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {video.keywords.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{video.keywords.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    {video.topics && video.topics.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {video.topics.slice(0, 2).map((topic, index) => {
+                          const isMatch = topic.toLowerCase().includes(query.toLowerCase());
+                          return (
+                            <Badge 
+                              key={index} 
+                              variant="secondary" 
+                              className={`text-xs ${isMatch ? 'bg-primary text-primary-foreground' : ''}`}
+                            >
+                              {topic}
+                            </Badge>
+                          );
+                        })}
+                        {video.topics.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{video.topics.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    {video.keywords && video.keywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {video.keywords.slice(0, 3).map((keyword, index) => {
+                          const isMatch = keyword.toLowerCase().includes(query.toLowerCase());
+                          return (
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className={`text-xs ${isMatch ? 'border-primary text-primary' : ''}`}
+                            >
+                              {keyword}
+                            </Badge>
+                          );
+                        })}
+                        {video.keywords.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{video.keywords.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </Link>
