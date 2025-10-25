@@ -584,9 +584,10 @@ export function HomePage() {
             </motion.div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 px-4">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8 md:space-y-16">
+          <div className="px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-8 md:space-y-16">
               <section>
                 {recentVideos.length > 0 ? (
                   <RecentVideosTable videos={recentVideos} loading={loading} />
@@ -739,10 +740,12 @@ export function HomePage() {
                 </Card>
               )}
             </div>
+            </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12 px-4">
+          <div className="px-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 mt-8 md:mt-12">
             <Card className="glass border-border/50 hover:border-primary/30 transition-all hover-lift group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6 relative">
@@ -803,6 +806,7 @@ export function HomePage() {
                 </p>
               </CardContent>
             </Card>
+            </div>
           </div>
         </motion.div>
       </div>
