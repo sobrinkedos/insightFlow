@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Header } from "./components/layout/header";
 import { BottomNav } from "./components/layout/bottom-nav";
+import { QueueProcessor } from "./components/queue-processor";
 import { HomePage } from "./pages/home";
 import { ThemesPage } from "./pages/themes";
 import { VideosPage } from "./pages/videos";
@@ -24,6 +25,7 @@ function App() {
 
   return (
     <div className="relative flex min-h-screen w-full max-w-full flex-col bg-transparent font-sans overflow-x-hidden">
+      <QueueProcessor />
       <Header />
       <main className="flex-1 w-full max-w-full overflow-x-hidden pb-16 md:pb-0 pt-[56px] md:pt-[96px]">
         <AnimatePresence mode="wait">

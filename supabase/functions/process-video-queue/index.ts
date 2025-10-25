@@ -69,7 +69,7 @@ serve(async (req) => {
     console.log(`🎯 Looking for ${targetPlatform} video to process...`);
 
     // 3. Get the next video from the queue for the target platform
-    const { data: nextInQueue, error: queueError } = await supabaseAdmin
+    let { data: nextInQueue, error: queueError } = await supabaseAdmin
       .rpc('get_next_from_queue', { p_platform: targetPlatform })
       .single();
 
@@ -90,7 +90,7 @@ serve(async (req) => {
       }
       
       // Use the video from any platform
-      Object.assign(nextInQueue || {}, anyVideo);
+      nextInQueue = anyVideo;
     }
 
     console.log(`🎬 Processing ${nextInQueue.platform} video from queue: ${nextInQueue.video_id}`);
