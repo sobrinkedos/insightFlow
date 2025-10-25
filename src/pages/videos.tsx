@@ -431,99 +431,25 @@ export function VideosPage() {
             </div>
           ) : filteredVideos.length > 0 ? (
             <>
-              <div className="space-y-4 md:space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {filteredVideos.map((video) => (
                   <Card 
                     key={video.id} 
-                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-lg overflow-hidden"
+                    className="cursor-pointer glass border-border/50 hover:border-primary/50 transition-all hover-lift group rounded-lg overflow-hidden flex flex-col"
                     onClick={() => navigate(`/videos/${video.id}`)}
                   >
-                    <CardContent className="!p-0 md:!p-4">
-                      {/* Layout Mobile: Thumbnail em cima, info embaixo */}
-                      <div className="md:hidden">
+                    <CardContent className="!p-0 flex flex-col flex-1">
+                      {/* Thumbnail */}
+                      <div className="relative w-full aspect-video">
                         <img 
                           src={getVideoThumbnail(video.url, video.thumbnail_url)} 
                           alt={video.title || 'Thumbnail'}
-                          className="w-full aspect-video object-cover"
+                          className="w-full h-full object-cover"
                           onError={(e) => {
                             e.currentTarget.src = 'https://via.placeholder.com/640x360/666666/ffffff?text=Video';
                           }}
                         />
-                        <div className="p-3">
-                          <div className="flex gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm line-clamp-2 mb-1">{video.title || new URL(video.url).hostname}</div>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                                <span>•</span>
-                                <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
-                              </div>
-                              <VideoProgressIndicator 
-                                progress={progressMap.get(video.id) || null}
-                              />
-                            </div>
-                            <div className="flex items-start gap-1 shrink-0">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
-                                onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
-                              >
-                                <Heart 
-                                  className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`}
-                                />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Ações</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/videos/${video.id}`)}}>
-                                    Ver Detalhes
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive" onClick={(e) => deleteVideo(video.id, e)}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Excluir
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Layout Desktop: Horizontal */}
-                      <div className="hidden md:flex items-center gap-3">
-                        <img 
-                          src={getVideoThumbnail(video.url, video.thumbnail_url)} 
-                          alt={video.title || 'Thumbnail'}
-                          className="w-20 h-14 object-cover rounded border border-border shrink-0"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://via.placeholder.com/120x90/666666/ffffff?text=Video';
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-base truncate mb-1">{video.title || new URL(video.url).hostname}</div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                            <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
-                          </div>
-                          <VideoProgressIndicator 
-                            progress={progressMap.get(video.id) || null}
-                          />
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="absolute top-2 right-2">
                           <Badge 
                             variant={
                               video.status === 'Concluído' ? 'default' : 
@@ -535,10 +461,32 @@ export function VideosPage() {
                           >
                             {video.status}
                           </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Info */}
+                      <div className="p-3 flex flex-col flex-1">
+                        <div className="flex gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm line-clamp-2 mb-1">{video.title || new URL(video.url).hostname}</div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="capitalize">{new URL(video.url).hostname.split('.').slice(-2, -1)[0]}</span>
+                              <span>•</span>
+                              <span>{formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <VideoProgressIndicator 
+                          progress={progressMap.get(video.id) || null}
+                        />
+                        
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-border/50">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-9 w-9"
+                            className="h-8 w-8"
                             onClick={(e) => toggleFavorite(video.id, video.is_favorite, e)}
                           >
                             <Heart 
@@ -550,7 +498,7 @@ export function VideosPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-9 w-9"
+                                className="h-8 w-8"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <MoreHorizontal className="h-4 w-4" />
