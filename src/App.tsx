@@ -15,6 +15,8 @@ import { VideoDetailPage } from "./pages/video-detail";
 import { SharePage } from "./pages/share";
 import { FavoritesPage } from "./pages/favorites";
 import SearchPage from "./pages/search";
+import { ProfilePage } from "./pages/profile";
+import { SettingsPage } from "./pages/settings";
 import { useOrientationLock } from "./hooks/use-orientation-lock";
 
 function App() {
@@ -44,6 +46,8 @@ function App() {
               <Route path="/video/:id" element={<VideoDetailPage />} />
               <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </AnimatePresence>

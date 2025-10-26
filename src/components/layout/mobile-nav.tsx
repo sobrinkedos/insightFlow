@@ -171,21 +171,35 @@ export function MobileNav() {
 
             {user ? (
               <>
-                <button
+                <NavLink
+                  to="/profile"
                   onClick={handleNavClick}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`
+                  }
                 >
                   <User className="h-5 w-5" />
                   Perfil
-                </button>
+                </NavLink>
 
-                <button
+                <NavLink
+                  to="/settings"
                   onClick={handleNavClick}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`
+                  }
                 >
                   <Settings className="h-5 w-5" />
                   Configurações
-                </button>
+                </NavLink>
 
                 <button
                   onClick={() => {
