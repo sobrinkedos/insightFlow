@@ -18,6 +18,7 @@ import { useOrientationLock } from "@/hooks/use-orientation-lock";
 import { detectGenericSummary } from "@/lib/generic-summary-detector";
 import { useVideoReprocess } from "@/hooks/use-video-reprocess";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { VideoMetadataEditor } from "@/components/video-metadata-editor";
 
 // Componente para renderizar tutorial steps (pode ser JSON ou Markdown)
 function TutorialSteps({ steps }: { steps: string }) {
@@ -357,6 +358,7 @@ export function VideoDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
+          <VideoMetadataEditor video={video} onUpdate={setVideo} />
           <Button
             variant="outline"
             size="icon"
