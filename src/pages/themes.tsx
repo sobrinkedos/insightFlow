@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Layers,
   MoreHorizontal,
+  Search,
+  X,
 } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
 
@@ -116,7 +118,9 @@ export function ThemesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [filteredThemes, setFilteredThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchThemes = async () => {
     if (!user) return;
@@ -150,8 +154,24 @@ export function ThemesPage() {
     }));
     
     setThemes(processedData as any);
+    setFilteredThemes(processedData as any);
     setLoading(false);
   };
+
+  // Filtrar temas baseado na busca
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredThemes(themes);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = themes.filter(theme => 
+      theme.title.toLowerCase().includes(query) ||
+      theme.description?.toLowerCase().includes(query)
+    );
+    setFilteredThemes(filtered);
+  }, [searchQuery, themes]);
 
   useEffect(() => {
     fetchThemes();
@@ -181,6 +201,28 @@ export function ThemesPage() {
           title="Meus Temas"
           description="Seus vídeos organizados automaticamente por temas pela IA."
         />
+
+        {/* Barra de busca */}
+        <div className="mt-6 md:mt-8">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar temas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
       
       <div className="mt-6 md:mt-8">
         <div>
@@ -200,8 +242,20 @@ export function ThemesPage() {
             </div>
           ) : themes.length > 0 ? (
             <>
-              <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {themes.map((theme) => (
+              {filteredThemes.length === 0 ? (
+                <Card>
+                  <CardContent className="py-24">
+                    <EmptyState
+                      icon={Search}
+                      title="Nenhum tema encontrado"
+                      description={`Nenhum tema corresponde à busca "${searchQuery}".`}
+                    />
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredThemes.map((theme) => (
                   <Card 
                     key={theme.id} 
                     className="group cursor-pointer overflow-hidden glass border-border/50 hover:border-primary/50 transition-all hover:shadow-glow hover-lift relative"
@@ -280,13 +334,16 @@ export function ThemesPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-              <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
-                <p>
-                  Mostrando <strong>{themes.length}</strong> {themes.length === 1 ? 'tema' : 'temas'}
-                </p>
-              </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
+                    <p>
+                      Mostrando <strong>{filteredThemes.length}</strong> de <strong>{themes.length}</strong> {themes.length === 1 ? 'tema' : 'temas'}
+                      {searchQuery && ` para "${searchQuery}"`}
+                    </p>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <Card>
