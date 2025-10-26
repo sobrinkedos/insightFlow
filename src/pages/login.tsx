@@ -114,8 +114,11 @@ export function LoginPage() {
               )}
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <Label htmlFor="password">Senha</Label>
+                <Link to="/forgot-password" className="text-sm underline hover:text-primary">
+                  Esqueceu a senha?
+                </Link>
               </div>
               <Input id="password" type="password" {...register('password')} />
               {errors.password && (

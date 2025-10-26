@@ -17,6 +17,8 @@ import { FavoritesPage } from "./pages/favorites";
 import SearchPage from "./pages/search";
 import { ProfilePage } from "./pages/profile";
 import { SettingsPage } from "./pages/settings";
+import { ForgotPasswordPage } from "./pages/forgot-password";
+import { ResetPasswordPage } from "./pages/reset-password";
 import { useOrientationLock } from "./hooks/use-orientation-lock";
 
 function App() {
@@ -35,6 +37,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/extensions" element={<ExtensionsPage />} />
             <Route path="/share" element={<SharePage />} />
             
