@@ -38,7 +38,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   // Estados para edição
   const [category, setCategory] = useState(video.category || "");
   const [subcategory, setSubcategory] = useState(video.subcategory || "");
-  const [themeId, setThemeId] = useState(video.theme_id || "");
+  const [themeId, setThemeId] = useState(video.theme_id || "none");
   const [topics, setTopics] = useState<string[]>(video.topics || []);
   const [keywords, setKeywords] = useState<string[]>(video.keywords || []);
   const [newTopic, setNewTopic] = useState("");
@@ -94,7 +94,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
       const updates: Partial<Video> = {
         category: category || null,
         subcategory: subcategory || null,
-        theme_id: themeId || null,
+        theme_id: themeId && themeId !== 'none' ? themeId : null,
         topics: topics.length > 0 ? topics : null,
         keywords: keywords.length > 0 ? keywords : null,
       };
@@ -122,7 +122,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   const handleReset = () => {
     setCategory(video.category || "");
     setSubcategory(video.subcategory || "");
-    setThemeId(video.theme_id || "");
+    setThemeId(video.theme_id || "none");
     setTopics(video.topics || []);
     setKeywords(video.keywords || []);
   };
@@ -174,7 +174,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
                 <SelectValue placeholder="Selecione um tema (opcional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum tema</SelectItem>
+                <SelectItem value="none">Nenhum tema</SelectItem>
                 {themes.map((theme) => (
                   <SelectItem key={theme.id} value={theme.id}>
                     {theme.title}
