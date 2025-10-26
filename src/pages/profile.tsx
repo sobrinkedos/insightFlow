@@ -96,10 +96,36 @@ export function ProfilePage() {
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching profile:", error);
+    }
+    
+    // Se não existe perfil, criar um vazio
+    if (!data) {
+      const { data: newProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          full_name: null,
+          username: null,
+          website: null,
+          avatar_url: null,
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating profile:", createError);
+      } else {
+        setProfile(newProfile);
+        setFormData({
+          full_name: newProfile?.full_name || "",
+          username: newProfile?.username || "",
+          website: newProfile?.website || "",
+        });
+      }
     } else {
       setProfile(data);
       setFormData({
@@ -170,24 +196,41 @@ export function ProfilePage() {
     if (!user) return;
 
     setSaving(true);
-    const { error } = await supabase
+    
+    // Tentar atualizar primeiro
+    const { error: updateError } = await supabase
       .from("profiles")
-      .upsert({
-        id: user.id,
+      .update({
         full_name: formData.full_name || null,
         username: formData.username || null,
         website: formData.website || null,
         updated_at: new Date().toISOString(),
-      });
+      })
+      .eq("id", user.id);
 
-    if (error) {
-      toast.error("Erro ao salvar perfil");
-      console.error("Error updating profile:", error);
-    } else {
-      toast.success("Perfil atualizado com sucesso!");
-      setEditing(false);
-      fetchProfile();
+    // Se falhar, tentar inserir
+    if (updateError) {
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          full_name: formData.full_name || null,
+          username: formData.username || null,
+          website: formData.website || null,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        toast.error("Erro ao salvar perfil");
+        console.error("Error saving profile:", insertError);
+        setSaving(false);
+        return;
+      }
     }
+
+    toast.success("Perfil atualizado com sucesso!");
+    setEditing(false);
+    fetchProfile();
     setSaving(false);
   };
 
