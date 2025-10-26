@@ -44,10 +44,24 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   const [newTopic, setNewTopic] = useState("");
   const [newKeyword, setNewKeyword] = useState("");
 
-  // Carregar temas do usuário
+  // Sugestões baseadas em dados existentes
+  const [suggestions, setSuggestions] = useState<{
+    categories: string[];
+    subcategories: string[];
+    topics: string[];
+    keywords: string[];
+  }>({
+    categories: [],
+    subcategories: [],
+    topics: [],
+    keywords: [],
+  });
+
+  // Carregar temas e sugestões do usuário
   useEffect(() => {
     if (open && user) {
       loadThemes();
+      loadSuggestions();
     }
   }, [open, user]);
 
@@ -63,6 +77,38 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
     if (!error && data) {
       setThemes(data);
     }
+  };
+
+  const loadSuggestions = async () => {
+    if (!user) return;
+
+    const { data: videos, error } = await supabase
+      .from('videos')
+      .select('category, subcategory, topics, keywords')
+      .eq('user_id', user.id)
+      .not('category', 'is', null);
+
+    if (error || !videos) return;
+
+    // Extrair valores únicos
+    const categoriesSet = new Set<string>();
+    const subcategoriesSet = new Set<string>();
+    const topicsSet = new Set<string>();
+    const keywordsSet = new Set<string>();
+
+    videos.forEach((v) => {
+      if (v.category) categoriesSet.add(v.category);
+      if (v.subcategory) subcategoriesSet.add(v.subcategory);
+      if (v.topics) v.topics.forEach((t: string) => topicsSet.add(t));
+      if (v.keywords) v.keywords.forEach((k: string) => keywordsSet.add(k));
+    });
+
+    setSuggestions({
+      categories: Array.from(categoriesSet).sort(),
+      subcategories: Array.from(subcategoriesSet).sort(),
+      topics: Array.from(topicsSet).sort(),
+      keywords: Array.from(keywordsSet).sort(),
+    });
   };
 
   const handleAddTopic = () => {
@@ -153,6 +199,21 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
               onChange={(e) => setCategory(e.target.value)}
               placeholder="Ex: Tecnologia, Educação, Negócios..."
             />
+            {suggestions.categories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                <span className="text-xs text-muted-foreground">Sugestões:</span>
+                {suggestions.categories.slice(0, 5).map((cat, i) => (
+                  <Badge
+                    key={i}
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
+                    onClick={() => setCategory(cat)}
+                  >
+                    {cat}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Subcategoria */}
@@ -164,6 +225,21 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
               onChange={(e) => setSubcategory(e.target.value)}
               placeholder="Ex: Programação, Marketing Digital..."
             />
+            {suggestions.subcategories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                <span className="text-xs text-muted-foreground">Sugestões:</span>
+                {suggestions.subcategories.slice(0, 5).map((subcat, i) => (
+                  <Badge
+                    key={i}
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
+                    onClick={() => setSubcategory(subcat)}
+                  >
+                    {subcat}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tema */}
@@ -203,6 +279,28 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+            {suggestions.topics.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                <span className="text-xs text-muted-foreground">Sugestões:</span>
+                {suggestions.topics
+                  .filter(t => !topics.includes(t))
+                  .slice(0, 8)
+                  .map((topic, i) => (
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-secondary text-xs"
+                      onClick={() => {
+                        if (!topics.includes(topic)) {
+                          setTopics([...topics, topic]);
+                        }
+                      }}
+                    >
+                      + {topic}
+                    </Badge>
+                  ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 mt-2">
               {topics.map((topic, i) => (
                 <Badge key={i} variant="secondary" className="gap-1">
@@ -240,6 +338,28 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+            {suggestions.keywords.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                <span className="text-xs text-muted-foreground">Sugestões:</span>
+                {suggestions.keywords
+                  .filter(k => !keywords.includes(k))
+                  .slice(0, 10)
+                  .map((keyword, i) => (
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-secondary text-xs"
+                      onClick={() => {
+                        if (!keywords.includes(keyword)) {
+                          setKeywords([...keywords, keyword]);
+                        }
+                      }}
+                    >
+                      + {keyword}
+                    </Badge>
+                  ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 mt-2">
               {keywords.map((keyword, i) => (
                 <Badge key={i} variant="outline" className="gap-1">
