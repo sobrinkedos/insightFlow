@@ -138,28 +138,39 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
     
     try {
       const updates: Partial<Video> = {
-        category: category || null,
-        subcategory: subcategory || null,
+        category: category.trim() || null,
+        subcategory: subcategory.trim() || null,
         theme_id: themeId && themeId !== 'none' ? themeId : null,
         topics: topics.length > 0 ? topics : null,
         keywords: keywords.length > 0 ? keywords : null,
       };
 
+      console.log('Atualizando vídeo:', video.id, 'com dados:', updates);
+
       const { data, error } = await supabase
         .from('videos')
         .update(updates)
         .eq('id', video.id)
+        .eq('user_id', user!.id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro do Supabase:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('Nenhum dado retornado após atualização');
+      }
 
       onUpdate(data);
       toast.success('Metadados atualizados com sucesso!');
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar metadados:', error);
-      toast.error('Erro ao atualizar metadados');
+      const errorMessage = error?.message || 'Erro desconhecido ao atualizar metadados';
+      toast.error(`Erro: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
