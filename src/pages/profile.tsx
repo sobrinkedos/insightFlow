@@ -47,7 +47,6 @@ const pageTransition = {
 type Profile = {
   id: string;
   full_name: string | null;
-  username: string | null;
   avatar_url: string | null;
   website: string | null;
   updated_at: string | null;
@@ -78,7 +77,6 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
-    username: "",
     website: "",
   });
 
@@ -109,7 +107,6 @@ export function ProfilePage() {
         .insert({
           id: user.id,
           full_name: null,
-          username: null,
           website: null,
           avatar_url: null,
         })
@@ -122,7 +119,6 @@ export function ProfilePage() {
         setProfile(newProfile);
         setFormData({
           full_name: newProfile?.full_name || "",
-          username: newProfile?.username || "",
           website: newProfile?.website || "",
         });
       }
@@ -130,7 +126,6 @@ export function ProfilePage() {
       setProfile(data);
       setFormData({
         full_name: data.full_name || "",
-        username: data.username || "",
         website: data.website || "",
       });
     }
@@ -202,7 +197,6 @@ export function ProfilePage() {
       .from("profiles")
       .update({
         full_name: formData.full_name || null,
-        username: formData.username || null,
         website: formData.website || null,
         updated_at: new Date().toISOString(),
       })
@@ -215,7 +209,6 @@ export function ProfilePage() {
         .insert({
           id: user.id,
           full_name: formData.full_name || null,
-          username: formData.username || null,
           website: formData.website || null,
           updated_at: new Date().toISOString(),
         });
@@ -242,9 +235,6 @@ export function ProfilePage() {
         .join("")
         .toUpperCase()
         .slice(0, 2);
-    }
-    if (profile?.username) {
-      return profile.username.slice(0, 2).toUpperCase();
     }
     if (user?.email) {
       return user.email.slice(0, 2).toUpperCase();
@@ -311,7 +301,6 @@ export function ProfilePage() {
                           setEditing(false);
                           setFormData({
                             full_name: profile?.full_name || "",
-                            username: profile?.username || "",
                             website: profile?.website || "",
                           });
                         }}
@@ -341,13 +330,8 @@ export function ProfilePage() {
                   {!editing && (
                     <div className="text-center">
                       <h3 className="text-xl font-semibold">
-                        {profile?.full_name || profile?.username || "Usuário"}
+                        {profile?.full_name || "Usuário"}
                       </h3>
-                      {profile?.username && profile?.full_name && (
-                        <p className="text-sm text-muted-foreground">
-                          @{profile.username}
-                        </p>
-                      )}
                     </div>
                   )}
                 </div>
@@ -365,17 +349,6 @@ export function ProfilePage() {
                           setFormData({ ...formData, full_name: e.target.value })
                         }
                         placeholder="Seu nome"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Nome de Usuário</Label>
-                      <Input
-                        id="username"
-                        value={formData.username}
-                        onChange={(e) =>
-                          setFormData({ ...formData, username: e.target.value })
-                        }
-                        placeholder="@usuario"
                       />
                     </div>
                     <div className="space-y-2">
