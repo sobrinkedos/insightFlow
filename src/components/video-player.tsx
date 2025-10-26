@@ -686,25 +686,27 @@ export function VideoPlayer({ videoId, embedUrl, title, className, videoUrl, thu
           </div>
         )}
         
-        {/* Botão de fullscreen */}
-        <Button
-          variant="secondary"
-          size="icon"
-          className={cn(
-            "absolute bottom-4 right-4 z-20 shadow-lg",
-            "opacity-0 group-hover:opacity-100 transition-opacity",
-            "touch-none pointer-events-auto",
-            isFullscreen && "!opacity-100"
-          )}
-          onClick={toggleFullscreen}
-          aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-        >
-          {isFullscreen ? (
-            <Minimize className="h-4 w-4" />
-          ) : (
-            <Maximize className="h-4 w-4" />
-          )}
-        </Button>
+        {/* Botão de fullscreen - não mostrar para Instagram pois já tem controles nativos */}
+        {platform !== 'instagram' && (
+          <Button
+            variant="secondary"
+            size="icon"
+            className={cn(
+              "absolute bottom-4 right-4 z-20 shadow-lg",
+              "opacity-0 group-hover:opacity-100 transition-opacity",
+              "touch-none pointer-events-auto",
+              isFullscreen && "!opacity-100"
+            )}
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+          >
+            {isFullscreen ? (
+              <Minimize className="h-4 w-4" />
+            ) : (
+              <Maximize className="h-4 w-4" />
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Controle manual de progresso */}
