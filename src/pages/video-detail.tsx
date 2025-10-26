@@ -353,32 +353,28 @@ export function VideoDetailPage() {
           title={video.title || "Detalhes do Vídeo"}
           description={video.channel ? `Canal: ${video.channel} • Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}` : `Adicionado em ${formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}`}
         >
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="flex-shrink-0">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Button>
-            <VideoMetadataEditor video={video} onUpdate={setVideo} />
-          </div>
-          <div className="flex items-center gap-2 sm:ml-auto">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleFavorite}
-              className="flex-shrink-0"
-            >
-              <Heart className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={deleteVideo}
-              className="flex-shrink-0"
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="flex-shrink-0">
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Voltar</span>
+          </Button>
+          <VideoMetadataEditor video={video} onUpdate={setVideo} />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFavorite}
+            className="flex-shrink-0 ml-auto sm:ml-0"
+          >
+            <Heart className={`h-4 w-4 ${video.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={deleteVideo}
+            className="flex-shrink-0"
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
         </div>
       </PageHeader>
 

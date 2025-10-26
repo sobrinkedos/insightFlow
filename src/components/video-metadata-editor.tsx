@@ -228,9 +228,9 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Pencil className="mr-2 h-4 w-4" />
-          Editar Metadados
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Pencil className="h-4 w-4" />
+          <span className="hidden xs:inline sm:hidden md:inline">Metadados</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
