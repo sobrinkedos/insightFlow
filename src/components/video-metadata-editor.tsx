@@ -38,7 +38,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   // Estados para edição
   const [category, setCategory] = useState(video.category || "");
   const [subcategory, setSubcategory] = useState(video.subcategory || "");
-  const [themeId, setThemeId] = useState(video.theme_id || "none");
+  const [themeId, setThemeId] = useState("none");
   const [topics, setTopics] = useState<string[]>(video.topics || []);
   const [keywords, setKeywords] = useState<string[]>(video.keywords || []);
   const [newTopic, setNewTopic] = useState("");
@@ -62,6 +62,7 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
     if (open && user) {
       loadThemes();
       loadSuggestions();
+      loadCurrentTheme();
     }
   }, [open, user]);
 
@@ -76,6 +77,23 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
     
     if (!error && data) {
       setThemes(data);
+    }
+  };
+
+  const loadCurrentTheme = async () => {
+    if (!user) return;
+
+    // Buscar tema atual do vídeo na tabela theme_videos
+    const { data, error } = await supabase
+      .from('theme_videos')
+      .select('theme_id')
+      .eq('video_id', video.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setThemeId(data.theme_id);
+    } else {
+      setThemeId('none');
     }
   };
 
@@ -137,10 +155,10 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
     setLoading(true);
     
     try {
-      const updates: Partial<Video> = {
+      // Preparar updates sem theme_id por enquanto (coluna não existe no banco)
+      const updates: any = {
         category: category.trim() || null,
         subcategory: subcategory.trim() || null,
-        theme_id: themeId && themeId !== 'none' ? themeId : null,
         topics: topics.length > 0 ? topics : null,
         keywords: keywords.length > 0 ? keywords : null,
       };
@@ -164,6 +182,29 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
         throw new Error('Nenhum dado retornado após atualização');
       }
 
+      // Se houver tema selecionado, atualizar a relação na tabela theme_videos
+      if (themeId && themeId !== 'none') {
+        // Primeiro, remover associações antigas deste vídeo
+        await supabase
+          .from('theme_videos')
+          .delete()
+          .eq('video_id', video.id);
+
+        // Adicionar nova associação
+        await supabase
+          .from('theme_videos')
+          .insert({
+            theme_id: themeId,
+            video_id: video.id,
+          });
+      } else if (themeId === 'none') {
+        // Remover todas as associações se "Nenhum tema" foi selecionado
+        await supabase
+          .from('theme_videos')
+          .delete()
+          .eq('video_id', video.id);
+      }
+
       onUpdate(data);
       toast.success('Metadados atualizados com sucesso!');
       setOpen(false);
@@ -179,9 +220,9 @@ export function VideoMetadataEditor({ video, onUpdate }: VideoMetadataEditorProp
   const handleReset = () => {
     setCategory(video.category || "");
     setSubcategory(video.subcategory || "");
-    setThemeId(video.theme_id || "none");
     setTopics(video.topics || []);
     setKeywords(video.keywords || []);
+    loadCurrentTheme(); // Recarregar tema original
   };
 
   return (
