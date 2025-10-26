@@ -20,9 +20,15 @@ import { supabase } from "@/lib/supabase";
 import { Theme, Video } from "@/types/database";
 import { PageHeader } from "@/components/page-header";
 
-const getYouTubeThumbnail = (url: string): string | null => {
+const getVideoThumbnail = (video: Video): string | null => {
+  // Primeiro, tenta usar a thumbnail salva no banco (Instagram, TikTok, etc)
+  if (video.thumbnail_url) {
+    return video.thumbnail_url;
+  }
+  
+  // Se não tiver, tenta extrair do YouTube
   try {
-    const videoUrl = new URL(url);
+    const videoUrl = new URL(video.url);
     let videoId: string | null = null;
     if (videoUrl.hostname.includes("youtube.com")) {
       videoId = videoUrl.searchParams.get("v");
@@ -262,7 +268,7 @@ export function ThemeDetailPage() {
                   {videos
                     .slice((currentPage - 1) * videosPerPage, currentPage * videosPerPage)
                     .map((video, index) => {
-                      const thumbnail = getYouTubeThumbnail(video.url);
+                      const thumbnail = getVideoThumbnail(video);
                       return (
                         <div key={video.id}>
                           <Link to={`/videos/${video.id}`} className="block hover:bg-muted/50 p-2 rounded-lg -m-2 transition-colors">
@@ -275,7 +281,12 @@ export function ThemeDetailPage() {
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                       e.currentTarget.style.display = 'none';
+                                      const parent = e.currentTarget.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = '<div class="flex w-full h-full items-center justify-center"><svg class="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>';
+                                      }
                                     }}
+                                    crossOrigin="anonymous"
                                   />
                                 </div>
                               ) : (
