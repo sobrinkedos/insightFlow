@@ -9,11 +9,18 @@
 - **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Guia de configuração do Vercel
 - **[IMPORTAR-ENV-VERCEL.md](./IMPORTAR-ENV-VERCEL.md)** - Como importar variáveis de ambiente no Vercel
 
+### 🚀 Deploy e CI/CD
+- **[SETUP-VERCEL-RAPIDO.md](./SETUP-VERCEL-RAPIDO.md)** - ⚡ Setup rápido do Vercel (5 minutos)
+- **[DEPLOY-VERCEL.md](./DEPLOY-VERCEL.md)** - Guia completo de deploy no Vercel
+- **[CHECKLIST-DEPLOY.md](./CHECKLIST-DEPLOY.md)** - Checklist de configuração de deploy
+- **[GUIA-MIGRACOES.md](./GUIA-MIGRACOES.md)** - Guia completo de migrações
+- **[SISTEMA-BACKUP.md](./SISTEMA-BACKUP.md)** - Sistema de backup automatizado
+
+### 🔧 Configuração
+- **[CONFIGURAR-GITHUB-SECRETS.md](./CONFIGURAR-GITHUB-SECRETS.md)** - Configurar secrets do GitHub
+- **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Configurar Vercel detalhadamente
+
 ### 🚀 Próximas Documentações (A serem criadas)
-- **SETUP.md** - Guia de setup inicial para desenvolvedores
-- **DEPLOYMENT.md** - Processo de deploy detalhado
-- **MIGRATION.md** - Guia de migrações de banco de dados
-- **BACKUP.md** - Estratégia e procedimentos de backup
 - **TROUBLESHOOTING.md** - Problemas comuns e soluções
 
 ## Estrutura de Ambientes

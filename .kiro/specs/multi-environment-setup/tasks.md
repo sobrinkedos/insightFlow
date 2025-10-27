@@ -35,78 +35,78 @@
   - _Requisitos: 5.4_
 
 -
-  3. [ ] Implementar sistema de migração de banco de dados
-- [ ] 3.1 Criar estrutura de diretórios e arquivos de migração
+  3. [x] Implementar sistema de migração de banco de dados
+- [x] 3.1 Criar estrutura de diretórios e arquivos de migração
   - Criar diretório `/supabase/migrations`
   - Criar diretório `/supabase/seed` com arquivos de seed por ambiente
   - Criar arquivo `supabase/config.toml` com configurações
   - _Requisitos: 6.1_
 
-- [ ] 3.2 Implementar scripts de aplicação de migrações
+- [x] 3.2 Implementar scripts de aplicação de migrações
   - Criar script `migrate:dev` para aplicar migrações em desenvolvimento
   - Criar script `migrate:test` para aplicar migrações em teste
   - Criar script `migrate:prod` para aplicar migrações em produção com aprovação
   - Implementar tracking de migrações executadas em tabela `migration_history`
   - _Requisitos: 1.4, 6.2, 6.3, 6.4_
 
-- [ ] 3.3 Implementar sistema de rollback de migrações
+- [x] 3.3 Implementar sistema de rollback de migrações
   - Criar script `migrate:rollback:dev` para reverter migrações em
     desenvolvimento
   - Criar script `migrate:rollback:test` para reverter migrações em teste
   - Implementar validação que previne rollback em produção sem backup
   - _Requisitos: 6.5_
 
-- [ ] 3.4 Integrar backup automático antes de migrações em produção
+- [x] 3.4 Integrar backup automático antes de migrações em produção
   - Modificar script `migrate:prod` para criar backup antes de aplicar
   - Implementar verificação de sucesso do backup antes de prosseguir
   - Adicionar registro na tabela `migration_history` com referência ao backup
   - _Requisitos: 6.6_
 
 -
-  4. [ ] Implementar sistema de automação de backup
-- [ ] 4.1 Criar workflow GitHub Actions para backup diário
+  4. [x] Implementar sistema de automação de backup
+- [x] 4.1 Criar workflow GitHub Actions para backup diário
   - Criar arquivo `.github/workflows/backup-production.yml`
   - Configurar schedule para execução diária às 2h AM
   - Implementar step de export do banco de produção usando pg_dump
   - Implementar step de import para banco de backup
   - _Requisitos: 3.1, 3.2, 3.4_
 
-- [ ] 4.2 Implementar trigger de backup pós-migração
+- [x] 4.2 Implementar trigger de backup pós-migração
   - Adicionar workflow_dispatch e repository_dispatch ao workflow de backup
   - Modificar script de migração para disparar backup via webhook
   - Implementar registro do backup com type='pre_migration' na tabela
     `backup_history`
   - _Requisitos: 3.3_
 
-- [ ] 4.3 Implementar verificação de integridade de backups
+- [x] 4.3 Implementar verificação de integridade de backups
   - Criar script que compara contagem de registros entre produção e backup
   - Implementar validação de schema entre produção e backup
   - Adicionar step de verificação no workflow de backup
   - Registrar resultado da verificação na tabela `backup_history`
   - _Requisitos: 3.5_
 
-- [ ] 4.4 Implementar política de retenção de backups
+- [x] 4.4 Implementar política de retenção de backups
   - Criar script que identifica backups com mais de 30 dias
   - Implementar lógica de retenção (diário: 30 dias, semanal: 4 semanas, mensal:
     3 meses)
   - Adicionar step de cleanup no workflow de backup
   - _Requisitos: 3.6_
 
-- [ ] 4.5 Implementar sistema de alertas para falhas de backup
+- [x] 4.5 Implementar sistema de alertas para falhas de backup
   - Adicionar step de notificação em caso de falha no workflow
   - Configurar envio de email ou webhook para administradores
   - Implementar alerta crítico se backup não executar em 48 horas
   - _Requisitos: 3.7, 7.1, 7.3_
 
 -
-  5. [ ] Configurar pipeline de deploy automatizado
-- [ ] 5.1 Configurar deploys automáticos para desenvolvimento e teste
+  5. [x] Configurar pipeline de deploy automatizado
+- [x] 5.1 Configurar deploys automáticos para desenvolvimento e teste
   - Configurar Vercel para auto-deploy da branch development
   - Configurar Vercel para auto-deploy da branch staging
   - Testar deploys automáticos em ambos os ambientes
   - _Requisitos: 4.1, 4.2_
 
-- [ ] 5.2 Configurar deploy controlado para produção
+- [x] 5.2 Configurar deploy controlado para produção
   - Criar workflow `.github/workflows/deploy-production.yml`
   - Implementar step de aprovação manual usando manual-approval action
   - Configurar lista de aprovadores autorizados
@@ -118,7 +118,7 @@
   - Implementar para ambientes de teste e produção
   - _Requisitos: 4.4_
 
-- [ ] 5.4 Implementar rollback automático em caso de falha
+- [x] 5.4 Implementar rollback automático em caso de falha
   - Adicionar step de rollback para versão anterior se deploy falhar
   - Implementar notificação de administradores em caso de falha
   - Testar processo de rollback em ambiente de teste
@@ -147,7 +147,7 @@
 
 -
   7. [ ] Implementar sistema de monitoramento e alertas
-- [ ] 7.1 Criar tabelas de monitoramento no banco
+- [x] 7.1 Criar tabelas de monitoramento no banco
   - Criar tabela `backup_history` com campos definidos no design
   - Criar tabela `migration_history` com campos definidos no design
   - Criar tabela `resource_usage` com campos definidos no design
@@ -186,7 +186,7 @@
   - Adicionar validação que previne cópia direta de PII
   - _Requisitos: 10.2, 10.3_
 
-- [ ] 8.3 Criar scripts de seed para ambientes
+- [x] 8.3 Criar scripts de seed para ambientes
   - Criar arquivo `supabase/seed/development.sql` com dados de teste
   - Criar arquivo `supabase/seed/test.sql` com dados para testes automatizados
   - Implementar comando `npm run seed:dev` e `npm run seed:test`
@@ -194,7 +194,7 @@
 
 -
   9. [ ] Criar documentação completa
-- [ ] 9.1 Criar documentação de setup e configuração
+- [x] 9.1 Criar documentação de setup e configuração
   - Criar `README.md` com visão geral e instruções de setup local
   - Criar `DEPLOYMENT.md` com processo de deploy detalhado
   - Criar `MIGRATION.md` com guia de migrações

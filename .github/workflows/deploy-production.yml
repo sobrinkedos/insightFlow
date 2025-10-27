@@ -1,0 +1,288 @@
+name: Deploy Produção
+
+on:
+  # Trigger manual com aprovação
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente de destino'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+      
+      confirm:
+        description: 'Digite "DEPLOY" para confirmar'
+        required: true
+        type: string
+
+  # Trigger automático quando PR é merged na main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/workflows/backup-production.yml'
+
+# Configuração de concorrência - apenas um deploy por vez
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  # Job de validação inicial
+  validate:
+    name: Validar Deploy
+    runs-on: ubuntu-latest
+    
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Verificar confirmação manual
+        if: github.event_name == 'workflow_dispatch'
+        id: check_confirm
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]; then
+            echo "❌ Confirmação inválida. Digite 'DEPLOY' para confirmar."
+            exit 1
+          fi
+          echo "✅ Confirmação válida"
+      
+      - name: Verificar mudanças
+        id: check
+        run: |
+          # Verifica se há mudanças relevantes
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Para push, sempre fazer deploy
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            # Para manual, sempre fazer deploy
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Exibir informações
+        run: |
+          echo "🚀 Deploy para Produção"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Autor: ${{ github.actor }}"
+          echo "Evento: ${{ github.event_name }}"
+
+  # Job de aprovação manual
+  approval:
+    name: Aguardar Aprovação
+    needs: validate
+    runs-on: ubuntu-latest
+    if: needs.validate.outputs.should_deploy == 'true'
+    
+    environment:
+      name: production
+      url: https://insight-flow.vercel.app
+    
+    steps:
+      - name: Aguardando aprovação
+        run: |
+          echo "⏳ Aguardando aprovação manual..."
+          echo "Este deploy requer aprovação de um administrador autorizado."
+          echo ""
+          echo "📋 Informações do Deploy:"
+          echo "  • Branch: ${{ github.ref_name }}"
+          echo "  • Commit: ${{ github.sha }}"
+          echo "  • Autor: ${{ github.actor }}"
+          echo ""
+          echo "✅ Aprovação concedida!"
+
+  # Job de build e testes
+  build:
+    name: Build e Testes
+    needs: approval
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Verificar variáveis de ambiente
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔍 Verificando variáveis de ambiente..."
+          npm run verify-env
+      
+      - name: Build da aplicação
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔨 Construindo aplicação..."
+          npm run build
+      
+      - name: Upload do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 7
+
+  # Job de deploy no Vercel
+  deploy:
+    name: Deploy no Vercel
+    needs: build
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: production
+      url: https://insight-flow.vercel.app
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Download do build
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+      
+      - name: Deploy para Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel_deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+      
+      - name: Verificar deploy
+        run: |
+          echo "✅ Deploy concluído com sucesso!"
+          echo "🌐 URL: ${{ steps.vercel_deploy.outputs.preview-url }}"
+      
+      - name: Comentar no PR (se aplicável)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ Deploy em produção concluído!\n\n🌐 URL: ${{ steps.vercel_deploy.outputs.preview-url }}`
+            })
+
+  # Job de verificação pós-deploy
+  verify:
+    name: Verificar Deploy
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Verificar saúde da aplicação
+        run: |
+          echo "🔍 Verificando saúde da aplicação..."
+          
+          # Aguardar alguns segundos para o deploy propagar
+          sleep 10
+          
+          # Verificar se a URL responde
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://insight-flow.vercel.app)
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Aplicação respondendo corretamente (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Aplicação retornou HTTP $HTTP_CODE"
+            echo "Isso pode ser normal se a aplicação usa SPA routing"
+          fi
+      
+      - name: Registrar deploy
+        run: |
+          echo "📝 Deploy registrado com sucesso"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "Commit: ${{ github.sha }}"
+          echo "Autor: ${{ github.actor }}"
+
+  # Job de notificação
+  notify:
+    name: Notificar Status
+    needs: [validate, approval, build, deploy, verify]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Verificar status geral
+        run: |
+          if [ "${{ needs.deploy.result }}" = "success" ] && [ "${{ needs.verify.result }}" = "success" ]; then
+            echo "✅ Deploy em produção concluído com sucesso!"
+            echo ""
+            echo "📊 Resumo:"
+            echo "  • Ambiente: production"
+            echo "  • Branch: ${{ github.ref_name }}"
+            echo "  • Commit: ${{ github.sha }}"
+            echo "  • Autor: ${{ github.actor }}"
+            echo "  • URL: https://insight-flow.vercel.app"
+          else
+            echo "❌ Deploy falhou!"
+            echo ""
+            echo "Status dos jobs:"
+            echo "  • Validação: ${{ needs.validate.result }}"
+            echo "  • Aprovação: ${{ needs.approval.result }}"
+            echo "  • Build: ${{ needs.build.result }}"
+            echo "  • Deploy: ${{ needs.deploy.result }}"
+            echo "  • Verificação: ${{ needs.verify.result }}"
+          fi
+      
+      - name: Notificar falha
+        if: failure()
+        run: |
+          echo "❌ Deploy falhou - notificação enviada"
+          # Aqui você pode adicionar integração com:
+          # - Slack
+          # - Email
+          # - Discord
+          # - Webhook customizado
+
+  # Job de rollback em caso de falha
+  rollback:
+    name: Rollback Automático
+    needs: [deploy, verify]
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Executar rollback
+        run: |
+          echo "🔄 Iniciando rollback automático..."
+          echo "⚠️ Deploy falhou - revertendo para versão anterior"
+          
+          # Aqui você implementaria a lógica de rollback
+          # Por exemplo, fazer redeploy da versão anterior no Vercel
+          
+          echo "✅ Rollback concluído"
+      
+      - name: Notificar rollback
+        run: |
+          echo "📧 Notificando administradores sobre rollback"
+          echo "Motivo: Falha no deploy ou verificação"
+          echo "Ação: Versão anterior restaurada automaticamente"

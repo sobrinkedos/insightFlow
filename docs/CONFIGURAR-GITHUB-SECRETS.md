@@ -2,7 +2,8 @@
 
 ## Visão Geral
 
-O workflow de backup automático requer secrets configurados no GitHub para acessar os bancos de dados de produção e backup.
+O workflow de backup automático requer secrets configurados no GitHub para
+acessar os bancos de dados de produção e backup.
 
 ## Secrets Necessários
 
@@ -11,11 +12,13 @@ O workflow de backup automático requer secrets configurados no GitHub para aces
 URL de conexão direta ao banco de dados de produção.
 
 **Formato:**
+
 ```
 postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 
 **Como obter:**
+
 1. Acesse https://supabase.com/dashboard/project/jropngieefxgnufmkeaj
 2. Vá em **Settings** > **Database**
 3. Role até **Connection string**
@@ -24,6 +27,7 @@ postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 6. Substitua `[YOUR-PASSWORD]` pela senha do banco: `dogRyjsEfOYVtd5H`
 
 **Valor final:**
+
 ```
 postgresql://postgres:dogRyjsEfOYVtd5H@db.jropngieefxgnufmkeaj.supabase.co:5432/postgres
 ```
@@ -33,11 +37,13 @@ postgresql://postgres:dogRyjsEfOYVtd5H@db.jropngieefxgnufmkeaj.supabase.co:5432/
 URL de conexão direta ao banco de dados de backup.
 
 **Formato:**
+
 ```
 postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 
 **Como obter:**
+
 1. Acesse https://supabase.com/dashboard/project/vewrtrnqubvmipfgnxlv
 2. Vá em **Settings** > **Database**
 3. Role até **Connection string**
@@ -46,6 +52,7 @@ postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 6. Substitua `[YOUR-PASSWORD]` pela senha do banco: `NuEmt9MicyIvE3Oa`
 
 **Valor final:**
+
 ```
 postgresql://postgres:NuEmt9MicyIvE3Oa@db.vewrtrnqubvmipfgnxlv.supabase.co:5432/postgres
 ```
@@ -104,6 +111,7 @@ Após adicionar os secrets, você deve ver:
 **Causa:** URL de conexão incorreta ou firewall bloqueando
 
 **Solução:**
+
 1. Verifique se a URL está correta
 2. Confirme que o projeto Supabase está ativo (não pausado)
 3. Verifique se a senha está correta
@@ -113,6 +121,7 @@ Após adicionar os secrets, você deve ver:
 **Causa:** Senha incorreta
 
 **Solução:**
+
 1. Verifique a senha no dashboard do Supabase
 2. Atualize o secret com a senha correta
 3. Tente novamente
@@ -122,6 +131,7 @@ Após adicionar os secrets, você deve ver:
 **Causa:** Usuário sem permissões adequadas
 
 **Solução:**
+
 1. Certifique-se de usar o usuário `postgres`
 2. Verifique as permissões no Supabase
 
@@ -130,6 +140,7 @@ Após adicionar os secrets, você deve ver:
 **Causa:** Cron schedule pode levar até 1 hora para ativar
 
 **Solução:**
+
 1. Execute manualmente primeiro para testar
 2. Aguarde até o próximo horário agendado (2h AM UTC)
 3. Verifique se o workflow está habilitado
@@ -176,6 +187,7 @@ LIMIT 10;
 ### Alertas
 
 O workflow enviará notificações em caso de:
+
 - ✅ Sucesso do backup
 - ❌ Falha no backup
 - ⚠️ Verificação de integridade falhou
