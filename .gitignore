@@ -13,6 +13,11 @@ node_modules/
 # Vercel environment files (contém credenciais)
 .env.vercel.*
 
+# Config directory (contém credenciais)
+config/.env.development
+config/.env.test
+config/.env.production
+
 # Arquivos temporários e de teste
 _temp_*.ts
 test-*.ts

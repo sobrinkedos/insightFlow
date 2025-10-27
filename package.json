@@ -9,7 +9,8 @@
     "build:no-check": "vite build",
     "build:extensions": "node scripts/build-extensions-simple.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify-env": "tsx scripts/verify-env.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
