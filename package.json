@@ -18,6 +18,9 @@
     "migrate:rollback:dev": "tsx scripts/rollback.ts development",
     "migrate:rollback:test": "tsx scripts/rollback.ts test",
     "seed:dev": "tsx scripts/seed.ts development",
+    "seed:test": "tsx scripts/seed.ts test",
+    "backup:trigger": "tsx scripts/trigger-backup.ts",
+    "backup:post-migration": "tsx scripts/trigger-backup.ts post-migration"
     "seed:test": "tsx scripts/seed.ts test"
   },
   "dependencies": {

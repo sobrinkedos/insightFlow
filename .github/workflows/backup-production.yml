@@ -1,0 +1,207 @@
+name: Backup Produção
+
+on:
+  # Execução diária às 2h AM (UTC)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Permite execução manual
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Tipo de backup'
+        required: false
+        default: 'manual'
+        type: choice
+        options:
+          - manual
+          - daily
+          - pre_migration
+  
+  # Trigger via webhook após migração
+  repository_dispatch:
+    types: [migration-completed]
+
+jobs:
+  backup:
+    name: Backup do Banco de Produção
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Setup PostgreSQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Verificar versão do PostgreSQL
+        run: psql --version
+      
+      - name: Criar diretório de backup
+        run: mkdir -p backups
+      
+      - name: Gerar timestamp
+        id: timestamp
+        run: echo "timestamp=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_OUTPUT
+      
+      - name: Determinar tipo de backup
+        id: backup_type
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "type=daily" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "type=pre_migration" >> $GITHUB_OUTPUT
+          else
+            echo "type=${{ github.event.inputs.backup_type || 'manual' }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Exportar banco de produção
+        env:
+          PROD_DB_URL: ${{ secrets.PROD_SUPABASE_DB_URL }}
+        run: |
+          echo "🔄 Exportando banco de produção..."
+          BACKUP_FILE="backups/backup_${{ steps.timestamp.outputs.timestamp }}.sql"
+          
+          pg_dump "$PROD_DB_URL" \
+            --format=plain \
+            --no-owner \
+            --no-acl \
+            --clean \
+            --if-exists \
+            --file="$BACKUP_FILE"
+          
+          echo "✅ Backup exportado: $BACKUP_FILE"
+          echo "backup_file=$BACKUP_FILE" >> $GITHUB_OUTPUT
+        id: export
+      
+      - name: Verificar tamanho do backup
+        id: size
+        run: |
+          SIZE_BYTES=$(stat -f%z "${{ steps.export.outputs.backup_file }}" 2>/dev/null || stat -c%s "${{ steps.export.outputs.backup_file }}")
+          SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1048576" | bc)
+          echo "size_mb=$SIZE_MB" >> $GITHUB_OUTPUT
+          echo "📊 Tamanho do backup: ${SIZE_MB}MB"
+      
+      - name: Importar para banco de backup
+        env:
+          BACKUP_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
+        run: |
+          echo "🔄 Importando para banco de backup..."
+          psql "$BACKUP_DB_URL" < "${{ steps.export.outputs.backup_file }}"
+          echo "✅ Backup importado com sucesso"
+      
+      - name: Verificar integridade do backup
+        env:
+          PROD_DB_URL: ${{ secrets.PROD_SUPABASE_DB_URL }}
+          BACKUP_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
+        run: |
+          echo "🔍 Verificando integridade..."
+          
+          # Conta registros em tabelas principais (exemplo)
+          PROD_COUNT=$(psql "$PROD_DB_URL" -t -c "SELECT COUNT(*) FROM public.migration_history" | tr -d ' ')
+          BACKUP_COUNT=$(psql "$BACKUP_DB_URL" -t -c "SELECT COUNT(*) FROM public.migration_history" | tr -d ' ')
+          
+          echo "Produção: $PROD_COUNT registros"
+          echo "Backup: $BACKUP_COUNT registros"
+          
+          if [ "$PROD_COUNT" = "$BACKUP_COUNT" ]; then
+            echo "✅ Integridade verificada"
+            echo "verified=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Contagens diferentes - verificação manual necessária"
+            echo "verified=false" >> $GITHUB_OUTPUT
+          fi
+        id: verify
+      
+      - name: Registrar backup no histórico
+        env:
+          BACKUP_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
+        run: |
+          echo "📝 Registrando backup no histórico..."
+          
+          psql "$BACKUP_DB_URL" <<EOF
+          INSERT INTO public.backup_history (
+            type,
+            size_mb,
+            status,
+            source_environment,
+            verification_status,
+            retention_until,
+            metadata
+          ) VALUES (
+            '${{ steps.backup_type.outputs.type }}',
+            ${{ steps.size.outputs.size_mb }},
+            'completed',
+            'production',
+            '${{ steps.verify.outputs.verified }}',
+            NOW() + INTERVAL '30 days',
+            '{"github_run_id": "${{ github.run_id }}", "timestamp": "${{ steps.timestamp.outputs.timestamp }}"}'::jsonb
+          );
+          EOF
+          
+          echo "✅ Backup registrado"
+      
+      - name: Limpar backups antigos
+        env:
+          BACKUP_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
+        run: |
+          echo "🧹 Limpando backups expirados..."
+          
+          psql "$BACKUP_DB_URL" <<EOF
+          -- Marcar backups expirados
+          UPDATE public.backup_history
+          SET status = 'expired'
+          WHERE retention_until < NOW()
+            AND status = 'completed';
+          EOF
+          
+          echo "✅ Limpeza concluída"
+      
+      - name: Enviar notificação de sucesso
+        if: success()
+        run: |
+          echo "✨ Backup concluído com sucesso!"
+          echo "Tipo: ${{ steps.backup_type.outputs.type }}"
+          echo "Tamanho: ${{ steps.size.outputs.size_mb }}MB"
+          echo "Verificado: ${{ steps.verify.outputs.verified }}"
+      
+      - name: Enviar notificação de falha
+        if: failure()
+        run: |
+          echo "❌ Backup falhou!"
+          echo "Verifique os logs para mais detalhes"
+          # Aqui você pode adicionar integração com Slack, email, etc.
+      
+      - name: Upload do arquivo de backup (opcional)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ steps.timestamp.outputs.timestamp }}
+          path: ${{ steps.export.outputs.backup_file }}
+          retention-days: 7
+
+  notify:
+    name: Notificar Status
+    needs: backup
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Verificar status
+        run: |
+          if [ "${{ needs.backup.result }}" = "success" ]; then
+            echo "✅ Backup concluído com sucesso"
+          else
+            echo "❌ Backup falhou - ação necessária"
+          fi
