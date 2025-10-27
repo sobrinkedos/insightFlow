@@ -66,6 +66,13 @@ jobs:
             echo "type=${{ github.event.inputs.backup_type || 'manual' }}" >> $GITHUB_OUTPUT
           fi
       
+      - name: Desabilitar IPv6
+        run: |
+          echo "🔧 Desabilitando IPv6..."
+          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+          echo "✅ IPv6 desabilitado"
+      
       - name: Exportar banco de produção
         env:
           PROD_DB_URL: ${{ secrets.PROD_SUPABASE_DB_URL }}
@@ -73,34 +80,32 @@ jobs:
           echo "🔄 Exportando banco de produção..."
           BACKUP_FILE="backups/backup_${{ steps.timestamp.outputs.timestamp }}.sql"
           
-          # Extrair componentes da URL
+          # Extrair host da URL
           DB_HOST=$(echo "$PROD_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
           echo "Host: $DB_HOST"
           
-          # Resolver para IPv4
-          DB_IP=$(getent ahostsv4 "$DB_HOST" | head -n1 | awk '{print $1}')
+          # Resolver DNS para IPv4 apenas
+          DB_IP=$(dig +short "$DB_HOST" A | head -n1)
           echo "Resolved IPv4: $DB_IP"
           
-          # Substituir hostname por IP na URL
-          PROD_DB_URL_IPV4=$(echo "$PROD_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+          # Se não conseguiu resolver, usar o hostname
+          if [ -z "$DB_IP" ]; then
+            echo "⚠️ Não conseguiu resolver IP, usando hostname"
+            FINAL_URL="$PROD_DB_URL"
+          else
+            # Substituir hostname por IP na URL
+            FINAL_URL=$(echo "$PROD_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+            echo "URL com IP: ${FINAL_URL/@*:*@/@[IP]:*@}"
+          fi
           
           # Executar pg_dump com timeout
-          timeout 300 pg_dump "$PROD_DB_URL_IPV4" \
+          timeout 300 pg_dump "$FINAL_URL" \
             --format=plain \
             --no-owner \
             --no-acl \
             --clean \
             --if-exists \
-            --file="$BACKUP_FILE" || {
-              echo "⚠️ Tentativa com IPv4 falhou, tentando com hostname original..."
-              timeout 300 pg_dump "$PROD_DB_URL" \
-                --format=plain \
-                --no-owner \
-                --no-acl \
-                --clean \
-                --if-exists \
-                --file="$BACKUP_FILE"
-            }
+            --file="$BACKUP_FILE"
           
           echo "✅ Backup exportado: $BACKUP_FILE"
           echo "backup_file=$BACKUP_FILE" >> $GITHUB_OUTPUT
@@ -120,22 +125,26 @@ jobs:
         run: |
           echo "🔄 Importando para banco de backup..."
           
-          # Extrair componentes da URL
+          # Extrair host da URL
           DB_HOST=$(echo "$BACKUP_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
           echo "Host: $DB_HOST"
           
-          # Resolver para IPv4
-          DB_IP=$(getent ahostsv4 "$DB_HOST" | head -n1 | awk '{print $1}')
+          # Resolver DNS para IPv4 apenas
+          DB_IP=$(dig +short "$DB_HOST" A | head -n1)
           echo "Resolved IPv4: $DB_IP"
           
-          # Substituir hostname por IP na URL
-          BACKUP_DB_URL_IPV4=$(echo "$BACKUP_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+          # Se não conseguiu resolver, usar o hostname
+          if [ -z "$DB_IP" ]; then
+            echo "⚠️ Não conseguiu resolver IP, usando hostname"
+            FINAL_URL="$BACKUP_DB_URL"
+          else
+            # Substituir hostname por IP na URL
+            FINAL_URL=$(echo "$BACKUP_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+            echo "URL com IP: ${FINAL_URL/@*:*@/@[IP]:*@}"
+          fi
           
           # Executar psql com timeout
-          timeout 300 psql "$BACKUP_DB_URL_IPV4" < "${{ steps.export.outputs.backup_file }}" || {
-            echo "⚠️ Tentativa com IPv4 falhou, tentando com hostname original..."
-            timeout 300 psql "$BACKUP_DB_URL" < "${{ steps.export.outputs.backup_file }}"
-          }
+          timeout 300 psql "$FINAL_URL" < "${{ steps.export.outputs.backup_file }}"
           
           echo "✅ Backup importado com sucesso"
       
