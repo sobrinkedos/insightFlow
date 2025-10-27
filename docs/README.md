@@ -3,6 +3,7 @@
 ## Índice de Documentação
 
 ### 📋 Infraestrutura e Configuração
+- **[RESUMO-VISUAL-AMBIENTES.md](./RESUMO-VISUAL-AMBIENTES.md)** - 🌟 Resumo visual e referência rápida (COMECE AQUI!)
 - **[INFRAESTRUTURA.md](./INFRAESTRUTURA.md)** - Documentação completa da infraestrutura multi-ambiente
 - **[GUIA-RAPIDO-AMBIENTES.md](./GUIA-RAPIDO-AMBIENTES.md)** - Guia rápido de referência dos ambientes
 - **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Guia de configuração do Vercel
