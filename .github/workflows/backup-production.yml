@@ -73,13 +73,34 @@ jobs:
           echo "🔄 Exportando banco de produção..."
           BACKUP_FILE="backups/backup_${{ steps.timestamp.outputs.timestamp }}.sql"
           
-          pg_dump "$PROD_DB_URL" \
+          # Extrair componentes da URL
+          DB_HOST=$(echo "$PROD_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+          echo "Host: $DB_HOST"
+          
+          # Resolver para IPv4
+          DB_IP=$(getent ahostsv4 "$DB_HOST" | head -n1 | awk '{print $1}')
+          echo "Resolved IPv4: $DB_IP"
+          
+          # Substituir hostname por IP na URL
+          PROD_DB_URL_IPV4=$(echo "$PROD_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+          
+          # Executar pg_dump com timeout
+          timeout 300 pg_dump "$PROD_DB_URL_IPV4" \
             --format=plain \
             --no-owner \
             --no-acl \
             --clean \
             --if-exists \
-            --file="$BACKUP_FILE"
+            --file="$BACKUP_FILE" || {
+              echo "⚠️ Tentativa com IPv4 falhou, tentando com hostname original..."
+              timeout 300 pg_dump "$PROD_DB_URL" \
+                --format=plain \
+                --no-owner \
+                --no-acl \
+                --clean \
+                --if-exists \
+                --file="$BACKUP_FILE"
+            }
           
           echo "✅ Backup exportado: $BACKUP_FILE"
           echo "backup_file=$BACKUP_FILE" >> $GITHUB_OUTPUT
@@ -98,7 +119,24 @@ jobs:
           BACKUP_DB_URL: ${{ secrets.BACKUP_SUPABASE_DB_URL }}
         run: |
           echo "🔄 Importando para banco de backup..."
-          psql "$BACKUP_DB_URL" < "${{ steps.export.outputs.backup_file }}"
+          
+          # Extrair componentes da URL
+          DB_HOST=$(echo "$BACKUP_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+          echo "Host: $DB_HOST"
+          
+          # Resolver para IPv4
+          DB_IP=$(getent ahostsv4 "$DB_HOST" | head -n1 | awk '{print $1}')
+          echo "Resolved IPv4: $DB_IP"
+          
+          # Substituir hostname por IP na URL
+          BACKUP_DB_URL_IPV4=$(echo "$BACKUP_DB_URL" | sed "s/@${DB_HOST}/@${DB_IP}/")
+          
+          # Executar psql com timeout
+          timeout 300 psql "$BACKUP_DB_URL_IPV4" < "${{ steps.export.outputs.backup_file }}" || {
+            echo "⚠️ Tentativa com IPv4 falhou, tentando com hostname original..."
+            timeout 300 psql "$BACKUP_DB_URL" < "${{ steps.export.outputs.backup_file }}"
+          }
+          
           echo "✅ Backup importado com sucesso"
       
       - name: Verificar integridade do backup
