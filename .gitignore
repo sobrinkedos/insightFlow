@@ -10,6 +10,9 @@ node_modules/
 .env.production
 .env.*.local
 
+# Vercel environment files (contém credenciais)
+.env.vercel.*
+
 # Arquivos temporários e de teste
 _temp_*.ts
 test-*.ts

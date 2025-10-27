@@ -1,6 +1,8 @@
 # Plano de Implementação
 
-- [ ] 1. Configurar infraestrutura base de ambientes
+- [x] 1. Configurar infraestrutura base de ambientes
+
+
 
 
   - Criar e configurar as duas contas Supabase com os 4 projetos necessários

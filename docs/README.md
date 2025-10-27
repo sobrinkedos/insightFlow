@@ -5,6 +5,8 @@
 ### 📋 Infraestrutura e Configuração
 - **[INFRAESTRUTURA.md](./INFRAESTRUTURA.md)** - Documentação completa da infraestrutura multi-ambiente
 - **[GUIA-RAPIDO-AMBIENTES.md](./GUIA-RAPIDO-AMBIENTES.md)** - Guia rápido de referência dos ambientes
+- **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Guia de configuração do Vercel
+- **[IMPORTAR-ENV-VERCEL.md](./IMPORTAR-ENV-VERCEL.md)** - Como importar variáveis de ambiente no Vercel
 
 ### 🚀 Próximas Documentações (A serem criadas)
 - **SETUP.md** - Guia de setup inicial para desenvolvedores
