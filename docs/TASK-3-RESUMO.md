@@ -1,6 +1,6 @@
 # Task 3 - Implementar Sistema de Migração de Banco de Dados
 
-## ✅ Concluído (Parcial)
+## ✅ Concluído
 
 ### Subtask 3.1 - Estrutura de Diretórios ✅
 
@@ -236,23 +236,42 @@ SELECT * FROM public.resource_alerts
 WHERE alert_level != 'ok';
 ```
 
-## ⏳ Pendente
+### Subtask 3.3 - Sistema de Rollback ✅
 
-### Subtask 3.3 - Sistema de Rollback ⏳
+**Implementado:**
+- ✅ Script `rollback.ts` para desenvolvimento e teste
+- ✅ Comandos `migrate:rollback:dev` e `migrate:rollback:test`
+- ✅ Validação que previne rollback em produção via script
+- ✅ Marcação de migrações como `rolled_back` no histórico
+- ✅ Instruções claras para criar migrações reversas
+- ✅ Logs informativos e avisos de segurança
 
-**A implementar:**
-- Script `migrate:rollback:dev`
-- Script `migrate:rollback:test`
-- Validação que previne rollback em produção sem backup
-- Registro de rollbacks no migration_history
+**Funcionalidades:**
+- Identifica última migração aplicada
+- Marca como `rolled_back` no migration_history
+- Exibe instruções para reverter manualmente
+- Recomenda criar migração reversa
+- Aguarda confirmação antes de executar
 
-### Subtask 3.4 - Backup Antes de Migração ⏳
+### Subtask 3.4 - Backup Antes de Migração ✅
 
-**A implementar:**
-- Integração com sistema de backup
-- Verificação de sucesso do backup
-- Registro da referência ao backup
-- Bloqueio de migração se backup falhar
+**Implementado:**
+- ✅ Script `migrate-with-backup.ts` para produção
+- ✅ Comando `migrate:prod:safe` (recomendado)
+- ✅ Criação automática de backup antes de migração
+- ✅ Verificação de integridade do backup
+- ✅ Registro da referência ao backup no migration_history
+- ✅ Bloqueio se backup falhar
+- ✅ Retenção automática de 30 dias
+
+**Fluxo Completo:**
+1. Verifica migrações pendentes
+2. Cria backup do banco de produção
+3. Registra backup na tabela backup_history
+4. Verifica integridade do backup
+5. Aplica migrações sequencialmente
+6. Registra cada migração com referência ao backup
+7. Exibe resumo completo
 
 ## 🎉 Benefícios Alcançados
 
@@ -270,16 +289,47 @@ WHERE alert_level != 'ok';
 - Boas práticas
 - Troubleshooting
 
+## 📝 Comandos Disponíveis
+
+### Migrações
+```bash
+npm run migrate:dev              # Desenvolvimento
+npm run migrate:test             # Teste/Staging
+npm run migrate:prod             # Produção (básico)
+npm run migrate:prod:safe        # Produção com backup (RECOMENDADO)
+```
+
+### Rollback
+```bash
+npm run migrate:rollback:dev     # Desenvolvimento
+npm run migrate:rollback:test    # Teste
+# Produção: processo manual com backup
+```
+
+### Seeds
+```bash
+npm run seed:dev                 # Desenvolvimento
+npm run seed:test                # Teste
+```
+
 ## 🔜 Próximos Passos
 
-1. **Implementar Subtask 3.3** - Sistema de rollback
-2. **Implementar Subtask 3.4** - Backup antes de migração
-3. **Testar migrações** em todos os ambientes
+1. **Testar migrações** em todos os ambientes
+2. **Aplicar migração inicial** em cada banco
+3. **Criar migrações adicionais** conforme necessário
 4. **Prosseguir para Task 4** - Sistema de automação de backup
+
+## 📚 Documentação Adicional
+
+- **[GUIA-MIGRACOES.md](./GUIA-MIGRACOES.md)** - Guia completo de uso
+- **[supabase/README.md](../supabase/README.md)** - Documentação técnica
+- Exemplos de migrações
+- Boas práticas
+- Troubleshooting
 
 ---
 
-**Data de Conclusão:** 2025-01-27 (Parcial - 3.1 e 3.2)  
+**Data de Conclusão:** 2025-01-27  
 **Executado por:** Sistema Kiro  
-**Status:** 50% completo (2 de 4 subtasks)  
-**Próxima Subtask:** 3.3 - Implementar sistema de rollback
+**Status:** ✅ 100% completo (4 de 4 subtasks)  
+**Próxima Task:** Task 4 - Sistema de automação de backup
