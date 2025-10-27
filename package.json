@@ -10,7 +10,12 @@
     "build:extensions": "node scripts/build-extensions-simple.js",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify-env": "tsx scripts/verify-env.ts"
+    "verify-env": "tsx scripts/verify-env.ts",
+    "migrate:dev": "tsx scripts/migrate.ts development",
+    "migrate:test": "tsx scripts/migrate.ts test",
+    "migrate:prod": "tsx scripts/migrate.ts production",
+    "seed:dev": "tsx scripts/seed.ts development",
+    "seed:test": "tsx scripts/seed.ts test"
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",

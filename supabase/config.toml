@@ -1,0 +1,43 @@
+# Configuração do Supabase CLI
+# Este arquivo configura o comportamento do Supabase CLI para migrações
+
+[api]
+# Porta para a API local (desenvolvimento)
+port = 54321
+# Schemas expostos via API
+schemas = ["public", "storage", "graphql_public"]
+# Configurações extras
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+# Porta para o banco de dados local
+port = 54322
+# Versão do PostgreSQL
+major_version = 15
+
+[studio]
+# Porta para o Supabase Studio local
+port = 54323
+
+[inbucket]
+# Porta para o Inbucket (email testing)
+port = 54324
+
+[storage]
+# Porta para o Storage local
+port = 54325
+
+[auth]
+# Porta para o Auth local
+port = 54326
+# Configurações de autenticação
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false

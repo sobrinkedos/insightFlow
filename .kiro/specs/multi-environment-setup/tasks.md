@@ -1,9 +1,7 @@
 # Plano de Implementação
 
-- [x] 1. Configurar infraestrutura base de ambientes
-
-
-
+-
+  1. [x] Configurar infraestrutura base de ambientes
 
   - Criar e configurar as duas contas Supabase com os 4 projetos necessários
   - Configurar estrutura de branches no GitHub (development, staging, main)
@@ -11,19 +9,18 @@
   - Documentar todas as credenciais de forma segura
   - _Requisitos: 1.1, 1.2, 2.1_
 
-- [x] 2. Implementar gerenciador de configuração de ambientes
-
+-
+  2. [x] Implementar gerenciador de configuração de ambientes
 
 - [x] 2.1 Criar estrutura de arquivos de configuração
 
-
-  - Criar diretório `/config` com arquivos `.env.example`, `.env.development`, `.env.test`
+  - Criar diretório `/config` com arquivos `.env.example`, `.env.development`,
+    `.env.test`
   - Criar arquivo `environment.config.ts` com interfaces TypeScript
   - Implementar validador de variáveis de ambiente obrigatórias
   - _Requisitos: 1.3, 5.1, 5.3_
 
 - [x] 2.2 Implementar carregador de configurações por ambiente
-
 
   - Criar função que detecta ambiente atual (development/test/production)
   - Implementar carregamento dinâmico de variáveis baseado no ambiente
@@ -32,13 +29,13 @@
 
 - [x] 2.3 Configurar variáveis de ambiente no Vercel
 
-
   - Adicionar variáveis de desenvolvimento no Vercel
   - Adicionar variáveis de teste no Vercel
   - Adicionar variáveis de produção no Vercel (encrypted)
   - _Requisitos: 5.4_
 
-- [ ] 3. Implementar sistema de migração de banco de dados
+-
+  3. [ ] Implementar sistema de migração de banco de dados
 - [ ] 3.1 Criar estrutura de diretórios e arquivos de migração
   - Criar diretório `/supabase/migrations`
   - Criar diretório `/supabase/seed` com arquivos de seed por ambiente
@@ -53,7 +50,8 @@
   - _Requisitos: 1.4, 6.2, 6.3, 6.4_
 
 - [ ] 3.3 Implementar sistema de rollback de migrações
-  - Criar script `migrate:rollback:dev` para reverter migrações em desenvolvimento
+  - Criar script `migrate:rollback:dev` para reverter migrações em
+    desenvolvimento
   - Criar script `migrate:rollback:test` para reverter migrações em teste
   - Implementar validação que previne rollback em produção sem backup
   - _Requisitos: 6.5_
@@ -64,8 +62,8 @@
   - Adicionar registro na tabela `migration_history` com referência ao backup
   - _Requisitos: 6.6_
 
-
-- [ ] 4. Implementar sistema de automação de backup
+-
+  4. [ ] Implementar sistema de automação de backup
 - [ ] 4.1 Criar workflow GitHub Actions para backup diário
   - Criar arquivo `.github/workflows/backup-production.yml`
   - Configurar schedule para execução diária às 2h AM
@@ -76,7 +74,8 @@
 - [ ] 4.2 Implementar trigger de backup pós-migração
   - Adicionar workflow_dispatch e repository_dispatch ao workflow de backup
   - Modificar script de migração para disparar backup via webhook
-  - Implementar registro do backup com type='pre_migration' na tabela `backup_history`
+  - Implementar registro do backup com type='pre_migration' na tabela
+    `backup_history`
   - _Requisitos: 3.3_
 
 - [ ] 4.3 Implementar verificação de integridade de backups
@@ -88,7 +87,8 @@
 
 - [ ] 4.4 Implementar política de retenção de backups
   - Criar script que identifica backups com mais de 30 dias
-  - Implementar lógica de retenção (diário: 30 dias, semanal: 4 semanas, mensal: 3 meses)
+  - Implementar lógica de retenção (diário: 30 dias, semanal: 4 semanas, mensal:
+    3 meses)
   - Adicionar step de cleanup no workflow de backup
   - _Requisitos: 3.6_
 
@@ -98,7 +98,8 @@
   - Implementar alerta crítico se backup não executar em 48 horas
   - _Requisitos: 3.7, 7.1, 7.3_
 
-- [ ] 5. Configurar pipeline de deploy automatizado
+-
+  5. [ ] Configurar pipeline de deploy automatizado
 - [ ] 5.1 Configurar deploys automáticos para desenvolvimento e teste
   - Configurar Vercel para auto-deploy da branch development
   - Configurar Vercel para auto-deploy da branch staging
@@ -123,7 +124,8 @@
   - Testar processo de rollback em ambiente de teste
   - _Requisitos: 4.5_
 
-- [ ] 6. Implementar sistema de controle de acesso
+-
+  6. [ ] Implementar sistema de controle de acesso
 - [ ] 6.1 Configurar políticas RLS no Supabase
   - Criar políticas RLS para ambiente de desenvolvimento (permissivo)
   - Criar políticas RLS para ambiente de teste (similar a produção)
@@ -143,8 +145,8 @@
   - Documentar processo de rotação de credenciais
   - _Requisitos: 2.4_
 
-
-- [ ] 7. Implementar sistema de monitoramento e alertas
+-
+  7. [ ] Implementar sistema de monitoramento e alertas
 - [ ] 7.1 Criar tabelas de monitoramento no banco
   - Criar tabela `backup_history` com campos definidos no design
   - Criar tabela `migration_history` com campos definidos no design
@@ -170,7 +172,8 @@
   - Adicionar logs para ambiente de produção em serviço externo
   - _Requisitos: 7.2, 7.4_
 
-- [ ] 8. Implementar camada de isolamento de dados
+-
+  8. [ ] Implementar camada de isolamento de dados
 - [ ] 8.1 Criar gerador de dados sintéticos
   - Implementar classe `DataGenerator` com método `generateFromSchema`
   - Integrar biblioteca faker para geração de dados realistas
@@ -189,7 +192,8 @@
   - Implementar comando `npm run seed:dev` e `npm run seed:test`
   - _Requisitos: 10.4, 10.5_
 
-- [ ] 9. Criar documentação completa
+-
+  9. [ ] Criar documentação completa
 - [ ] 9.1 Criar documentação de setup e configuração
   - Criar `README.md` com visão geral e instruções de setup local
   - Criar `DEPLOYMENT.md` com processo de deploy detalhado
@@ -210,7 +214,8 @@
   - Criar guia de primeiros passos
   - _Requisitos: 8.1_
 
-- [ ] 10. Implementar scripts de restauração e recuperação
+-
+  10. [ ] Implementar scripts de restauração e recuperação
 - [ ] 10.1 Criar scripts de restauração de backup
   - Implementar comando `npm run backup:list` para listar backups disponíveis
   - Implementar comando `npm run backup:restore` com confirmação obrigatória
@@ -225,7 +230,8 @@
   - Criar scripts auxiliares para cada cenário
   - _Requisitos: 3.5_
 
-- [ ] 11. Realizar testes de integração e validação
+-
+  11. [ ] Realizar testes de integração e validação
 - [ ]* 11.1 Testar isolamento entre ambientes
   - Verificar que cliente de dev não acessa dados de produção
   - Verificar que credenciais de um ambiente não funcionam em outro
@@ -253,7 +259,8 @@
   - Testar rollback em ambiente de desenvolvimento
   - _Requisitos: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-- [ ] 12. Configurar monitoramento contínuo e otimização
+-
+  12. [ ] Configurar monitoramento contínuo e otimização
 - [ ] 12.1 Configurar monitoramento de recursos em produção
   - Implementar coleta automática de métricas de uso
   - Configurar alertas para limites de 80% e 90%
