@@ -21,7 +21,6 @@
     "seed:test": "tsx scripts/seed.ts test",
     "backup:trigger": "tsx scripts/trigger-backup.ts",
     "backup:post-migration": "tsx scripts/trigger-backup.ts post-migration"
-    "seed:test": "tsx scripts/seed.ts test"
   },
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
