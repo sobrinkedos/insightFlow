@@ -97,7 +97,8 @@ vercel env pull .env.vercel.production
 
 ## ⚠️ IMPORTANTE: Remover Variáveis Antigas
 
-Antes de adicionar as novas, **remova as variáveis antigas** com prefixo `NEXT_PUBLIC_*`:
+Antes de adicionar as novas, **remova as variáveis antigas** com prefixo
+`NEXT_PUBLIC_*`:
 
 1. Vá em: **Settings → Environment Variables**
 2. Procure por variáveis que começam com `NEXT_PUBLIC_`
@@ -105,6 +106,7 @@ Antes de adicionar as novas, **remova as variáveis antigas** com prefixo `NEXT_
 4. Confirme a exclusão
 
 Variáveis para remover:
+
 - ❌ `NEXT_PUBLIC_SUPABASE_URL`
 - ❌ `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
@@ -115,6 +117,7 @@ Variáveis para remover:
 A Vercel usa o conceito de **Environments** para diferenciar:
 
 ### Preview (Branches development e staging)
+
 - Usado para todas as branches que NÃO são a production branch
 - Inclui: `development`, `staging`, feature branches, etc.
 - **Importante:** Você pode ter MÚLTIPLAS configurações de Preview
@@ -122,6 +125,7 @@ A Vercel usa o conceito de **Environments** para diferenciar:
   - Outra para `staging` (Supabase Test)
 
 ### Production (Branch main)
+
 - Usado APENAS para a branch configurada como production (geralmente `main`)
 - Deploy de produção
 
@@ -133,26 +137,27 @@ Para ter ambientes diferentes por branch, você tem 2 opções:
 
 ### Opção A: Usar VITE_ENVIRONMENT para diferenciar
 
-Adicione todas as variáveis como **Preview** e use `VITE_ENVIRONMENT` para determinar qual Supabase usar no código:
+Adicione todas as variáveis como **Preview** e use `VITE_ENVIRONMENT` para
+determinar qual Supabase usar no código:
 
 ```typescript
 // config/environment.config.ts
 const configs = {
   development: {
-    supabaseUrl: 'https://enkpfnqsjjnanlqhjnsv.supabase.co',
+    supabaseUrl: "https://enkpfnqsjjnanlqhjnsv.supabase.co",
     // ...
   },
   test: {
-    supabaseUrl: 'https://bosxuteortfshfysoqrd.supabase.co',
+    supabaseUrl: "https://bosxuteortfshfysoqrd.supabase.co",
     // ...
   },
   production: {
-    supabaseUrl: 'https://jropngieefxgnufmkeaj.supabase.co',
+    supabaseUrl: "https://jropngieefxgnufmkeaj.supabase.co",
     // ...
-  }
+  },
 };
 
-const env = import.meta.env.VITE_ENVIRONMENT || 'development';
+const env = import.meta.env.VITE_ENVIRONMENT || "development";
 export const config = configs[env];
 ```
 
