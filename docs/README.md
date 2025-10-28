@@ -2,8 +2,11 @@
 
 ## Índice de Documentação
 
+### 🌟 Documento Principal
+- **[SISTEMA-COMPLETO-MULTI-AMBIENTE.md](./SISTEMA-COMPLETO-MULTI-AMBIENTE.md)** - 📘 **GUIA COMPLETO** - Tudo sobre o sistema (COMECE AQUI!)
+
 ### 📋 Infraestrutura e Configuração
-- **[RESUMO-VISUAL-AMBIENTES.md](./RESUMO-VISUAL-AMBIENTES.md)** - 🌟 Resumo visual e referência rápida (COMECE AQUI!)
+- **[RESUMO-VISUAL-AMBIENTES.md](./RESUMO-VISUAL-AMBIENTES.md)** - Resumo visual e referência rápida
 - **[INFRAESTRUTURA.md](./INFRAESTRUTURA.md)** - Documentação completa da infraestrutura multi-ambiente
 - **[GUIA-RAPIDO-AMBIENTES.md](./GUIA-RAPIDO-AMBIENTES.md)** - Guia rápido de referência dos ambientes
 
