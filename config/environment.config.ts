@@ -35,8 +35,8 @@ export interface EnvironmentConfig {
 
 // Variáveis de ambiente obrigatórias
 const REQUIRED_ENV_VARS = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY',
   'VITE_ENVIRONMENT',
 ] as const;
 
@@ -139,13 +139,13 @@ export class EnvironmentManager {
     this.validateRequiredVars();
 
     // Obtém as variáveis
-    const supabaseUrl = import.meta.env.NEXT_PUBLIC_SUPABASE_URL as string;
-    const supabaseAnonKey = import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
     const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY as string | undefined;
 
     // Valida formato das credenciais
     this.validateSupabaseUrl(supabaseUrl);
-    this.validateSupabaseKey(supabaseAnonKey, 'NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    this.validateSupabaseKey(supabaseAnonKey, 'VITE_SUPABASE_ANON_KEY');
     
     if (supabaseServiceKey) {
       this.validateSupabaseKey(supabaseServiceKey, 'SUPABASE_SERVICE_ROLE_KEY');
