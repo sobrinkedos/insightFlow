@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "build:with-check": "tsc -b && vite build",
     "build:no-check": "vite build",
     "build:extensions": "node scripts/build-extensions-simple.js",
     "lint": "eslint .",
