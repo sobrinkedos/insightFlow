@@ -1,0 +1,35 @@
+# Arquivos que a Vercel deve ignorar durante o build
+
+# Credenciais locais
+credenciais/
+config/.env.*
+.env.vercel.*
+
+# Scripts de migração (não necessários no build)
+scripts/migrate*.ts
+scripts/rollback*.ts
+scripts/seed.ts
+scripts/trigger-backup.ts
+
+# Documentação de debug
+docs/CORRECAO-*.md
+docs/DIAGNOSTICO-*.md
+docs/PROBLEMA-*.md
+docs/SOLUCAO-*.md
+docs/SUCESSO-*.md
+
+# Arquivos temporários
+_temp_*
+test-*
+
+# Specs e planejamento
+.kiro/specs/
+
+# Node modules (já ignorado por padrão, mas garantindo)
+node_modules/
+
+# Arquivos de teste
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
