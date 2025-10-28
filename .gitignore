@@ -43,4 +43,4 @@ browser-extension/*.webm
 browser-extension/*.mov
 
 # Credenciais
-credenciais/
+credenciais/*.md

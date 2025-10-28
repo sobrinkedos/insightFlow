@@ -6,7 +6,11 @@
 - **[RESUMO-VISUAL-AMBIENTES.md](./RESUMO-VISUAL-AMBIENTES.md)** - 🌟 Resumo visual e referência rápida (COMECE AQUI!)
 - **[INFRAESTRUTURA.md](./INFRAESTRUTURA.md)** - Documentação completa da infraestrutura multi-ambiente
 - **[GUIA-RAPIDO-AMBIENTES.md](./GUIA-RAPIDO-AMBIENTES.md)** - Guia rápido de referência dos ambientes
-- **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Guia de configuração do Vercel
+
+### 🚀 Deploy e Vercel
+- **[SETUP-VERCEL-RAPIDO.md](./SETUP-VERCEL-RAPIDO.md)** - ⚡ Setup rápido do Vercel (5 minutos)
+- **[VERCEL-ONDE-ENCONTRAR-IDS.md](./VERCEL-ONDE-ENCONTRAR-IDS.md)** - 🔍 Guia visual para encontrar IDs da Vercel
+- **[CONFIGURAR-VERCEL.md](./CONFIGURAR-VERCEL.md)** - Guia de configuração completo do Vercel
 - **[IMPORTAR-ENV-VERCEL.md](./IMPORTAR-ENV-VERCEL.md)** - Como importar variáveis de ambiente no Vercel
 
 ### 🚀 Deploy e CI/CD

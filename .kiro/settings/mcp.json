@@ -1,33 +1,32 @@
 {
-  "mcpServers": {
-    "supabase": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server-supabase"
-      ],
-      "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_c775c32efe2a38abe349b7775a5f89bc0f3f33e6"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "list_tables",
-        "describe_table",
-        "run_query",
-        "execute_sql",
-        "list_projects",
-        "get_project",
-        "apply_migration",
-        "list_migrations",
-        "get_logs",
-        "get_anon_key",
-        "deploy_edge_function",
-        "list_edge_functions",
-        "list_edge_functions",
-        "get_project_url",
-        "list_extensions",
-        "get_edge_function"
-      ]
+    "mcpServers": {
+        "supabase": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@supabase/mcp-server-supabase"
+            ],
+            "env": {
+                "SUPABASE_ACCESS_TOKEN": "sbp_c775c32efe2a38abe349b7775a5f89bc0f3f33e6"
+            },
+            "disabled": false,
+            "autoApprove": [
+                "list_tables",
+                "describe_table",
+                "run_query",
+                "execute_sql",
+                "list_projects",
+                "get_project",
+                "apply_migration",
+                "list_migrations",
+                "get_logs",
+                "get_anon_key",
+                "deploy_edge_function",
+                "list_edge_functions",
+                "get_project_url",
+                "list_extensions",
+                "get_edge_function"
+            ]
+        }
     }
-  }
 }
